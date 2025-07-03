@@ -1,0 +1,39 @@
+{
+  "name": "samudra-app",
+  "version": "1.0.0",
+  "description": "samudra erp application",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run watch:scss\" \"npm run runserver\" \"npm run open:browser\"",
+    "compile:scss": "sass public/scss/custom.scss public/css/all-custom.css",
+    "watch:scss": "sass --watch public/scss/custom.scss:public/css/all-custom.css",
+    "rtl": "rtlcss --config .rtlcssrc.json public/css/all-custom.css > public/css/all-custom-rtl.css",
+    "runserver": "nodemon server.js",
+    "open:browser": "start http://127.0.0.1:5000/"
+  },
+  "author": "SovWare",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.2",
+    "concurrently": "^8.2.0",
+    "connect-mongodb-session": "^3.1.1",
+    "dotenv": "^16.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.3",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.17.2",
+    "i18n": "^0.14.2",
+    "mongoose": "^6.11.4",
+    "mongoose-unique-validator": "^3.0.0",
+    "node-sessionstorage": "^1.0.0",
+    "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "open": "^9.1.0",
+    "rtlcss": "^4.1.0",
+    "sass": "^1.64.1"
+  }
+}

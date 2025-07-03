@@ -1,0 +1,17 @@
+const express = require('express')
+const router = express.Router()
+const KeuanganController = require('../controllers/keuanganController')
+const authMiddleware = require('../middlewares/auth')
+const localeMiddleware = require('../middlewares/locale')
+
+router.get('/akun/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.akun)
+router.get('/jurnal-umum/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.jurnalUmum)
+router.get('/arus-kas/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.arusKas)
+router.get('/kas-kecil/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.kasKecil)
+router.get('/kas-bantuan/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.kasBantuan)
+router.get('/bank/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.bank)
+router.get('/piutang/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.piutang)
+router.get('/laba-rugi/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.labaRugi)
+router.get('/neraca/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.neraca)
+router.get('/pajak/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], KeuanganController.pajak)
+module.exports = router

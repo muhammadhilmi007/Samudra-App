@@ -1,0 +1,17 @@
+{
+    "presets": [
+      "rtlcss-starter-presets"
+    ],
+    "stringMap":[
+      {
+        "name":"custom",
+        "search": ["left", "Left"],
+        "replace": ["right", "Right"],
+        "options": {
+          "scope": "*",
+          "ignoreCase": false
+        }
+      }
+    ]
+  }
+  
