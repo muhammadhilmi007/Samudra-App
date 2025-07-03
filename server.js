@@ -29,6 +29,9 @@ const customer_routes = require('./routes/customer')
 const website_routes = require('./routes/website')
 const penjualan_routes = require('./routes/penjualanRoutes')
 const keuangan_routes = require('./routes/keuanganRoutes')
+const operasional_routes = require('./routes/operasionalRoutes')
+const administrasi_routes = require('./routes/administrasiRoutes')
+const hrd_routes = require('./routes/hrdRoutes')
 
 // register all the assets
 app.use(BASE_URL + 'css',express.static(__dirname + '/public/css'))
@@ -87,6 +90,10 @@ app.use(BASE_URL + '',auth_routes)
 app.use(BASE_URL + 'customer',customer_routes)
 app.use(BASE_URL + 'penjualan',penjualan_routes)
 app.use(BASE_URL + 'keuangan',keuangan_routes)
+app.use(BASE_URL + 'operasional',operasional_routes)
+app.use(BASE_URL + 'administrasi',administrasi_routes)
+app.use(BASE_URL + 'hrd',hrd_routes)
+
 
 app.use(localeMiddleware.activeLocale)
 
