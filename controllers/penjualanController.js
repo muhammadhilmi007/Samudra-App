@@ -7,12 +7,21 @@ const penjualan = (request, response, next) => {
 };
 
 // barang page
+const produk = (request, response, next) => {
+  response.render("../views/pages/penjualan/produk.ejs", {
+    title: "Produk",
+    name: "produk",
+  });
+};
+
+// barang page
 const barang = (request, response, next) => {
   response.render("../views/pages/penjualan/barang.ejs", {
     title: "Barang",
     name: "barang",
   });
 };
+
 // pelanggan page
 const pelanggan = (request, response, next) => {
   response.render("../views/pages/penjualan/pelanggan.ejs", {
@@ -52,4 +61,5 @@ module.exports = {
   packing,
   harga,
   ekspedisi,
+  produk,
 };

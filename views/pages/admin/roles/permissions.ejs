@@ -1,0 +1,165 @@
+<!-- Breadcrumb -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="<%= base %>dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Admin</a></li>
+        <li class="breadcrumb-item"><a href="<%= base %>admin/roles">Roles</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Permissions</li>
+      </ol>
+    </nav>
+    <h1 class="h3 mb-0">Manage Permissions: <%= role.name %></h1>
+  </div>
+  <a href="<%= base %>admin/roles" class="btn btn-secondary">
+    <i class="bx bx-arrow-back"></i> Back to Roles
+  </a>
+</div>
+
+<!-- Role Info -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3">
+        <strong>Role Name:</strong><br>
+        <%= role.name %>
+      </div>
+      <div class="col-md-3">
+        <strong>Branch:</strong><br>
+        <%= role.branch_id ? role.branch_id.name : '-' %>
+      </div>
+      <div class="col-md-3">
+        <strong>Division:</strong><br>
+        <%= role.division_id ? role.division_id.name : '-' %>
+      </div>
+      <div class="col-md-3">
+        <strong>Position:</strong><br>
+        <%= role.position_id ? role.position_id.name : '-' %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Permissions Form -->
+<form method="POST" action="<%= base %>admin/roles/<%= role._id %>/permissions">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Module Permissions</h5>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-info mb-4">
+        <i class="bx bx-info-circle"></i> 
+        Check the permissions you want to grant to this role. Users with this role will only be able to perform the selected actions.
+      </div>
+
+      <% Object.keys(modulePermissions).forEach(moduleCode => { %>
+        <% const moduleData = modulePermissions[moduleCode]; %>
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">
+              <i class="<%= moduleData.module.icon %>"></i> 
+              <%= moduleData.module.name %>
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <% moduleData.permissions.forEach(permission => { %>
+                <div class="col-md-3 mb-2">
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input permission-checkbox" 
+                      type="checkbox" 
+                      name="permissions[]" 
+                      value="<%= permission._id %>"
+                      id="perm_<%= permission._id %>"
+                      data-module="<%= moduleCode %>"
+                      data-action="<%= permission.action %>"
+                      <%= currentPermissions[permission._id.toString()] ? 'checked' : '' %>
+                    >
+                    <label class="form-check-label" for="perm_<%= permission._id %>">
+                      <% 
+                        const actionIcons = {
+                          'create': 'bx-plus-circle',
+                          'read': 'bx-show',
+                          'update': 'bx-edit',
+                          'delete': 'bx-trash',
+                          'export': 'bx-download',
+                          'import': 'bx-upload',
+                          'approve': 'bx-check-circle',
+                          'reject': 'bx-x-circle'
+                        };
+                        const actionColors = {
+                          'create': 'text-success',
+                          'read': 'text-info',
+                          'update': 'text-warning',
+                          'delete': 'text-danger',
+                          'export': 'text-primary',
+                          'import': 'text-primary',
+                          'approve': 'text-success',
+                          'reject': 'text-danger'
+                        };
+                      %>
+                      <i class="bx <%= actionIcons[permission.action] || 'bx-dots-horizontal-rounded' %> <%= actionColors[permission.action] || '' %>"></i>
+                      <%= permission.action.charAt(0).toUpperCase() + permission.action.slice(1) %>
+                    </label>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-outline-primary select-all" data-module="<%= moduleCode %>">
+                Select All
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary deselect-all" data-module="<%= moduleCode %>">
+                Deselect All
+              </button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">
+          <i class="bx bx-save"></i> Save Permissions
+        </button>
+        <a href="<%= base %>admin/roles" class="btn btn-secondary">
+          Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+// Select/Deselect all permissions for a module
+document.querySelectorAll('.select-all').forEach(button => {
+  button.addEventListener('click', function() {
+    const module = this.dataset.module;
+    document.querySelectorAll(`input[data-module="${module}"]`).forEach(checkbox => {
+      checkbox.checked = true;
+    });
+  });
+});
+
+document.querySelectorAll('.deselect-all').forEach(button => {
+  button.addEventListener('click', function() {
+    const module = this.dataset.module;
+    document.querySelectorAll(`input[data-module="${module}"]`).forEach(checkbox => {
+      checkbox.checked = false;
+    });
+  });
+});
+
+// Auto-check 'read' permission when other permissions are selected
+document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+  checkbox.addEventListener('change', function() {
+    if (this.checked && this.dataset.action !== 'read') {
+      const module = this.dataset.module;
+      const readCheckbox = document.querySelector(`input[data-module="${module}"][data-action="read"]`);
+      if (readCheckbox) {
+        readCheckbox.checked = true;
+      }
+    }
+  });
+});
+</script>

@@ -111,6 +111,15 @@
           <span class="menu-text"><%- __('penjualan') %></span>
         </a>
       </li>
+       <li>
+        <a
+          href="<%- locals.base %>penjualan/produk/<%- locale %>"
+          class="<%- name === 'produk' ?'active':'' %>"
+        >
+          <span class="nav-icon uil uil-box"></span>
+          <span class="menu-text"><%- __('produk') %></span>
+        </a>
+      </li>
       <li>
         <a
           href="<%- locals.base %>penjualan/barang/<%- locale %>"
@@ -428,6 +437,65 @@
           <span class="nav-icon uil uil-file-edit-alt"></span>
           <span class="menu-text"><%- __('laporan') %></span>
         </a>
+      </li>
+      <li class="menu-title mt-30">
+        <span>SETTINGS</span>
+      </li>
+      <li
+        class="has-child <%- name === 'settings' || name === 'permission' || name === 'role' || name === 'division' || name === 'position' || name === 'user' ?'open':'' %>"
+      >
+        <a
+          href="#"
+          class="<%- name === 'settings' || name === 'permission' || name === 'role' || name === 'division' || name === 'position' || name === 'user' ?'active':'' %>"
+        >
+          <span class="nav-icon uil uil-setting"></span>
+          <span class="menu-text"><%- __('setting-menu-title') %></span>
+          <span class="toggle-icon"></span>
+        </a>
+        <ul>
+          <li>
+            <a
+              class="<%- name === 'settings' ?'active':'' %>"
+              href="<%- locals.base %>setting/settings/<%- locale %>"
+              ><%- __('setting') %></a
+            >
+          </li>
+          <li>
+            <a
+              class="<%- name === 'permission' ?'active':'' %>"
+              href="<%- locals.base %>admin/roles/<%- locale %>"
+              ><%- __('permission') %></a
+            >
+          </li>
+          <li>
+            <a
+              class="<%- name === 'role' ?'active':'' %>"
+              href="<%- locals.base %>admin/roles/<%- locale %>"
+              ><%- __('role') %></a
+            >
+          </li>
+          <li>
+            <a
+              href="<%- locals.base %>admin/users/<%- locale %>"
+              class="<%- name === 'users' ?'active':'' %>"
+              ><%- __('users') %></a
+            >
+          </li>
+          <li>
+            <a
+              href="<%- locals.base %>admin/divisions/<%- locale %>"
+              class="<%- name === 'divisi' ?'active':'' %>"
+              ><%- __('divisi') %></a
+            >
+          </li>
+          <li>
+            <a
+              href="<%- locals.base %>admin/positions/<%- locale %>"
+              class="<%- name === 'posisi' ?'active':'' %>"
+              ><%- __('posisi') %></a
+            >
+          </li>
+        </ul>
       </li>
       <li class="menu-title mt-30">
         <span>APLIKASI</span>
@@ -788,15 +856,6 @@
             </a>
           </li>
         </ul>
-      </li>
-      <li>
-        <a
-          href="<%- locals.base %>pages/settings/<%- locale %>"
-          class="<%- name === 'settings' ? 'active':'' %>"
-        >
-          <span class="nav-icon uil uil-setting"></span>
-          <span class="menu-text"><%- __('setting-menu-title') %></span>
-        </a>
       </li>
       <li class="menu-title mt-30">
         <span>CRUD</span>

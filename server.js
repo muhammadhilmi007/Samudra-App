@@ -4,6 +4,7 @@ const session = require('express-session')
 const MongoDBStore = require('connect-mongodb-session')(session)
 const globalSession = require('./middlewares/session')
 const localeMiddleware = require('./middlewares/locale')
+const permissionMiddleware = require('./middlewares/permission')
 const bodyParser = require('body-parser')
 const expressLayout = require('express-ejs-layouts')
 const app = express()
@@ -16,6 +17,10 @@ const DB_HOST = process.env.DATABASE_HOST
 const DB_PORT = process.env.DATABASE_PORT
 const DB_NAME = process.env.DATABASE_NAME
 const BASE_URL = process.env.BASE_URL
+
+// Method override for PUT and DELETE
+const methodOverride = require('method-override')
+app.use(methodOverride('_method'))
 
 // requires all the routes
 const dashboard_routes = require('./routes/dashboard')
@@ -32,6 +37,10 @@ const keuangan_routes = require('./routes/keuanganRoutes')
 const operasional_routes = require('./routes/operasionalRoutes')
 const administrasi_routes = require('./routes/administrasiRoutes')
 const hrd_routes = require('./routes/hrdRoutes')
+
+// New routes
+const admin_routes = require('./routes/adminRoutes')
+const product_routes = require('./routes/productRoutes')
 
 // register all the assets
 app.use(BASE_URL + 'css',express.static(__dirname + '/public/css'))
@@ -68,6 +77,13 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(globalSession.globalSession)
 app.use(globalSession.errorMessage)
+
+// Global middleware for permissions
+app.use(permissionMiddleware.loadUserPermissions)
+
+// Make hasPermission helper available in views
+app.locals.hasPermission = permissionMiddleware.hasPermission
+
 app.locals.base = BASE_URL
 app.use(function(request, response, next){
    response.locals.base = BASE_URL
@@ -93,7 +109,8 @@ app.use(BASE_URL + 'keuangan',keuangan_routes)
 app.use(BASE_URL + 'operasional',operasional_routes)
 app.use(BASE_URL + 'administrasi',administrasi_routes)
 app.use(BASE_URL + 'hrd',hrd_routes)
-
+app.use(BASE_URL + 'admin',admin_routes)
+app.use(BASE_URL + 'products',product_routes)
 
 app.use(localeMiddleware.activeLocale)
 

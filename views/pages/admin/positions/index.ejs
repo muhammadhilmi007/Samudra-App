@@ -1,0 +1,110 @@
+<!-- Breadcrumb -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="<%= base %>dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Admin</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Positions</li>
+      </ol>
+    </nav>
+    <h1 class="h3 mb-0">Position Management</h1>
+  </div>
+  <% if (userPermissions && userPermissions.positions && userPermissions.positions.includes('create')) { %>
+  <a href="<%= base %>admin/positions/create" class="btn btn-primary">
+    <i class="bx bx-plus"></i> Create New Position
+  </a>
+  <% } %>
+</div>
+
+<!-- Success/Error Messages -->
+<% if (locals.successMessage) { %>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <%= successMessage %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<% if (locals.errorMessage) { %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= errorMessage %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<% } %>
+
+<!-- Positions Table -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">All Positions</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Name</th>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (positions && positions.length > 0) { %>
+            <% positions.forEach(position => { %>
+            <tr>
+              <td>
+                <span class="badge bg-primary">Level <%= position.level %></span>
+              </td>
+              <td><strong><%= position.name %></strong></td>
+              <td><code><%= position.code %></code></td>
+              <td><%= position.description || '-' %></td>
+              <td>
+                <% if (position.isActive) { %>
+                <span class="badge bg-success">Active</span>
+                <% } else { %>
+                <span class="badge bg-danger">Inactive</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <% if (userPermissions && userPermissions.positions && userPermissions.positions.includes('update')) { %>
+                  <a href="<%= base %>admin/positions/<%= position._id %>/edit" class="btn btn-warning" title="Edit">
+                    <i class="bx bx-edit"></i>
+                  </a>
+                  <% } %>
+                  <% if (userPermissions && userPermissions.positions && userPermissions.positions.includes('delete')) { %>
+                  <button type="button" class="btn btn-danger" onclick="confirmDelete('<%= position._id %>')" title="Delete">
+                    <i class="bx bx-trash"></i>
+                  </button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="text-center">No positions found</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Form (Hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+  <input type="hidden" name="_method" value="DELETE">
+</form>
+
+<script>
+function confirmDelete(positionId) {
+  if (confirm('Are you sure you want to delete this position? This action cannot be undone.')) {
+    const form = document.getElementById('deleteForm');
+    form.action = '<%= base %>admin/positions/' + positionId;
+    form.submit();
+  }
+}
+</script>

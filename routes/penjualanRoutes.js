@@ -10,4 +10,5 @@ router.get('/pelanggan/:language(en|gr|ar)', [localeMiddleware.localized, authMi
 router.get('/packing/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], PenjualanController.packing)
 router.get('/harga/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], PenjualanController.harga)
 router.get('/ekspedisi/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], PenjualanController.ekspedisi)
+router.get('/produk/:language(en|gr|ar)', [localeMiddleware.localized, authMiddleware.isAuthenticated], PenjualanController.produk)
 module.exports = router

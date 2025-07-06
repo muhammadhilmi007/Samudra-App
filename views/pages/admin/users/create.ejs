@@ -1,0 +1,192 @@
+<!-- Breadcrumb -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="<%= base %>dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="#">Admin</a></li>
+        <li class="breadcrumb-item"><a href="<%= base %>admin/users">Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create</li>
+      </ol>
+    </nav>
+    <h1 class="h3 mb-0">Create New User</h1>
+  </div>
+  <a href="<%= base %>admin/users" class="btn btn-secondary">
+    <i class="bx bx-arrow-back"></i> Back to Users
+  </a>
+</div>
+
+<!-- Create Form -->
+<div class="card">
+  <div class="card-body">
+    <form method="POST" action="<%= base %>admin/users">
+      <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-6">
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" 
+              id="name" 
+              name="name" 
+              value="<%= locals.input ? input.name : '' %>"
+              placeholder="Enter full name"
+              required
+            >
+            <% if (locals.errors && errors.name) { %>
+            <div class="invalid-feedback">
+              <%= errors.name.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+            <input 
+              type="email" 
+              class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" 
+              id="email" 
+              name="email" 
+              value="<%= locals.input ? input.email : '' %>"
+              placeholder="Enter email address"
+              required
+            >
+            <% if (locals.errors && errors.email) { %>
+            <div class="invalid-feedback">
+              <%= errors.email.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+            <input 
+              type="password" 
+              class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>" 
+              id="password" 
+              name="password" 
+              placeholder="Enter password"
+              required
+            >
+            <% if (locals.errors && errors.password) { %>
+            <div class="invalid-feedback">
+              <%= errors.password.message %>
+            </div>
+            <% } %>
+            <div class="form-text">Minimum 8 characters recommended</div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-6">
+          <!-- Branch -->
+          <div class="mb-3">
+            <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
+            <select 
+              class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" 
+              id="branch_id" 
+              name="branch_id"
+              required
+              <%= branches.length === 1 ? 'readonly' : '' %>
+            >
+              <option value="">Select Branch</option>
+              <% branches.forEach(branch => { %>
+              <option value="<%= branch._id %>" <%= (locals.input && input.branch_id == branch._id) ? 'selected' : '' %>>
+                <%= branch.name %>
+              </option>
+              <% }) %>
+            </select>
+            <% if (locals.errors && errors.branch_id) { %>
+            <div class="invalid-feedback">
+              <%= errors.branch_id.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Division -->
+          <div class="mb-3">
+            <label for="division_id" class="form-label">Division <span class="text-danger">*</span></label>
+            <select 
+              class="form-control <%= locals.errors && errors.division_id ? 'is-invalid' : '' %>" 
+              id="division_id" 
+              name="division_id"
+              required
+            >
+              <option value="">Select Division</option>
+              <% divisions.forEach(division => { %>
+              <option value="<%= division._id %>" <%= (locals.input && input.division_id == division._id) ? 'selected' : '' %>>
+                <%= division.name %>
+              </option>
+              <% }) %>
+            </select>
+            <% if (locals.errors && errors.division_id) { %>
+            <div class="invalid-feedback">
+              <%= errors.division_id.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Position -->
+          <div class="mb-3">
+            <label for="position_id" class="form-label">Position <span class="text-danger">*</span></label>
+            <select 
+              class="form-control <%= locals.errors && errors.position_id ? 'is-invalid' : '' %>" 
+              id="position_id" 
+              name="position_id"
+              required
+            >
+              <option value="">Select Position</option>
+              <% positions.forEach(position => { %>
+              <option value="<%= position._id %>" <%= (locals.input && input.position_id == position._id) ? 'selected' : '' %>>
+                <%= position.name %> (Level <%= position.level %>)
+              </option>
+              <% }) %>
+            </select>
+            <% if (locals.errors && errors.position_id) { %>
+            <div class="invalid-feedback">
+              <%= errors.position_id.message %>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            id="isActive" 
+            name="isActive"
+            <%= (!locals.input || (locals.input && input.isActive === 'on')) ? 'checked' : '' %>
+          >
+          <label class="form-check-label" for="isActive">
+            Active Status
+          </label>
+        </div>
+        <div class="form-text">Active users can login to the system</div>
+      </div>
+
+      <!-- Role Info -->
+      <div class="alert alert-info">
+        <i class="bx bx-info-circle"></i> 
+        The system will automatically assign or create a role based on the selected Branch, Division, and Position combination.
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bx bx-save"></i> Create User
+        </button>
+        <a href="<%= base %>admin/users" class="btn btn-secondary">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
