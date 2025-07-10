@@ -69,7 +69,7 @@ const store = async (req, res) => {
 
     await division.save();
     req.session.successMessage = "Division created successfully!";
-    res.redirect(res.locals.base + "admin/divisions");
+    res.redirect(res.locals.base + "administrasi/divisions/en");
   } catch (error) {
     console.error(error);
     res.render("../views/pages/administrasi/division/create.ejs", {
@@ -87,7 +87,7 @@ const edit = async (req, res) => {
     const division = await Division.findById(req.params.id);
     if (!division) {
       req.session.errorMessage = "Division not found!";
-      return res.redirect(res.locals.base + "admin/divisions");
+      return res.redirect(res.locals.base + "administrasi/divisions/en");
     }
 
     res.render("../views/pages/administrasi/divisi/edit", {
@@ -98,7 +98,7 @@ const edit = async (req, res) => {
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to load division!";
-    res.redirect(res.locals.base + "admin/divisions");
+    res.redirect(res.locals.base + "administrasi/divisions/en");
   }
 };
 
@@ -108,7 +108,7 @@ const update = async (req, res) => {
     const division = await Division.findById(req.params.id);
     if (!division) {
       req.session.errorMessage = "Division not found!";
-      return res.redirect(res.locals.base + "admin/divisions");
+      return res.redirect(res.locals.base + "administrasi/divisions/en");
     }
 
     division.name = req.body.name;
@@ -118,7 +118,7 @@ const update = async (req, res) => {
 
     await division.save();
     req.session.successMessage = "Division updated successfully!";
-    res.redirect(res.locals.base + "admin/divisions");
+    res.redirect(res.locals.base + "administrasi/divisions/en");
   } catch (error) {
     console.error(error);
     res.render("../views/pages/administrasi/divisi/edit", {
@@ -148,16 +148,16 @@ const destroy = async (req, res) => {
     if (rolesCount > 0 || usersCount > 0) {
       req.session.errorMessage =
         "Cannot delete division! It is being used by roles or users.";
-      return res.redirect(res.locals.base + "admin/divisions");
+      return res.redirect(res.locals.base + "administrasi/divisions/en");
     }
 
     await Division.findByIdAndDelete(req.params.id);
     req.session.successMessage = "Division deleted successfully!";
-    res.redirect(res.locals.base + "admin/divisions");
+    res.redirect(res.locals.base + "administrasi/divisions/en");
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to delete division!";
-    res.redirect(res.locals.base + "admin/divisions");
+    res.redirect(res.locals.base + "administrasi/divisions/en");
   }
 };
 

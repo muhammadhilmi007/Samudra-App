@@ -37,13 +37,13 @@ router.get(
   permissionMiddleware.checkPermission("divisions", "update"),
   DivisionController.edit
 );
-router.put(
+router.post(
   "/divisions/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "update"),
   DivisionController.update
 );
-router.delete(
+router.post(
   "/divisions/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "delete"),

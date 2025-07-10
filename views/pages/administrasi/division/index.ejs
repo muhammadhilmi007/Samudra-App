@@ -46,7 +46,7 @@
           <div class="action-btn">
             <% if (userPermissions && userPermissions.divisions &&
             userPermissions.divisions.includes('create')) { %>
-            <a href="<%= base %>admin/divisions/create" class="btn btn-primary">
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-divisi">
               <i class="uil-plus"></i> Create New Division
             </a>
             <% } %>
@@ -102,7 +102,7 @@
                       <li>
                         <% if (userPermissions && userPermissions.divisions &&
                         userPermissions.divisions.includes('update')) { %>
-                        <a href="<%= base %>admin/divisions/<%= division._id %>/edit" class="edit">
+                        <a href="#" class="edit" data-id="<%= division._id %>" data-name="<%= division.name %>" data-code="<%= division.code %>" data-description="<%= division.description || '' %>" data-active="<%= division.isActive %>" data-bs-toggle="modal" data-bs-target="#modal-edit-divisi">
                           <i class="uil uil-edit"></i>
                         </a>
                         <% } %>
@@ -110,7 +110,7 @@
                       <li>
                         <% if (userPermissions && userPermissions.divisions &&
                         userPermissions.divisions.includes('delete')) { %>
-                        <a href="#" class="remove" onclick="confirmDelete('<%= division._id %>')">
+                        <a href="#" class="remove" data-id="<%= division._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
                           <i class="uil uil-trash-alt"></i>
                         </a>
                         <% } %>
@@ -160,35 +160,212 @@
             </nav>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <!-- Delete Form (Hidden) -->
-        <form id="deleteForm" method="POST" style="display: none">
-          <input type="hidden" name="_method" value="DELETE" />
+<!-- Modal for Delete Confirmation -->
+<div class="modal-delete modal fade" id="modal-delete" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-info" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="modal-info-body d-flex">
+          <div class="modal-info-icon warning">
+            <img src="<%- locals.base %>img/svg/alert-circle.svg" alt="alert-circle" class="svg">
+          </div>
+          <div class="modal-info-text">
+            <h6>Do you want to delete this division?</h6>
+            <p>This action cannot be undone.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
+
+        <!-- ✅ Form Submit Here -->
+        <form id="modalDeleteForm" method="POST" class="d-inline">
+          <!-- No need for _method override, backend uses POST for delete -->
+          <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-  function confirmDelete(divisionId) {
-    if (
-      confirm(
-        "Are you sure you want to delete this division? This action cannot be undone."
-      )
-    ) {
-      const form = document.getElementById("deleteForm");
-      form.action = "<%= base %>admin/divisions/" + divisionId;
-      form.submit();
-    }
-  }
+<!-- Modal for Adding Division -->
+<div class="modal-tambah-divisi modal fade show" id="modal-tambah-divisi" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white ">
+      <form method="POST" action="<%= base %>administrasi/divisions/en">
+        <div class="modal-header">
+          <h6 class="modal-title">Tambah Divisi</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Division Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter division name" required>
+            <% if (locals.errors && errors.name) { %>
+            <div class="invalid-feedback">
+              <%= errors.name.message %>
+            </div>
+            <% } %>
+          </div>
 
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="code" class="form-label">Division Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.code ? 'is-invalid' : '' %>" id="code" name="code" value="<%= locals.input ? input.code : '' %>" placeholder="e.g., HR, FIN, OPS" style="text-transform: uppercase;" required>
+            <% if (locals.errors && errors.code) { %>
+            <div class="invalid-feedback">
+              <%= errors.code.message %>
+            </div>
+            <% } %>
+            <div class="form-text">Use short uppercase codes (will be converted automatically)</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter division description"><%= locals.input ? input.description : '' %></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%= (!locals.input || (locals.input && input.isActive === 'on')) ? 'checked' : '' %>>
+              <label class="form-check-label" for="isActive">
+                Active Status
+              </label>
+            </div>
+            <div class="form-text">Active divisions can be assigned to users and roles</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
+            <a href="<%= base %>administrasi/divisions/en" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Editing Division -->
+<div class="modal-edit-divisi modal fade" id="modal-edit-divisi" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white">
+      <form method="POST" id="editDivisionForm" action="">
+        <!-- Method override untuk PUT request -->
+        <input type="hidden" name="_method" value="PUT" />
+        <div class="modal-header">
+          <h6 class="modal-title">Edit Divisi</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="edit-name" class="form-label">Division Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-name" name="name" placeholder="Enter division name" required>
+          </div>
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="edit-code" class="form-label">Division Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-code" name="code" placeholder="e.g., HR, FIN, OPS" style="text-transform: uppercase;" required>
+            <div class="form-text">Use short uppercase codes (will be converted automatically)</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="edit-description" class="form-label">Description</label>
+            <textarea class="form-control" id="edit-description" name="description" rows="3" placeholder="Enter division description"></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive">
+              <label class="form-check-label" for="edit-isActive">
+                Active Status
+              </label>
+            </div>
+            <div class="form-text">Active divisions can be assigned to users and roles</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Update Division</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle Delete
+  document.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const divisionId = this.getAttribute('data-id');
+      const form = document.getElementById('modalDeleteForm');
+      // Backend uses POST method for delete
+      form.action = "<%= base %>administrasi/divisions/" + divisionId + "/en";
+      form.method = "POST";
+    });
+  });
+
+  // Handle Edit
+  document.querySelectorAll('.edit').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const divisionId = this.getAttribute('data-id');
+      const divisionName = this.getAttribute('data-name');
+      const divisionCode = this.getAttribute('data-code');
+      const divisionDescription = this.getAttribute('data-description');
+      const divisionActive = this.getAttribute('data-active') === 'true';
+
+      // Set form action untuk PUT request
+      const form = document.getElementById('editDivisionForm');
+      form.action = "<%= base %>administrasi/divisions/" + divisionId + "/en";
+
+      // Populate form fields
+      document.getElementById('edit-name').value = divisionName;
+      document.getElementById('edit-code').value = divisionCode;
+      document.getElementById('edit-description').value = divisionDescription;
+      document.getElementById('edit-isActive').checked = divisionActive;
+    });
+  });
+
+  // Handle pagination
   document.querySelector('.page-selection').addEventListener('change', function() {
     const selectedLimit = this.value;
     const params = new URLSearchParams(window.location.search);
     params.set('limit', selectedLimit);
     params.set('page', 1);
     window.location.href = `${window.location.pathname}?${params.toString()}`;
+  });
 
+  // Auto uppercase code field for create modal
+  document.getElementById('code').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Auto uppercase code field for edit modal
+  document.getElementById('edit-code').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
   });
 </script>

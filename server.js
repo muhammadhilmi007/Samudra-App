@@ -20,6 +20,7 @@ const BASE_URL = process.env.BASE_URL;
 
 // Method override for PUT and DELETE
 const methodOverride = require("method-override");
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 
 // requires all the routes
