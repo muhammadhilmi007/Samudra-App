@@ -37,7 +37,7 @@
   --bs-third: #8231d3;
   --bs-white: #ffffff;
   --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif,
+    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", OpenSans, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -55,7 +55,7 @@
 }
 body {
   margin: 0;
-  font-family: Jost, sans-serif;
+  font-family: OpenSans, sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -88,7 +88,7 @@ h5,
 h6 {
   margin-top: 0;
   margin-bottom: 0;
-  font-family: Jost, sans-serif;
+  font-family: OpenSans, sans-serif;
   font-weight: 600;
   line-height: 1.2;
   color: var(--color-dark);
@@ -5235,7 +5235,7 @@ fieldset:disabled .btn {
   z-index: 1080;
   display: block;
   margin: 0;
-  font-family: Jost, sans-serif;
+  font-family: OpenSans, sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -5344,7 +5344,7 @@ fieldset:disabled .btn {
   z-index: 9998;
   display: block;
   max-width: 235px;
-  font-family: Jost, sans-serif;
+  font-family: OpenSans, sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;

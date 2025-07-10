@@ -10,17 +10,33 @@ const Module = mongoose.model("Module", require("../schemas/moduleSchema"));
 // List all roles
 const index = async (req, res) => {
   try {
-    const roles = await Role.find()
-      .populate('branch_id')
-      .populate('division_id')
-      .populate('position_id')
-      .sort({ name: 1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
+
+    // Ambil data roles sesuai halaman
+    const [roles, total] = await Promise.all([
+      Role.find()
+        .populate('branch_id')
+        .populate('division_id')
+        .populate('position_id')
+        .sort({ name: 1 })
+        .skip(skip)
+        .limit(limit),
+      Role.countDocuments()
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
 
     res.render("../views/pages/admin/roles/index.ejs", {
       title: "Roles",
-      roles: roles,
+      roles,
       layout: "../views/layout/app.ejs",
-      name: "roles"
+      name: "roles",
+      currentPage: page,
+      totalPages,
+      limit,
+      total,
     });
   } catch (error) {
     console.error(error);
@@ -28,6 +44,7 @@ const index = async (req, res) => {
     res.redirect(res.locals.base + "dashboard/analytics/" + res.getLocale());
   }
 };
+
 
 // Show create form
 const create = async (req, res) => {
@@ -152,11 +169,11 @@ const updatePermissions = async (req, res) => {
     }
 
     req.session.successMessage = "Permissions updated successfully!";
-    res.redirect(res.locals.base + "admin/roles");
+    res.redirect(res.locals.base + "admin/roles/en");
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to update permissions!";
-    res.redirect(res.locals.base + "admin/roles/permissions/" + req.params.id);
+    res.redirect(res.locals.base + "admin/roles/permissions/en" + req.params.id);
   }
 };
 
@@ -216,7 +233,7 @@ const update = async (req, res) => {
 
     res.render("../views/pages/admin/roles/edit", {
       title: "Edit Role",
-      role: role,
+      role: Role,
       branches: branches,
       divisions: divisions,
       positions: positions,

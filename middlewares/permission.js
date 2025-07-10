@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const RolePermission = mongoose.model("RolePermission", require("../schemas/rolePermissionSchema"));
 const Permission = mongoose.model("Permission", require("../schemas/permissionSchema"));
 const User = mongoose.model("User", require("../schemas/userSchema"));
-const Role = mongoose.model("Role", require("../schemas/roleSchema"));
 
 // Check if user has specific permission
 const checkPermission = (moduleCode, action) => {

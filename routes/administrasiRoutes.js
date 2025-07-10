@@ -9,11 +9,7 @@ router.get(
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   AdministrasiController.cabang
 );
-router.get(
-  "/divisi/:language(en|gr|ar)",
-  [localeMiddleware.localized, authMiddleware.isAuthenticated],
-  AdministrasiController.divisi
-);
+
 router.get(
   "/kendaraan/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],

@@ -254,7 +254,7 @@
 	"transit cabang": "transit cabang",
 	"lansir barang": "lansir barang",
 	"cabang": "cabang",
-	"divisi": "divisi",
+	"division": "division",
 	"kendaraan": "kendaraan",
 	"surat": "surat",
 	"tagihan": "tagihan",
@@ -280,5 +280,10 @@
 	"role": "role",
 	"posisi": "posisi",
 	"role-data": "role-data",
-	"Role Management": "Role Management"
+	"Role Management": "Role Management",
+	"modules": "modules",
+	"User Management": "User Management",
+	"Users": "Users",
+	"divisi": "divisi",
+	"Divisi": "Divisi"
 }

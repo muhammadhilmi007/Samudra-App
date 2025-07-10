@@ -6,13 +6,6 @@ const cabang = (request, response, next) => {
   });
 };
 
-// divisi page
-const divisi = (request, response, next) => {
-  response.render("../views/pages/administrasi/divisi.ejs", {
-    title: "Divisi",
-    name: "divisi",
-  });
-};
 // kendaraan page
 const kendaraan = (request, response, next) => {
   response.render("../views/pages/administrasi/kendaraan.ejs", {
@@ -62,12 +55,11 @@ const invoice = (request, response, next) => {
 };
 
 module.exports = {
-    cabang,
-    divisi,
-    kendaraan,
-    surat,
-    tagihan,
-    retur,
-    overdue,
-    invoice
+  cabang,
+  kendaraan,
+  surat,
+  tagihan,
+  retur,
+  overdue,
+  invoice,
 };

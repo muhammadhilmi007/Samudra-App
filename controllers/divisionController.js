@@ -1,14 +1,46 @@
 const mongoose = require("mongoose");
-const Division = mongoose.model("Division", require("../schemas/divisionSchema"));
+const Division = mongoose.model(
+  "Division",
+  require("../schemas/divisionSchema")
+);
 
 // List all divisions
 const index = async (req, res) => {
   try {
-    const divisions = await Division.find().sort({ name: 1 });
-    res.render("../views/admin/divisions/index", {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+
+    // Build query search
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { code: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    const [divisions, total] = await Promise.all([
+      Division.find(query).sort({ name: 1 }).skip(skip).limit(limit),
+      Division.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render("../views/pages/administrasi/division/index.ejs", {
       title: "Divisions",
       divisions: divisions,
-      layout: "../views/layout/app.ejs"
+      layout: "../views/layout/app.ejs",
+      name: "division",
+      currentPage: page,
+      totalPages: totalPages,
+      limit: limit,
+      total: total,
+      search: search,
     });
   } catch (error) {
     console.error(error);
@@ -19,9 +51,9 @@ const index = async (req, res) => {
 
 // Show create form
 const create = (req, res) => {
-  res.render("../views/admin/divisions/create", {
+  res.render("../views/pages/administrasi/division/create", {
     title: "Create Division",
-    layout: "../views/layout/app.ejs"
+    layout: "../views/layout/app.ejs",
   });
 };
 
@@ -32,7 +64,7 @@ const store = async (req, res) => {
       name: req.body.name,
       code: req.body.code.toUpperCase(),
       description: req.body.description,
-      isActive: req.body.isActive === 'on'
+      isActive: req.body.isActive === "on",
     });
 
     await division.save();
@@ -40,11 +72,11 @@ const store = async (req, res) => {
     res.redirect(res.locals.base + "admin/divisions");
   } catch (error) {
     console.error(error);
-    res.render("../views/admin/divisions/create", {
+    res.render("../views/pages/administrasi/division/create.ejs", {
       title: "Create Division",
       layout: "../views/layout/app.ejs",
       errors: error.errors,
-      input: req.body
+      input: req.body,
     });
   }
 };
@@ -58,10 +90,10 @@ const edit = async (req, res) => {
       return res.redirect(res.locals.base + "admin/divisions");
     }
 
-    res.render("../views/admin/divisions/edit", {
+    res.render("../views/pages/administrasi/divisi/edit", {
       title: "Edit Division",
       division: division,
-      layout: "../views/layout/app.ejs"
+      layout: "../views/layout/app.ejs",
     });
   } catch (error) {
     console.error(error);
@@ -82,19 +114,19 @@ const update = async (req, res) => {
     division.name = req.body.name;
     division.code = req.body.code.toUpperCase();
     division.description = req.body.description;
-    division.isActive = req.body.isActive === 'on';
+    division.isActive = req.body.isActive === "on";
 
     await division.save();
     req.session.successMessage = "Division updated successfully!";
     res.redirect(res.locals.base + "admin/divisions");
   } catch (error) {
     console.error(error);
-    res.render("../views/admin/divisions/edit", {
+    res.render("../views/pages/administrasi/divisi/edit", {
       title: "Edit Division",
       division: division,
       layout: "../views/layout/app.ejs",
       errors: error.errors,
-      input: req.body
+      input: req.body,
     });
   }
 };
@@ -105,12 +137,17 @@ const destroy = async (req, res) => {
     // Check if division is being used
     const Role = mongoose.model("Role", require("../schemas/roleSchema"));
     const User = mongoose.model("User", require("../schemas/userSchema"));
-    
-    const rolesCount = await Role.countDocuments({ division_id: req.params.id });
-    const usersCount = await User.countDocuments({ division_id: req.params.id });
-    
+
+    const rolesCount = await Role.countDocuments({
+      division_id: req.params.id,
+    });
+    const usersCount = await User.countDocuments({
+      division_id: req.params.id,
+    });
+
     if (rolesCount > 0 || usersCount > 0) {
-      req.session.errorMessage = "Cannot delete division! It is being used by roles or users.";
+      req.session.errorMessage =
+        "Cannot delete division! It is being used by roles or users.";
       return res.redirect(res.locals.base + "admin/divisions");
     }
 
@@ -130,5 +167,5 @@ module.exports = {
   store,
   edit,
   update,
-  destroy
+  destroy,
 };

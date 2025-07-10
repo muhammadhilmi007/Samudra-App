@@ -6,7 +6,6 @@ const localeMiddleware = require('../middlewares/locale');
 
 // Controllers
 const BranchController = require('../controllers/branchController');
-const DivisionController = require('../controllers/divisionController');
 const PositionController = require('../controllers/positionController');
 const RoleController = require('../controllers/roleController');
 const ModuleController = require('../controllers/moduleController');
@@ -23,14 +22,6 @@ router.post('/branches', permissionMiddleware.checkPermission('branches', 'creat
 router.get('/branches/:id/edit', permissionMiddleware.checkPermission('branches', 'update'), BranchController.edit);
 router.put('/branches/:id', permissionMiddleware.checkPermission('branches', 'update'), BranchController.update);
 router.delete('/branches/:id', permissionMiddleware.checkPermission('branches', 'delete'), BranchController.destroy);
-
-// Division Management
-router.get('/divisions', permissionMiddleware.checkPermission('divisions', 'read'), DivisionController.index);
-router.get('/divisions/create', permissionMiddleware.checkPermission('divisions', 'create'), DivisionController.create);
-router.post('/divisions', permissionMiddleware.checkPermission('divisions', 'create'), DivisionController.store);
-router.get('/divisions/:id/edit', permissionMiddleware.checkPermission('divisions', 'update'), DivisionController.edit);
-router.put('/divisions/:id', permissionMiddleware.checkPermission('divisions', 'update'), DivisionController.update);
-router.delete('/divisions/:id', permissionMiddleware.checkPermission('divisions', 'delete'), DivisionController.destroy);
 
 // Position Management
 router.get('/positions', permissionMiddleware.checkPermission('positions', 'read'), PositionController.index);
@@ -61,12 +52,12 @@ router.post('/modules/:id/permissions', permissionMiddleware.checkPermission('mo
 router.delete('/modules/:id', permissionMiddleware.checkPermission('modules', 'delete'), ModuleController.destroy);
 
 // User Management
-router.get('/users', permissionMiddleware.checkPermission('users', 'read'), UserController.index);
-router.get('/users/create', permissionMiddleware.checkPermission('users', 'create'), UserController.create);
-router.post('/users', permissionMiddleware.checkPermission('users', 'create'), UserController.store);
-router.get('/users/:id/edit', permissionMiddleware.checkPermission('users', 'update'), UserController.edit);
-router.put('/users/:id', permissionMiddleware.checkPermission('users', 'update'), UserController.update);
-router.delete('/users/:id', permissionMiddleware.checkPermission('users', 'delete'), UserController.destroy);
+router.get('/users/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.index);
+router.get('/users/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.create);
+router.post('/users/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.store);
+router.get('/users/:id/edit/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.edit);
+router.put('/users/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.update);
+router.delete('/users/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'delete'), UserController.destroy);
 
 // AJAX Endpoints
 router.get('/api/roles', authMiddleware.isAuthenticated, UserController.getRolesByFilters);
