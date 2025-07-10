@@ -32,10 +32,10 @@ const index = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     res.render("../views/pages/administrasi/division/index.ejs", {
-      title: "Divisions",
+      title: "Divisi",
       divisions: divisions,
       layout: "../views/layout/app.ejs",
-      name: "division",
+      name: "index",
       currentPage: page,
       totalPages: totalPages,
       limit: limit,
@@ -69,7 +69,9 @@ const store = async (req, res) => {
 
     await division.save();
     req.session.successMessage = "Division created successfully!";
-    res.redirect(res.locals.base + "administrasi/divisions/en");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
     res.render("../views/pages/administrasi/division/create.ejs", {
@@ -87,7 +89,9 @@ const edit = async (req, res) => {
     const division = await Division.findById(req.params.id);
     if (!division) {
       req.session.errorMessage = "Division not found!";
-      return res.redirect(res.locals.base + "administrasi/divisions/en");
+      return res.redirect(
+        process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+      );
     }
 
     res.render("../views/pages/administrasi/divisi/edit", {
@@ -96,9 +100,11 @@ const edit = async (req, res) => {
       layout: "../views/layout/app.ejs",
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     req.session.errorMessage = "Failed to load division!";
-    res.redirect(res.locals.base + "administrasi/divisions/en");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+    );
   }
 };
 
@@ -108,7 +114,9 @@ const update = async (req, res) => {
     const division = await Division.findById(req.params.id);
     if (!division) {
       req.session.errorMessage = "Division not found!";
-      return res.redirect(res.locals.base + "administrasi/divisions/en");
+      return res.redirect(
+        process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+      );
     }
 
     division.name = req.body.name;
@@ -118,12 +126,14 @@ const update = async (req, res) => {
 
     await division.save();
     req.session.successMessage = "Division updated successfully!";
-    res.redirect(res.locals.base + "administrasi/divisions/en");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
     res.render("../views/pages/administrasi/divisi/edit", {
       title: "Edit Division",
-      division: division,
+      division: Division,
       layout: "../views/layout/app.ejs",
       errors: error.errors,
       input: req.body,
@@ -148,16 +158,22 @@ const destroy = async (req, res) => {
     if (rolesCount > 0 || usersCount > 0) {
       req.session.errorMessage =
         "Cannot delete division! It is being used by roles or users.";
-      return res.redirect(res.locals.base + "administrasi/divisions/en");
+      return res.redirect(
+        process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+      );
     }
 
     await Division.findByIdAndDelete(req.params.id);
     req.session.successMessage = "Division deleted successfully!";
-    res.redirect(res.locals.base + "administrasi/divisions/en");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to delete division!";
-    res.redirect(res.locals.base + "administrasi/divisions/en");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/divisi/index/" + res.getLocale()
+    );
   }
 };
 

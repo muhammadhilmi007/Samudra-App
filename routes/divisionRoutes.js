@@ -14,37 +14,37 @@ router.use(permissionMiddleware.loadUserPermissions);
 
 // Division Management
 router.get(
-  "/divisions/:language(en|gr|ar)",
+  "/index/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "read"),
   DivisionController.index
 );
 router.get(
-  "/divisions/create/:language(en|gr|ar)",
+  "/create/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "create"),
   DivisionController.create
 );
 router.post(
-  "/divisions/:language(en|gr|ar)",
+  "/create/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "create"),
   DivisionController.store
 );
 router.get(
-  "/divisions/:id/edit/:language(en|gr|ar)",
+  "/edit/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "update"),
   DivisionController.edit
 );
 router.post(
-  "/divisions/:id/:language(en|gr|ar)",
+  "/update/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "update"),
   DivisionController.update
 );
 router.post(
-  "/divisions/:id/:language(en|gr|ar)",
+  "/delete/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("divisions", "delete"),
   DivisionController.destroy

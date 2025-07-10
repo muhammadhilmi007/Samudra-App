@@ -20,9 +20,23 @@ const index = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
     // Query for users - if not super admin, filter by branch
     let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { branch: { $regex: search, $options: "i" } },
+          { division: { $regex: search, $options: "i" } },
+          { position: { $regex: search, $options: "i" } },
+          { role: { $regex: search, $options: "i" } },
+          { isActive: search === "active" ? true : false },
+        ],
+      };
+    }
     if (!req.session.user.email.includes("admin@")) {
       query.branch_id = currentUser.branch_id;
     }
@@ -50,6 +64,8 @@ const index = async (req, res) => {
       totalPages,
       limit,
       total,
+      search,
+      currentUser: currentUser,
     });
   } catch (error) {
     console.error(error);

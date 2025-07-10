@@ -115,7 +115,7 @@ app.use(BASE_URL + "administrasi", administrasi_routes);
 app.use(BASE_URL + "hrd", hrd_routes);
 app.use(BASE_URL + "admin", admin_routes);
 app.use(BASE_URL + "products", product_routes);
-app.use(BASE_URL + "administrasi", division_routes);
+app.use(BASE_URL + "administrasi/divisi", division_routes);
 
 app.use(localeMiddleware.activeLocale);
 
