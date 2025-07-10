@@ -51,14 +51,6 @@ router.get('/modules/:id/permissions', permissionMiddleware.checkPermission('mod
 router.post('/modules/:id/permissions', permissionMiddleware.checkPermission('modules', 'update'), ModuleController.addPermission);
 router.delete('/modules/:id', permissionMiddleware.checkPermission('modules', 'delete'), ModuleController.destroy);
 
-// User Management
-router.get('/users/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.index);
-router.get('/users/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.create);
-router.post('/users/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.store);
-router.get('/users/:id/edit/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.edit);
-router.put('/users/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.update);
-router.delete('/users/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'delete'), UserController.destroy);
-
 // AJAX Endpoints
 router.get('/api/roles', authMiddleware.isAuthenticated, UserController.getRolesByFilters);
 

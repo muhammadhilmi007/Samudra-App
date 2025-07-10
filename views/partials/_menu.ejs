@@ -215,7 +215,7 @@
         </a>
       </li>
       <li>
-        <a href="<%- locals.base %>administrasi/divisi/index/<%- locale %>" class="<%- name === 'index' ?'active':'' %>">
+        <a href="<%- locals.base %>administrasi/division/index/<%- locale %>" class="<%- name === 'index' ?'active':'' %>">
           <span class="nav-icon uil uil-channel"></span>
           <span class="menu-text"><%- __('divisi') %></span>
         </a>
@@ -292,28 +292,28 @@
       <li class="menu-title mt-30">
         <span>SETTINGS</span>
       </li>
-      <li class="has-child <%- name === 'settings' || name === 'permission' || name === 'role' || name === 'user' ?'open':'' %>">
-        <a href="#" class="<%- name === 'settings' || name === 'permission' || name === 'role' || name === 'user' ?'active':'' %>">
+      <li class="has-child <%- name === 'settings' || name === 'permission' || name === 'role' || name === 'users' ?'open':'' %>">
+        <a href="#" class="<%- name === 'settings' || name === 'permission' || name === 'role' || name === 'users' ?'active':'' %>">
           <span class="nav-icon uil uil-setting"></span>
           <span class="menu-text"><%- __('setting-menu-title') %></span>
           <span class="toggle-icon"></span>
         </a>
         <ul>
           <li>
-            <a class="<%- name === 'settings' ?'active':'' %>" href="<%- locals.base %>setting/settings/<%- locale %>"><%- __('setting') %></a>
+            <a href="<%- locals.base %>setting/settings/<%- locale %>" class="<%- name === 'settings' ?'active':'' %>"><%- __('setting') %></a>
           </li>
           <li>
             <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
-            <a class="<%- name === 'permissions' ?'active':'' %>" href="<%- locals.base %>admin/roles/<%= roles[0]._id %>/permissions/<%- locale %>"><%- __('permission') %></a>
+            <a href="<%- locals.base %>admin/roles/<%= roles[0]._id %>/permissions/<%- locale %>" class="<%- name === 'permissions' ?'active':'' %>"><%- __('permission') %></a>
             <% } else { %>
             <a class="<%- name === 'permissions' ?'active':'' %> disabled" href="#" title="No role available"><%- __('permission') %></a>
             <% } %>
           </li>
           <li>
-            <a class="<%- name === 'role' ?'active':'' %>" href="<%- locals.base %>admin/roles/<%- locale %>"><%- __('role') %></a>
+            <a href="<%- locals.base %>admin/roles/<%- locale %>" class="<%- name === 'role' ?'active':'' %>"><%- __('role') %></a>
           </li>
           <li>
-            <a href="<%- locals.base %>admin/users/<%- locale %>" class="<%- name === 'users' ?'active':'' %>"><%- __('users') %></a>
+            <a href="<%- locals.base %>settings/users/index/<%- locale %>" class="<%- name === 'users' ?'active':'' %>"><%- __('users') %></a>
           </li>
         </ul>
       </li>

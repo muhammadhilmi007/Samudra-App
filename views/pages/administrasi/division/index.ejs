@@ -57,7 +57,7 @@
         <div class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
           <div class="support-form__search">
             <div class="support-order-search">
-              <form action="<%= locals.base %>administrasi/divisi/index/<%- locale %>" method="GET" class="support-order-search__form">
+              <form action="<%= locals.base %>administrasi/division/index/<%- locale %>" method="GET" class="support-order-search__form">
                 <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
                 <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
               </form>
@@ -197,7 +197,7 @@
 <div class="modal-tambah-divisi modal fade show" id="modal-tambah-divisi" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content modal-bg-white ">
-      <form method="POST" action="<%= locals.base %>administrasi/divisi/create/<%- locale %>">
+      <form method="POST" action="<%= locals.base %>administrasi/division/create/<%- locale %>">
         <div class="modal-header">
           <h6 class="modal-title">Tambah Divisi</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
@@ -249,7 +249,7 @@
           <!-- Buttons -->
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
-            <a href="<%= locals.base %>administrasi/divisi/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
+            <a href="<%= locals.base %>administrasi/division/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
               Cancel
             </a>
           </div>
@@ -324,7 +324,7 @@
       const divisionId = this.getAttribute('data-id');
       const form = document.getElementById('modalDeleteForm');
       // Backend uses POST method for delete
-      form.action = "<%= locals.base %>administrasi/divisi/delete/" + divisionId + "/<%- locale %>";
+      form.action = "<%= locals.base %>administrasi/division/delete/" + divisionId + "/<%- locale %>";
       form.method = "POST";
     });
   });
@@ -340,7 +340,7 @@
 
       // Set form action untuk PUT request
       const form = document.getElementById('editDivisionForm');
-      form.action = "<%= locals.base %>administrasi/divisi/update/" + divisionId + "/<%- locale %>";
+      form.action = "<%= locals.base %>administrasi/division/update/" + divisionId + "/<%- locale %>";
 
       // Populate form fields
       document.getElementById('edit-name').value = divisionName;

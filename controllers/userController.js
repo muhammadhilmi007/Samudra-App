@@ -55,7 +55,7 @@ const index = async (req, res) => {
 
     const totalPages = Math.ceil(total / limit);
 
-    res.render("../views/pages/admin/users/index.ejs", {
+    res.render("../views/pages/settings/users/index.ejs", {
       title: "Users",
       users: users,
       layout: "../views/layout/app.ejs",
@@ -91,7 +91,7 @@ const create = async (req, res) => {
       level: 1,
     });
 
-    res.render("../views/pages/admin/users/create.ejs", {
+    res.render("../views/pages/settings/users/create.ejs", {
       title: "Create User",
       branches: branches,
       divisions: divisions,
@@ -101,7 +101,9 @@ const create = async (req, res) => {
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to load form data!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   }
 };
 
@@ -173,7 +175,7 @@ const store = async (req, res) => {
       level: 1,
     });
 
-    res.render("../views/pages/admin/users/create.ejs", {
+    res.render("../views/pages/settings/users/create.ejs", {
       title: "Create User",
       branches: branches,
       divisions: divisions,
@@ -220,7 +222,7 @@ const edit = async (req, res) => {
       .populate("division_id")
       .populate("position_id");
 
-    res.render("../views/pages/admin/users/edit.ejs", {
+    res.render("../views/pages/settings/users/edit.ejs", {
       title: "Edit User",
       user: user,
       branches: branches,
@@ -319,7 +321,7 @@ const update = async (req, res) => {
     });
     const roles = await Role.find({ isActive: true });
 
-    res.render("../views/pages/admin/users/edit.ejs", {
+    res.render("../views/pages/settings/users/edit.ejs", {
       title: "Edit User",
       user: User,
       branches: branches,
