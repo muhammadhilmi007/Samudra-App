@@ -44,6 +44,7 @@ const admin_routes = require("./routes/adminRoutes");
 const product_routes = require("./routes/productRoutes");
 const division_routes = require("./routes/divisionRoutes");
 const user_routes = require("./routes/userRoutes");
+const role_routes = require("./routes/roleRoutes");
 
 // register all the assets
 app.use(BASE_URL + "css", express.static(__dirname + "/public/css"));
@@ -118,6 +119,7 @@ app.use(BASE_URL + "admin", admin_routes);
 app.use(BASE_URL + "products", product_routes);
 app.use(BASE_URL + "administrasi/division", division_routes);
 app.use(BASE_URL + "settings/users", user_routes);
+app.use(BASE_URL + "settings/roles", role_routes);
 
 app.use(localeMiddleware.activeLocale);
 

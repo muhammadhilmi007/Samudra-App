@@ -7,7 +7,6 @@ const localeMiddleware = require('../middlewares/locale');
 // Controllers
 const BranchController = require('../controllers/branchController');
 const PositionController = require('../controllers/positionController');
-const RoleController = require('../controllers/roleController');
 const ModuleController = require('../controllers/moduleController');
 const UserController = require('../controllers/userController');
 
@@ -30,16 +29,6 @@ router.post('/positions', permissionMiddleware.checkPermission('positions', 'cre
 router.get('/positions/:id/edit', permissionMiddleware.checkPermission('positions', 'update'), PositionController.edit);
 router.put('/positions/:id', permissionMiddleware.checkPermission('positions', 'update'), PositionController.update);
 router.delete('/positions/:id', permissionMiddleware.checkPermission('positions', 'delete'), PositionController.destroy);
-
-// Role Management
-router.get('/roles/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'read'), RoleController.index);
-router.get('/roles/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'create'), RoleController.create);
-router.post('/roles/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'create'), RoleController.store);
-router.get('/roles/:id/edit/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'update'), RoleController.edit);
-router.put('/roles/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'update'), RoleController.update);
-router.get('/roles/:id/permissions/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'update'), RoleController.permissions);
-router.post('/roles/:id/permissions/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'update'), RoleController.updatePermissions);
-router.delete('/roles/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('roles', 'delete'), RoleController.destroy);
 
 // Module Management
 router.get('/modules', permissionMiddleware.checkPermission('modules', 'read'), ModuleController.index);

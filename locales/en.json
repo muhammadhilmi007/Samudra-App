@@ -285,5 +285,8 @@
 	"User Management": "User Management",
 	"Users": "Users",
 	"divisi": "divisi",
-	"Divisi": "Divisi"
+	"Divisi": "Divisi",
+	"roles": "roles",
+	"Permissions": "Permissions",
+	"Permission": "Permission"
 }

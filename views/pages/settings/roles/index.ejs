@@ -7,8 +7,7 @@
         <%= successMessage %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-      <% } %>
-      <% if (locals.errorMessage) { %>
+      <% } %> <% if (locals.errorMessage) { %>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= errorMessage %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -16,20 +15,20 @@
       <% } %>
     </div>
     <div class="col-lg-12">
+      <!-- Breadcrumb -->
       <div class="breadcrumb-main">
         <h4 class="text-capitalize breadcrumb-title">
-          <%- __('User Management') %>
+          <%- __('Role Management') %>
         </h4>
         <div class="breadcrumb-action justify-content-center flex-wrap">
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
               <li class="breadcrumb-item">
-                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title') %></a>
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title')
+                  %></a>
               </li>
-              <li class="breadcrumb-item"><a href="#">Admin</a></li>
-              <li class="breadcrumb-item active" aria-current="page">
-                <%- __('Users') %>
-              </li>
+              <li class="breadcrumb-item"><a href="#">Settings</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Roles</li>
             </ol>
           </nav>
         </div>
@@ -37,92 +36,65 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-30">
+    <div class="col-12 mb-30">
       <div class="support-ticket-system support-ticket-system--search">
         <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between">
           <div class="d-flex flex-wrap justify-content-center breadcrumb-main__wrapper">
             <div class="d-flex align-items-center ticket__title justify-content-center me-md-25 mb-md-0 mb-20">
-              <h5 class="card-title mb-0">All Users</h4>
+              <h5 class="card-title mb-0">All Roles</h4>
             </div>
           </div>
-          <div class="action-btn mt-sm-0 mt-15">
-            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
-            <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
-              <i class="las la-plus fs-16"></i>Add New User
+          <div class="action-btn">
+            <% if (userPermissions && userPermissions.roles &&
+            userPermissions.roles.includes('create')) { %>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-roles">
+              <i class="uil-plus"></i> Create New Role
             </a>
             <% } %>
           </div>
         </div>
 
-        <!-- Search Division -->
+        <!-- Search Roles -->
         <div class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
           <div class="support-form__search">
             <div class="support-order-search">
-              <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET" class="support-order-search__form">
+              <form action="<%= locals.base %>settings/roles/index/<%- locale %>" method="GET" class="support-order-search__form">
                 <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
                 <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
               </form>
-
             </div>
           </div>
         </div>
 
-        <!-- Users Table -->
+        <!-- Roles Table -->
         <div class="userDatatable userDatatable--ticket userDatatable--ticket--2">
           <div class="table-responsive">
             <table class="table mb-0 table-hover">
               <thead>
                 <tr class="userDatatable-header">
                   <th>Name</th>
-                  <th>Email</th>
                   <th>Branch</th>
                   <th>Division</th>
                   <th>Position</th>
-                  <th>Role</th>
                   <th>Status</th>
-                  <th>Last Login</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <% if (users && users.length> 0) { %> <% users.forEach(user=> { %>
+                <% if (roles && roles.length > 0) { %> <%
+                roles.forEach(function(role) { %>
                 <tr>
                   <td>
-                    <strong>
-                      <%= user.name %>
-                    </strong>
-                    <% if (session && session.user && user.email===session.user.email) { %>
-                    <span class="badge bg-info ms-1">You</span>
+                    <strong><%= role.name %></strong>
+                    <% if (role.description) { %>
+                    <br /><small class="text-muted"><%= role.description %></small>
                     <% } %>
                   </td>
+                  <td><%= role.branch_id ? role.branch_id.name : '-' %></td>
+                  <td><%= role.division_id ? role.division_id.name : '-' %></td>
+                  <td><%= role.position_id ? role.position_id.name : '-' %></td>
                   <td>
-                    <%= user.email %>
-                  </td>
-                  <td>
-                    <%= user.branch_id ? user.branch_id.name : '-' %>
-                  </td>
-                  <td>
-                    <%= user.division_id ? user.division_id.name : '-' %>
-                  </td>
-                  <td>
-                    <%= user.position_id ? user.position_id.name : '-' %>
-                  </td>
-                  <td>
-                    <% if (user.role_id) { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-info color-white userDatatable-content-status active">
-                        <%= user.role_id.name %>
-                      </span>
-                    </div>
-                    <% } else { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-info color-white userDatatable-content-status activetext-muted">No role</span>
-                    </div>
-                    <span class="text-muted">No role</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (user.isActive) { %>
+                    <% if (role.isActive) { %>
                     <div class="userDatatable-content d-inline-block">
                       <span class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
                     </div>
@@ -133,43 +105,38 @@
                     <% } %>
                   </td>
                   <td>
-                    <% if (user.lastLogin) { %>
-                    <%= new Date(user.lastLogin).toLocaleDateString() %>
-                    <br />
-                    <small class="text-muted">
-                      <%= new Date(user.lastLogin).toLocaleTimeString() %>
-                    </small>
-                    <% } else { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-opacity-danger color-danger userDatatable-content-status active">Never</span>
-                    </div>
-                    <% } %>
-                  </td>
-                  <td>
                     <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
                       <li>
-                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update')) { %>
-                        <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-users" data-id="<%= user._id %>" data-name="<%= user.name %>" data-email="<%= user.email %>" data-password="" data-branch="<%= user.branch_id ? user.branch_id._id : '' %>" data-division="<%= user.division_id ? user.division_id._id : '' %>" data-position="<%= user.position_id ? user.position_id._id : '' %>" data-role="<%= user.role_id ? user.role_id._id : '' %>" data-active="<%= user.isActive ? 'on' : '' %>">
-                          <i class="uil uil-edit"></i>
+                        <% if (userPermissions && userPermissions.roles &&
+                      userPermissions.roles.includes('update')) { %>
+                        <a href="<%= locals.base %>settings/roles/edit/<%= role._id %>/permissions/<%- locale %>" class="view">
+                          <i class="uil-shield"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                      <li>
+                        <% if (userPermissions && userPermissions.roles &&
+                      userPermissions.roles.includes('update')) { %>
+                        <a href="#" class="edit" data-id="<%= role._id %>" data-name="<%= role.name %>" data-description="<%= role.description || '' %>" data-branch="<%= role.branch_id ? role.branch_id._id : '' %>" data-division="<%= role.division_id ? role.division_id._id : '' %>" data-position="<%= role.position_id ? role.position_id._id : '' %>" data-active="<%= role.isActive ? 'on' : '' %>" data-bs-toggle="modal" data-bs-target="#modal-edit-roles">
+                          <i class="uil-pen"></i>
                         </a>
 
                         <% } %>
                       </li>
                       <li>
-                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('delete') &&
-                          (!session || !session.user || user.email !==session.user.email)) { %>
-                        <a href="#" class="remove" data-id="<%= user._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
-                          <i class="uil uil-trash-alt"></i>
+                        <% if (userPermissions && userPermissions.roles &&
+                      userPermissions.roles.includes('delete')) { %>
+                        <a class="remove" href="#" data-id="<%= role._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
+                          <i class="uil-trash"></i>
                         </a>
                         <% } %>
                       </li>
                     </ul>
                   </td>
                 </tr>
-                <% }) %>
-                <% } else { %>
+                <% }) %> <% } else { %>
                 <tr>
-                  <td colspan="9" class="text-center">No users found</td>
+                  <td colspan="6" class="text-center">No roles found</td>
                 </tr>
                 <% } %>
               </tbody>
@@ -180,17 +147,17 @@
               <ul class="dm-pagination d-flex">
                 <li class="dm-pagination__item">
                   <% if (totalPages > 1) { %>
-                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %>" class="dm-pagination__link pagination-control <%= currentPage === 1 ? 'disabled' : '' %>">
                     <span class="la la-angle-left"></span>
                   </a>
 
                   <% for (let i = 1; i <= totalPages; i++) { %>
-                  <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                  <a href="?page=<%= i %>&limit=<%= limit %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
                     <span class="page-number"><%= i %></span>
                   </a>
                   <% } %>
 
-                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %>" class="dm-pagination__link pagination-control <%= currentPage === totalPages ? 'disabled' : '' %>">
                     <span class="la la-angle-right"></span>
                   </a>
                   <% } %>
@@ -199,7 +166,7 @@
                 <li class="dm-pagination__item">
                   <div class="paging-option">
                     <select name="page-number" class="page-selection">
-                      <option value="2" <%= limit == 2 ? 'selected' : '' %>>2/page</option>
+                      <option value="3" <%= limit == 3 ? 'selected' : '' %>>3/page</option>
                       <option value="10" <%= limit == 10 ? 'selected' : '' %>>10/page</option>
                       <option value="20" <%= limit == 20 ? 'selected' : '' %>>20/page</option>
                     </select>
@@ -224,15 +191,17 @@
             <img src="<%- locals.base %>img/svg/alert-circle.svg" alt="alert-circle" class="svg">
           </div>
           <div class="modal-info-text">
-            <h6>Do you want to delete this user?</h6>
+            <h6>Do you want to delete this roles?</h6>
             <p>This action cannot be undone.</p>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
-        <!-- Delete Form (Hidden) -->
+
+        <!-- ✅ Form Submit Here -->
         <form id="modalDeleteForm" method="POST" class="d-inline">
+          <!-- No need for _method override, backend uses POST for delete -->
           <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
         </form>
       </div>
@@ -240,56 +209,40 @@
   </div>
 </div>
 
-<!-- Modal for Adding Users -->
-<div class="modal-tambah-users modal fade show" id="modal-tambah-users" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal for Adding Roles -->
+<div class="modal-tambah-roles modal fade show" id="modal-tambah-roles" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content modal-bg-white ">
-      <form method="POST" action="<%= locals.base %>settings/users/create/<%- locale %>">
+      <form method="POST" action="<%= locals.base %>settings/roles/create/<%- locale %>">
         <div class="modal-header">
-          <h6 class="modal-title">Tambah Users</h6>
+          <h6 class="modal-title">Tambah Roles</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
           </button>
         </div>
         <div class="modal-body">
-          <!-- Name -->
+          <!-- Role Name -->
           <div class="mb-3">
-            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter full name" required>
+            <label for="name" class="form-label">Role Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter role name" required>
             <% if (locals.errors && errors.name) { %>
             <div class="invalid-feedback">
               <%= errors.name.message %>
             </div>
             <% } %>
+            <div class="form-text">E.g., "Sales Manager - Jakarta", "Finance Staff - Bandung"</div>
           </div>
 
-          <!-- Email -->
+          <!-- Description -->
           <div class="mb-3">
-            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-            <input type="email" class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" id="email" name="email" value="<%= locals.input ? input.email : '' %>" placeholder="Enter email address" required>
-            <% if (locals.errors && errors.email) { %>
-            <div class="invalid-feedback">
-              <%= errors.email.message %>
-            </div>
-            <% } %>
-          </div>
-
-          <!-- Password -->
-          <div class="mb-3">
-            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-            <input type="password" class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>" id="password" name="password" placeholder="Enter password" required>
-            <% if (locals.errors && errors.password) { %>
-            <div class="invalid-feedback">
-              <%= errors.password.message %>
-            </div>
-            <% } %>
-            <div class="form-text">Minimum 8 characters recommended</div>
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter role description"><%= locals.input ? input.description : '' %></textarea>
           </div>
 
           <!-- Branch -->
           <div class="mb-3">
             <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id" name="branch_id" required <%= branches.length === 1 ? 'readonly' : '' %>>
+            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id" name="branch_id" required>
               <option value="">Select Branch</option>
               <% branches.forEach(branch => { %>
               <option value="<%= branch._id %>" <%= (locals.input && input.branch_id == branch._id) ? 'selected' : '' %>>
@@ -348,20 +301,20 @@
                 Active Status
               </label>
             </div>
-            <div class="form-text">Active users can login to the system</div>
+            <div class="form-text">Active roles can be assigned to users</div>
           </div>
 
-          <!-- Role Info -->
+          <!-- Info Alert -->
           <div class="alert alert-info">
             <i class="bx bx-info-circle"></i>
-            The system will automatically assign or create a role based on the selected Branch, Division, and Position combination.
+            <strong>Note:</strong> After creating this role, you can set its permissions by clicking the shield icon in the roles list.
           </div>
         </div>
         <div class="modal-footer">
           <!-- Buttons -->
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
-            <a href="<%= locals.base %>settings/users/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
+            <a href="<%= locals.base %>administrasi/division/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
               Cancel
             </a>
           </div>
@@ -371,43 +324,35 @@
   </div>
 </div>
 
-<!-- Modal for Editing Users -->
-<div class="modal-edit-users modal fade" id="modal-edit-users" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal for Editing Roles -->
+<div class="modal-edit-roles modal fade" id="modal-edit-roles" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content modal-bg-white ">
-      <form method="POST" action="" id="editUserForm">
+      <form method="POST" id="editRoleForm">
         <input type="hidden" name="_method" value="PUT" />
         <div class="modal-header">
-          <h6 class="modal-title">Edit Users</h6>
+          <h6 class="modal-title">Edit Role</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
           </button>
         </div>
         <div class="modal-body">
-          <!-- Name -->
+          <!-- Role Name -->
           <div class="mb-3">
-            <label for="edit-name" class="form-label">Full Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit-name" name="name" placeholder="Enter full name" required>
+            <label for="edit-role-name" class="form-label">Role Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-role-name" name="name" required />
           </div>
 
-          <!-- Email -->
+          <!-- Description -->
           <div class="mb-3">
-            <label for="edit-email" class="form-label">Email Address <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" id="edit-email" name="email" placeholder="Enter email address" required>
-          </div>
-
-          <!-- Password -->
-          <div class="mb-3">
-            <label for="edit-password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="edit-password" name="password" placeholder="Leave blank to keep current password">
-            <div class="form-text">Leave blank if you don't want to change the password</div>
+            <label for="edit-role-description" class="form-label">Description</label>
+            <textarea class="form-control" id="edit-role-description" name="description" rows="3"></textarea>
           </div>
 
           <!-- Branch -->
           <div class="mb-3">
-            <label for="edit-branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
-            <select class="form-control" id="edit-branch_id" name="branch_id" required>
-              <option value="">Select Branch</option>
+            <label for="edit-role-branch" class="form-label">Branch</label>
+            <select class="form-control" id="edit-role-branch" name="branch_id" required>
               <% branches.forEach(branch => { %>
               <option value="<%= branch._id %>"><%= branch.name %></option>
               <% }) %>
@@ -416,9 +361,8 @@
 
           <!-- Division -->
           <div class="mb-3">
-            <label for="edit-division_id" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-control" id="edit-division_id" name="division_id" required>
-              <option value="">Select Division</option>
+            <label for="edit-role-division" class="form-label">Division</label>
+            <select class="form-control" id="edit-role-division" name="division_id" required>
               <% divisions.forEach(division => { %>
               <option value="<%= division._id %>"><%= division.name %></option>
               <% }) %>
@@ -427,9 +371,8 @@
 
           <!-- Position -->
           <div class="mb-3">
-            <label for="edit-position_id" class="form-label">Position <span class="text-danger">*</span></label>
-            <select class="form-control" id="edit-position_id" name="position_id" required>
-              <option value="">Select Position</option>
+            <label for="edit-role-position" class="form-label">Position</label>
+            <select class="form-control" id="edit-role-position" name="position_id" required>
               <% positions.forEach(position => { %>
               <option value="<%= position._id %>"><%= position.name %> (Level <%= position.level %>)</option>
               <% }) %>
@@ -439,23 +382,15 @@
           <!-- Status -->
           <div class="mb-3">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive">
-              <label class="form-check-label" for="edit-isActive">
-                Active Status
-              </label>
+              <input class="form-check-input" type="checkbox" id="edit-role-isActive" name="isActive">
+              <label class="form-check-label" for="edit-role-isActive">Active Status</label>
             </div>
-            <div class="form-text">Active users can login to the system</div>
-          </div>
-
-          <!-- Role Info -->
-          <div class="alert alert-info">
-            <i class="bx bx-info-circle"></i>
-            The system will automatically assign or create a role based on the selected Branch, Division, and Position combination.
           </div>
         </div>
+
         <div class="modal-footer">
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Update User</button>
+            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Save Changes</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
@@ -464,48 +399,44 @@
   </div>
 </div>
 
+
 <script>
   // Handle Delete
   document.querySelectorAll('.remove').forEach(btn => {
     btn.addEventListener('click', function() {
-      const userId = this.getAttribute('data-id');
+      const roleId = this.getAttribute('data-id');
       const form = document.getElementById('modalDeleteForm');
       // Backend uses POST method for delete
-      form.action = "<%= locals.base %>settings/users/delete/" + userId + "/<%- locale %>";
+      form.action = "<%= locals.base %>settings/roles/delete/" + roleId + "/<%- locale %>";
       form.method = "POST";
     });
   });
 
-  document.querySelector('.page-selection').addEventListener('change', function() {
-    const selectedLimit = this.value;
-    const params = new URLSearchParams(window.location.search);
-    params.set('limit', selectedLimit);
-    params.set('page', 1);
-    window.location.href = `${window.location.pathname}?${params.toString()}`;
-  });
-
+  // Isi form edit role ketika tombol edit diklik
   document.querySelectorAll('.edit').forEach(btn => {
     btn.addEventListener('click', function() {
       const id = this.dataset.id;
       const name = this.dataset.name;
-      const email = this.dataset.email;
+      const description = this.dataset.description;
       const branch = this.dataset.branch;
       const division = this.dataset.division;
       const position = this.dataset.position;
       const isActive = this.dataset.active === 'on';
 
-      // Set action URL
-      const form = document.getElementById('editUserForm');
-      form.action = "<%= locals.base %>settings/users/update/" + id + "/<%- locale %>";
+      const form = document.getElementById('editRoleForm');
+      form.action = "<%= locals.base %>settings/roles/update/" + id + "/<%- locale %>";
 
-      // Set field values
-      document.getElementById('edit-name').value = name;
-      document.getElementById('edit-email').value = email;
-      document.getElementById('edit-password').value = ''; // leave blank
-      document.getElementById('edit-branch_id').value = branch;
-      document.getElementById('edit-division_id').value = division;
-      document.getElementById('edit-position_id').value = position;
-      document.getElementById('edit-isActive').checked = isActive;
+      document.getElementById('edit-role-name').value = name;
+      document.getElementById('edit-role-description').value = description;
+      document.getElementById('edit-role-branch').value = branch;
+      document.getElementById('edit-role-division').value = division;
+      document.getElementById('edit-role-position').value = position;
+      document.getElementById('edit-role-isActive').checked = isActive;
     });
+  });
+
+  document.querySelector('.page-selection').addEventListener('change', function() {
+    const selectedLimit = this.value;
+    window.location.href = `?page=1&limit=${selectedLimit}`;
   });
 </script>

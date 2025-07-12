@@ -15,6 +15,10 @@ const Role = mongoose.model("Role", require("../schemas/roleSchema"));
 // List all users
 const index = async (req, res) => {
   try {
+    const branches = await Branch.find().sort({ name: 1 });
+    const divisions = await Division.find().sort({ name: 1 });
+    const positions = await Position.find().sort({ name: 1 });
+
     // Get current user to check their access level
     const currentUser = await User.findOne({ email: req.session.user.email });
     const page = parseInt(req.query.page) || 1;
@@ -56,7 +60,7 @@ const index = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     res.render("../views/pages/settings/users/index.ejs", {
-      title: "Users",
+      title: "View Users",
       users: users,
       layout: "../views/layout/app.ejs",
       name: "users",
@@ -66,6 +70,9 @@ const index = async (req, res) => {
       total,
       search,
       currentUser: currentUser,
+      branches: branches,
+      divisions: divisions,
+      positions: positions,
     });
   } catch (error) {
     console.error(error);
@@ -159,7 +166,9 @@ const store = async (req, res) => {
 
     await user.save();
     req.session.successMessage = "User created successfully!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
 
@@ -201,7 +210,9 @@ const edit = async (req, res) => {
     const user = await User.findOne(userQuery);
     if (!user) {
       req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(res.locals.base + "admin/users");
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
     }
 
     // Get data for dropdowns
@@ -234,7 +245,9 @@ const edit = async (req, res) => {
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to load user!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   }
 };
 
@@ -252,7 +265,9 @@ const update = async (req, res) => {
     const user = await User.findOne(userQuery);
     if (!user) {
       req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(res.locals.base + "admin/users");
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
     }
 
     // Update user fields
@@ -305,7 +320,9 @@ const update = async (req, res) => {
 
     await user.save();
     req.session.successMessage = "User updated successfully!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
 
@@ -343,7 +360,9 @@ const destroy = async (req, res) => {
     // Prevent self-deletion
     if (req.params.id === currentUser._id.toString()) {
       req.session.errorMessage = "You cannot delete your own account!";
-      return res.redirect(res.locals.base + "admin/users");
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
     }
 
     // Check if user can delete this user
@@ -356,15 +375,21 @@ const destroy = async (req, res) => {
 
     if (!result) {
       req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(res.locals.base + "admin/users");
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
     }
 
     req.session.successMessage = "User deleted successfully!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
     req.session.errorMessage = "Failed to delete user!";
-    res.redirect(res.locals.base + "admin/users");
+    res.redirect(
+      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+    );
   }
 };
 
