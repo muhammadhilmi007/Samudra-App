@@ -289,5 +289,8 @@
 	"roles": "roles",
 	"Permissions": "Permissions",
 	"Permission": "Permission",
-	"Cabang": "Cabang"
+	"Cabang": "Cabang",
+	"Posisi": "Posisi",
+	"jabatan": "jabatan",
+	"Jabatan": "Jabatan"
 }
