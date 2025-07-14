@@ -33,6 +33,7 @@ const store = async (req, res) => {
       code: req.body.code,
       address: req.body.address,
       phone: req.body.phone,
+      type: req.body.type || 'cabang',
       isActive: req.body.isActive === 'on'
     });
 
@@ -84,6 +85,7 @@ const update = async (req, res) => {
     branch.code = req.body.code;
     branch.address = req.body.address;
     branch.phone = req.body.phone;
+    branch.type = req.body.type || 'cabang';
     branch.isActive = req.body.isActive === 'on';
 
     await branch.save();

@@ -81,8 +81,7 @@ app.use(
   })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(globalSession.globalSession);
-app.use(globalSession.errorMessage);
+app.use(globalSession);
 
 // Global middleware for permissions
 app.use(permissionMiddleware.loadUserPermissions);

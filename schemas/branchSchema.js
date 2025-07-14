@@ -19,6 +19,12 @@ const branchSchema = mongoose.Schema({
     type: String,
     required: false
   },
+  type: {
+    type: String,
+    enum: ['pusat', 'cabang'],
+    default: 'cabang',
+    required: true
+  },
   isActive: {
     type: Boolean,
     default: true

@@ -1,20 +1,22 @@
 <div class="container-fluid mt-30">
   <div class="row">
-    <div class="card">
+    <div class="col-lg-12">
       <!-- Success/Error Messages -->
-      <% if (locals.successMessage) { %>
+      <% if (successMessage) { %>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         <%= successMessage %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
       </div>
-      <% } %> <% if (locals.errorMessage) { %>
+      <% } %> <% if (errorMessage) { %>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= errorMessage %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
       </div>
       <% } %>
-    </div>
-    <div class="col-lg-12">
       <div class="breadcrumb-main">
         <h4 class="text-capitalize breadcrumb-title"><%- __('Divisi') %></h4>
         <div class="breadcrumb-action justify-content-center flex-wrap">

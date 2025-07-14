@@ -104,6 +104,10 @@ const create = async (req, res) => {
       divisions: divisions,
       positions: positions,
       layout: "../views/layout/app.ejs",
+      errors: null,
+      input: {},
+      successMessage: req.session.successMessage || null,
+      errorMessage: req.session.errorMessage || null,
     });
   } catch (error) {
     console.error(error);
@@ -241,6 +245,10 @@ const edit = async (req, res) => {
       positions: positions,
       roles: roles,
       layout: "../views/layout/app.ejs",
+      errors: null,
+      input: {},
+      successMessage: req.session.successMessage || null,
+      errorMessage: req.session.errorMessage || null,
     });
   } catch (error) {
     console.error(error);

@@ -160,12 +160,14 @@ const authenticate = async (request, response, next) => {
     
     request.session.user = userInfo;
     request.session.save();
+
+    console.log(`User ${findUser.email} logged in successfully at ${new Date().toISOString()}`);
     
     response.redirect(
       response.locals.base + "dashboard/analytics/" + response.getLocale()
     );
   } catch (error) {
-    console.error(error);
+    console.log(error);
     request.session.errorMessage = "Authentication failed!";
     response.redirect(response.locals.base);
   }

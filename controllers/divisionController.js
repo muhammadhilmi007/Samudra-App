@@ -98,6 +98,8 @@ const edit = async (req, res) => {
       title: "Edit Division",
       division: division,
       layout: "../views/layout/app.ejs",
+      successMessage: req.session.successMessage || null,
+      errorMessage: req.session.errorMessage || null,
     });
   } catch (error) {
     console.log(error);

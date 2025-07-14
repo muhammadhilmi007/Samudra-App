@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const RolePermission = mongoose.model("RolePermission", require("../schemas/rolePermissionSchema"));
 const Permission = mongoose.model("Permission", require("../schemas/permissionSchema"));
 const User = mongoose.model("User", require("../schemas/userSchema"));
+const Role = mongoose.model("Role", require("../schemas/roleSchema"));
+const Branch = mongoose.model("Branch", require("../schemas/branchSchema"));
 
 // Check if user has specific permission
 const checkPermission = (moduleCode, action) => {
@@ -13,12 +15,19 @@ const checkPermission = (moduleCode, action) => {
         return res.redirect(res.locals.base);
       }
 
-      // Get user with role
-      const user = await User.findOne({ email: userEmail }).populate('role_id');
+      // Get user with role and branch
+      const user = await User.findOne({ email: userEmail })
+        .populate('role_id')
+        .populate('branch_id');
+        
       if (!user || !user.role_id) {
         req.session.errorMessage = "User role not found!";
         return res.redirect(res.locals.base);
       }
+
+      // Store user's branch type for use in controllers
+      req.userBranchType = user.branch_id?.type || 'cabang';
+      req.userBranch = user.branch_id;
 
       // Find the permission
       const permission = await Permission.findOne({
@@ -29,7 +38,7 @@ const checkPermission = (moduleCode, action) => {
 
       if (!permission) {
         req.session.errorMessage = "Permission not found!";
-        return res.status(403).render('../views/errors/403', {
+        return res.status(403).render('../views/pages/errors/403', {
           title: "Access Denied",
           layout: '../views/layout/app.ejs'
         });
@@ -44,7 +53,7 @@ const checkPermission = (moduleCode, action) => {
 
       if (!rolePermission) {
         req.session.errorMessage = "Access denied!";
-        return res.status(403).render('../views/errors/403', {
+        return res.status(403).render('../views/pages/errors/403', {
           title: "Access Denied",
           layout: '../views/layout/app.ejs'
         });
@@ -56,7 +65,7 @@ const checkPermission = (moduleCode, action) => {
     } catch (error) {
       console.error("Permission check error:", error);
       req.session.errorMessage = "Permission check failed!";
-      return res.status(500).render('../views/errors/500', {
+      return res.status(500).render('../views/pages/errors/500', {
         title: "Server Error",
         layout: '../views/layout/app.ejs'
       });
