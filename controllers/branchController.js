@@ -4,11 +4,41 @@ const Branch = mongoose.model("Branch", require("../schemas/branchSchema"));
 // List all branches
 const index = async (req, res) => {
   try {
-    const branches = await Branch.find().sort({ name: 1 });
-    res.render("../views/admin/branches/index", {
-      title: "Branches",
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+
+    // Build query search
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { code: { $regex: search, $options: "i" } },
+          { address: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    const [branches, total] = await Promise.all([
+      Branch.find(query).sort({ name: 1 }).skip(skip).limit(limit),
+      Branch.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render("../views/pages/administrasi/branches/index.ejs", {
+      title: "View Branches",
       branches: branches,
-      layout: "../views/layout/app.ejs"
+      layout: "../views/layout/app.ejs",
+      name: "branches",
+      search: search,
+      currentPage: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.error(error);
@@ -19,9 +49,9 @@ const index = async (req, res) => {
 
 // Show create form
 const create = (req, res) => {
-  res.render("../views/admin/branches/create", {
+  res.render("../views/pages/administrasi/branches/create", {
     title: "Create Branch",
-    layout: "../views/layout/app.ejs"
+    layout: "../views/layout/app.ejs",
   });
 };
 
@@ -33,20 +63,22 @@ const store = async (req, res) => {
       code: req.body.code,
       address: req.body.address,
       phone: req.body.phone,
-      type: req.body.type || 'cabang',
-      isActive: req.body.isActive === 'on'
+      type: req.body.type || "cabang",
+      isActive: req.body.isActive === "on",
     });
 
     await branch.save();
     req.session.successMessage = "Branch created successfully!";
-    res.redirect(res.locals.base + "admin/branches");
+    res.redirect(
+      process.env.BASE_URL + "administrasi/branches/index/" + res.getLocale()
+    );
   } catch (error) {
     console.error(error);
-    res.render("../views/admin/branches/create", {
+    res.render("../views/pages/administrasi/branches/create", {
       title: "Create Branch",
       layout: "../views/layout/app.ejs",
       errors: error.errors,
-      input: req.body
+      input: req.body,
     });
   }
 };
@@ -63,7 +95,7 @@ const edit = async (req, res) => {
     res.render("../views/admin/branches/edit", {
       title: "Edit Branch",
       branch: branch,
-      layout: "../views/layout/app.ejs"
+      layout: "../views/layout/app.ejs",
     });
   } catch (error) {
     console.error(error);
@@ -85,8 +117,8 @@ const update = async (req, res) => {
     branch.code = req.body.code;
     branch.address = req.body.address;
     branch.phone = req.body.phone;
-    branch.type = req.body.type || 'cabang';
-    branch.isActive = req.body.isActive === 'on';
+    branch.type = req.body.type || "cabang";
+    branch.isActive = req.body.isActive === "on";
 
     await branch.save();
     req.session.successMessage = "Branch updated successfully!";
@@ -98,7 +130,7 @@ const update = async (req, res) => {
       branch: branch,
       layout: "../views/layout/app.ejs",
       errors: error.errors,
-      input: req.body
+      input: req.body,
     });
   }
 };
@@ -122,5 +154,5 @@ module.exports = {
   store,
   edit,
   update,
-  destroy
+  destroy,
 };

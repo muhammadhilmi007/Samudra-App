@@ -1,11 +1,3 @@
-// cabang page
-const cabang = (request, response, next) => {
-  response.render("../views/pages/administrasi/cabang.ejs", {
-    title: "Cabang",
-    name: "cabang",
-  });
-};
-
 // kendaraan page
 const kendaraan = (request, response, next) => {
   response.render("../views/pages/administrasi/kendaraan.ejs", {
@@ -55,7 +47,6 @@ const invoice = (request, response, next) => {
 };
 
 module.exports = {
-  cabang,
   kendaraan,
   surat,
   tagihan,

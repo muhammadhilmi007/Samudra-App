@@ -1,25 +1,179 @@
 <div class="container-fluid mt-30">
-  <div class="social-dash-wrap">
-    <!-- <div class="row">
-            <div class="col-lg-12">
-                <div class="breadcrumb-main">
-                    <h4 class="text-capitalize breadcrumb-title"><%- __('blank-menu-title') %></h4>
-                    <div class="breadcrumb-action justify-content-center flex-wrap">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#"><i class="las la-home"></i>Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><%- __('blank-menu-title') %></li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <!-- Success/Error Messages -->
+      <% if (successMessage) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %> <% if (errorMessage) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title"><%- __('Cabang') %></h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title')
+                  %></a>
+              </li>
+              <li class="breadcrumb-item"><a href="#">Administrasi</a></li>
+              <li class="breadcrumb-item active" aria-current="page">
+                <%- __('Cabang') %>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-30">
+      <div class="support-ticket-system support-ticket-system--search">
+        <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between">
+          <div class="d-flex flex-wrap justify-content-center breadcrumb-main__wrapper">
+            <div class="d-flex align-items-center ticket__title justify-content-center me-md-25 mb-md-0 mb-20">
+              <h5 class="card-title mb-0">All Cabang</h5>
             </div>
-        </div> -->
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-body">
-            <p class="color-dark fw-500 fs-20 mb-0">Cabang Page</p>
+          </div>
+          <div class="action-btn">
+            <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('create')) { %>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-cabang">
+              <i class="uil-plus"></i> Create New Cabang
+            </a>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Search Division -->
+        <div class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
+          <div class="support-form__search">
+            <div class="support-order-search">
+              <form action="<%= locals.base %>administrasi/branches/index/<%- locale %>" method="GET" class="support-order-search__form">
+                <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
+                <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branches Table -->
+        <div class="userDatatable userDatatable--ticket userDatatable--ticket--2">
+          <div class="table-responsive">
+            <table class="table mb-0 table-hover">
+              <thead>
+                <tr class="userDatatable-header">
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Address</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (branches && branches.length > 0) { %>
+                <% branches.forEach(branch => { %>
+                <tr>
+                  <td>
+                    <strong><%= branch.name %></strong>
+                  </td>
+                  <td><code><%= branch.code %></code></td>
+                  <td>
+                    <% if (branch.type === 'pusat') { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-success color-success userDatatable-content-status active">Pusat</span>
+                    </div>
+                    <% } else { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-info color-info userDatatable-content-status active">Cabang</span>
+                    </div>
+                    <% } %>
+                  </td>
+                  <td><%= branch.address || '-' %></td>
+                  <td><%= branch.phone || '-' %></td>
+                  <td>
+                    <% if (branch.isActive) { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
+                    </div>
+                    <% } else { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
+                    </div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
+                      <li>
+                        <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('update')) { %>
+                        <a href="#" class="edit" data-id="<%= branch._id %>" data-name="<%= branch.name %>" data-code="<%= branch.code %>" data-type="<%= branch.type %>" data-address="<%= branch.address || '' %>" data-phone="<%= branch.phone || '' %>" data-active="<%= branch.isActive %>" data-bs-toggle="modal" data-bs-target="#modal-edit-cabang">
+                          <i class="uil-edit"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                      <li>
+                        <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('delete')) { %>
+                        <a href="#" class="remove" data-id="<%= branch._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
+                          <i class="uil-trash-alt"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+                <% }) %>
+                <% } else { %>
+                <tr>
+                  <td colspan="7" class="text-center">No branches found</td>
+                </tr>
+                <% } %>
+                </td>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-end pt-30">
+            <nav class="dm-page">
+              <ul class="dm-pagination d-flex">
+                <li class="dm-pagination__item">
+                  <% if (totalPages > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                    <span class="la la-angle-left"></span>
+                  </a>
+
+                  <% for (let i = 1; i <= totalPages; i++) { %>
+                  <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                    <span class="page-number"><%= i %></span>
+                  </a>
+                  <% } %>
+
+                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                    <span class="la la-angle-right"></span>
+                  </a>
+                  <% } %>
+
+                </li>
+                <li class="dm-pagination__item">
+                  <div class="paging-option">
+                    <select name="page-number" class="page-selection">
+                      <option value="2" <%= limit == 2 ? 'selected' : '' %>>2/page</option>
+                      <option value="10" <%= limit == 10 ? 'selected' : '' %>>10/page</option>
+                      <option value="20" <%= limit == 20 ? 'selected' : '' %>>20/page</option>
+                    </select>
+                  </div>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
@@ -27,122 +181,251 @@
   </div>
 </div>
 
-<!-- Breadcrumb -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="<%= base %>dashboard">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="#">Admin</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Branches</li>
-      </ol>
-    </nav>
-    <h1 class="h3 mb-0">Branch Management</h1>
-  </div>
-  <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('create')) { %>
-  <a href="<%= base %>admin/branches/create" class="btn btn-primary">
-    <i class="bx bx-plus"></i> Create New Branch
-  </a>
-  <% } %>
-</div>
+<!-- Modal for Delete Confirmation -->
+<div class="modal-delete modal fade" id="modal-delete" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-info" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="modal-info-body d-flex">
+          <div class="modal-info-icon warning">
+            <img src="<%- locals.base %>img/svg/alert-circle.svg" alt="alert-circle" class="svg">
+          </div>
+          <div class="modal-info-text">
+            <h6>Do you want to delete this branch?</h6>
+            <p>This action cannot be undone.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
 
-<!-- Success/Error Messages -->
-<% if (locals.successMessage) { %>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-  <%= successMessage %>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-<% } %>
-
-<% if (locals.errorMessage) { %>
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-  <%= errorMessage %>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-<% } %>
-
-<!-- Branches Table -->
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0">All Branches</h5>
-  </div>
-  <div class="card-body">
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Code</th>
-            <th>Type</th>
-            <th>Address</th>
-            <th>Phone</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (branches && branches.length > 0) { %>
-          <% branches.forEach(branch => { %>
-          <tr>
-            <td>
-              <strong><%= branch.name %></strong>
-            </td>
-            <td><code><%= branch.code %></code></td>
-            <td>
-              <% if (branch.type === 'pusat') { %>
-              <span class="badge bg-primary">Pusat</span>
-              <% } else { %>
-              <span class="badge bg-info">Cabang</span>
-              <% } %>
-            </td>
-            <td><%= branch.address || '-' %></td>
-            <td><%= branch.phone || '-' %></td>
-            <td>
-              <% if (branch.isActive) { %>
-              <span class="badge bg-success">Active</span>
-              <% } else { %>
-              <span class="badge bg-danger">Inactive</span>
-              <% } %>
-            </td>
-            <td>
-              <div class="btn-group btn-group-sm" role="group">
-                <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('update')) { %>
-                <a href="<%= base %>admin/branches/<%= branch._id %>/edit" class="btn btn-warning" title="Edit">
-                  <i class="bx bx-edit"></i>
-                </a>
-                <% } %>
-                <% if (userPermissions && userPermissions.branches && userPermissions.branches.includes('delete')) { %>
-                <button type="button" class="btn btn-danger" onclick="confirmDelete('<%= branch._id %>')" title="Delete">
-                  <i class="bx bx-trash"></i>
-                </button>
-                <% } %>
-              </div>
-            </td>
-          </tr>
-          <% }) %>
-          <% } else { %>
-          <tr>
-            <td colspan="7" class="text-center">No branches found</td>
-          </tr>
-          <% } %>
-          </td>
-        </tbody>
-      </table>
+        <!-- ✅ Form Submit Here -->
+        <form id="modalDeleteForm" method="POST" class="d-inline">
+          <!-- No need for _method override, backend uses POST for delete -->
+          <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Delete Form (Hidden) -->
-<form id="deleteForm" method="POST" style="display: none;">
-  <input type="hidden" name="_method" value="DELETE">
-</form>
+<!-- Modal for Adding Cabang -->
+<div class="modal-tambah-cabang modal fade show" id="modal-tambah-cabang" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white ">
+      <form method="POST" action="<%= locals.base %>administrasi/branches/create/<%- locale %>">
+        <div class="modal-header">
+          <h6 class="modal-title">Tambah Cabang</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Branch Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter branch name" required>
+            <% if (locals.errors && errors.name) { %>
+            <div class="invalid-feedback">
+              <%= errors.name.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="code" class="form-label">Branch Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.code ? 'is-invalid' : '' %>" id="code" name="code" value="<%= locals.input ? input.code : '' %>" placeholder="e.g., JKT-01, BDG-01" style="text-transform: uppercase;" required>
+            <% if (locals.errors && errors.code) { %>
+            <div class="invalid-feedback">
+              <%= errors.code.message %>
+            </div>
+            <% } %>
+            <div class="form-text">Use unique codes for each branch</div>
+          </div>
+
+          <!-- Address -->
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea class="form-control" id="address" name="address" rows="3" placeholder="Enter branch address"><%= locals.input ? input.address : '' %></textarea>
+          </div>
+
+          <!-- Phone -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="<%= locals.input ? input.phone : '' %>" placeholder="e.g., 021-1234567">
+          </div>
+
+          <!-- Type -->
+          <div class="mb-3">
+            <label for="type" class="form-label">Branch Type <span class="text-danger">*</span></label>
+            <select class="form-control <%= locals.errors && errors.type ? 'is-invalid' : '' %>" id="type" name="type" required>
+              <option value="cabang" <%= (!locals.input || (locals.input && input.type === 'cabang')) ? 'selected' : '' %>>
+                Cabang
+              </option>
+              <option value="pusat" <%= (locals.input && input.type === 'pusat') ? 'selected' : '' %>>
+                Pusat
+              </option>
+            </select>
+            <% if (locals.errors && errors.type) { %>
+            <div class="invalid-feedback">
+              <%= errors.type.message %>
+            </div>
+            <% } %>
+            <div class="form-text">Pusat is for headquarters, Cabang is for branch offices</div>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%= (!locals.input || (locals.input && input.isActive === 'on')) ? 'checked' : '' %>>
+              <label class="form-check-label" for="isActive">
+                Active Status
+              </label>
+            </div>
+            <div class="form-text">Active branches can be assigned to users and used in the system</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Cabang</button>
+            <a href="<%= locals.base %>administrasi/branches/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Editing Cabang -->
+<div class="modal-edit-cabang modal fade" id="modal-edit-cabang" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white">
+      <form method="POST" id="editBranchesForm" action="">
+        <!-- Method override untuk PUT request -->
+        <input type="hidden" name="_method" value="PUT" />
+        <div class="modal-header">
+          <h6 class="modal-title">Edit Cabang</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="edit-name" class="form-label">Branch Name</label>
+            <input type="text" class="form-control" id="edit-name" name="name" placeholder="Enter branch name" required>
+          </div>
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="edit-code" class="form-label">Branch Code</label>
+            <input type="text" class="form-control" id="edit-code" name="code" placeholder="e.g., JKT-01, BDG-01" style="text-transform: uppercase;" required>
+            <div class="form-text">Use short uppercase codes (will be converted automatically)</div>
+          </div>
+
+          <!-- address -->
+          <div class="mb-3">
+            <label for="edit-address" class="form-label">Address</label>
+            <textarea class="form-control" id="edit-address" name="address" placeholder="Enter branch address" rows="3"></textarea>
+          </div>
+
+          <!-- phone number -->
+          <div class="mb-3">
+            <label for="edit-phone" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="edit-phone" name="phone" placeholder="e.g., 021-1234567">
+          </div>
+
+          <!-- Type -->
+          <div class="mb-3">
+            <label for="edit-type" class="form-label">Branch Type</label>
+            <select class="form-control" id="edit-type" name="type" required>
+              <option value="cabang">Cabang</option>
+              <option value="pusat">Pusat</option>
+            </select>
+            <div class="form-text">Pusat is for headquarters, Cabang is for branch offices</div>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive">
+              <label class="form-check-label" for="edit-isActive">
+                Active Status
+              </label>
+            </div>
+            <div class="form-text">Active divisions can be assigned to users and roles</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Update Division</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
-  function confirmDelete(branchId) {
-    if (confirm('Are you sure you want to delete this branch? This action cannot be undone.')) {
-      const form = document.getElementById('deleteForm');
-      form.action = '<%= base %>admin/branches/' + branchId;
-      form.submit();
-    }
-  }
+  // Handle Delete
+  document.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const branchId = this.getAttribute('data-id');
+      const form = document.getElementById('modalDeleteForm');
+      // Backend uses POST method for delete
+      form.action = "<%= locals.base %>administrasi/branches/delete/" + branchId + "/<%- locale %>";
+      form.method = "POST";
+    });
+  });
+
+  // Handle pagination
+  document.querySelector('.page-selection').addEventListener('change', function() {
+    const selectedLimit = this.value;
+    const params = new URLSearchParams(window.location.search);
+    params.set('limit', selectedLimit);
+    params.set('page', 1);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  });
+
+  // Auto uppercase code field for create modal
+  document.getElementById('code').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Auto uppercase code field for edit modal
+  document.getElementById('edit-code').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Isi modal edit cabang
+  document.querySelectorAll('.edit').forEach(button => {
+    button.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const name = this.dataset.name;
+      const code = this.dataset.code;
+      const type = this.dataset.type;
+      const address = this.dataset.address;
+      const phone = this.dataset.phone;
+      const isActive = this.dataset.active === "true";
+
+      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-code').value = code;
+      document.getElementById('edit-type').value = type;
+      document.getElementById('edit-address').value = address || '';
+      document.getElementById('edit-phone').value = phone || '';
+      document.getElementById('edit-isActive').checked = isActive;
+
+      // Atur action form
+      const form = document.getElementById('editBranchesForm');
+      form.action = "<%= locals.base %>administrasi/branches/update/" + id + "/<%- locale %>";
+    });
+  });
 </script>

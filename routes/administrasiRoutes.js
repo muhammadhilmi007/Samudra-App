@@ -5,12 +5,6 @@ const authMiddleware = require("../middlewares/auth");
 const localeMiddleware = require("../middlewares/locale");
 
 router.get(
-  "/cabang/:language(en|gr|ar)",
-  [localeMiddleware.localized, authMiddleware.isAuthenticated],
-  AdministrasiController.cabang
-);
-
-router.get(
   "/kendaraan/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   AdministrasiController.kendaraan
