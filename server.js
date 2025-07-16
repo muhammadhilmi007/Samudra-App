@@ -5,6 +5,7 @@ const MongoDBStore = require("connect-mongodb-session")(session);
 const globalSession = require("./middlewares/session");
 const localeMiddleware = require("./middlewares/locale");
 const permissionMiddleware = require("./middlewares/permission");
+const menuMiddleware = require("./middlewares/menu");
 const bodyParser = require("body-parser");
 const expressLayout = require("express-ejs-layouts");
 const app = express();
@@ -40,7 +41,7 @@ const administrasi_routes = require("./routes/administrasiRoutes");
 const hrd_routes = require("./routes/hrdRoutes");
 
 // New routes
-const admin_routes = require("./routes/adminRoutes");
+const module_routes = require("./routes/moduleRoutes");
 const product_routes = require("./routes/productRoutes");
 const division_routes = require("./routes/divisionRoutes");
 const user_routes = require("./routes/userRoutes");
@@ -88,6 +89,9 @@ app.use(globalSession);
 // Global middleware for permissions
 app.use(permissionMiddleware.loadUserPermissions);
 
+// Global middleware for menu
+app.use(menuMiddleware.loadUserMenu);
+
 // Make hasPermission helper available in views
 app.locals.hasPermission = permissionMiddleware.hasPermission;
 
@@ -116,11 +120,11 @@ app.use(BASE_URL + "keuangan", keuangan_routes);
 app.use(BASE_URL + "operasional", operasional_routes);
 app.use(BASE_URL + "administrasi", administrasi_routes);
 app.use(BASE_URL + "hrd", hrd_routes);
-app.use(BASE_URL + "admin", admin_routes);
 app.use(BASE_URL + "products", product_routes);
 app.use(BASE_URL + "administrasi/division", division_routes);
 app.use(BASE_URL + "settings/users", user_routes);
 app.use(BASE_URL + "settings/roles", role_routes);
+app.use(BASE_URL + "settings/modules", module_routes);
 app.use(BASE_URL + "administrasi/branches", branch_routes);
 app.use(BASE_URL + "administrasi/position", position_routes);
 

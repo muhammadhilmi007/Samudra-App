@@ -10,9 +10,10 @@
     "watch:scss": "sass --watch public/scss/custom.scss:public/css/all-custom.css",
     "rtl": "rtlcss --config .rtlcssrc.json public/css/all-custom.css > public/css/all-custom-rtl.css",
     "runserver": "nodemon server.js",
-    "open:browser": "start http://127.0.0.1:5000/"
+    "open:browser": "start http://127.0.0.1:5000/",
+    "seed": "cd seeders && node initializeData.js"
   },
-  "author": "SovWare",
+  "author": "Raven Teknologi",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",

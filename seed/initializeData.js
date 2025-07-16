@@ -93,7 +93,7 @@ async function seedDatabase() {
       { name: 'Positions', code: 'positions', icon: 'bx bx-user-pin', order: 12, route: '/admin/positions' },
       { name: 'Users', code: 'users', icon: 'bx bx-user', order: 13, route: '/admin/users' },
       { name: 'Roles', code: 'roles', icon: 'bx bx-shield', order: 14, route: '/admin/roles' },
-      { name: 'Modules', code: 'modules', icon: 'bx bx-grid-alt', order: 15, route: '/admin/modules' }
+      { name: 'Modules', code: 'modules', icon: 'bx bx-grid-alt', order: 15, route: '/settings/modules' }
     ]);
 
     // Create Permissions for each module

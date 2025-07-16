@@ -292,5 +292,9 @@
 	"Cabang": "Cabang",
 	"Posisi": "Posisi",
 	"jabatan": "jabatan",
-	"Jabatan": "Jabatan"
+	"Jabatan": "Jabatan",
+	"Module": "Module",
+	"Module Management": "Module Management",
+	"Module Permissions": "Module Permissions",
+	"Module Permissions:": "Module Permissions:"
 }

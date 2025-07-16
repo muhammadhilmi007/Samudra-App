@@ -1,0 +1,530 @@
+<div class="container-fluid mt-30">
+  <div class="row">
+    <div class="col-lg-12">
+      <!-- Success/Error Messages -->
+      <% if (successMessage) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %> <% if (errorMessage) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title"><%- __('Module Management') %></h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title')
+                  %></a>
+              </li>
+              <li class="breadcrumb-item"><a href="#">Settings</a></li>
+              <li class="breadcrumb-item active" aria-current="page">
+                <%- __('Module') %>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-30">
+      <div class="support-ticket-system support-ticket-system--search">
+        <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between">
+          <div class="d-flex flex-wrap justify-content-center breadcrumb-main__wrapper">
+            <div class="d-flex align-items-center ticket__title justify-content-center me-md-25 mb-md-0 mb-20">
+              <h5 class="card-title mb-0">All Modules</h5>
+            </div>
+          </div>
+          <div class="action-btn">
+            <% if (userPermissions && userPermissions.modules && userPermissions.modules.includes('create')) { %>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-module">
+              <i class="uil-plus"></i> Create New Module
+            </a>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Search Positions -->
+        <div class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
+          <div class="support-form__search">
+            <div class="support-order-search">
+              <form action="<%= locals.base %>settings/modules/index/<%- locale %>" method="GET" class="support-order-search__form">
+                <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
+                <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Alert -->
+        <div class="alert alert-info mb-4">
+          <i class="bx bx-info-circle"></i>
+          Modules define the sections of your application. When you create a new module, the system automatically generates CRUD permissions (Create, Read, Update, Delete) for it.
+        </div>
+
+        <!-- Modules Table -->
+        <div class="userDatatable userDatatable--ticket userDatatable--ticket--2">
+          <div class="table-responsive">
+            <table class="table mb-0 table-hover">
+              <thead>
+                <tr class="userDatatable-header">
+                  <th>Order</th>
+                  <th>Icon</th>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Route</th>
+                  <th>Parent</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (modules && modules.length > 0) { %>
+                <% modules.forEach(module => { %>
+                <tr>
+                  <td>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-info color-white userDatatable-content-status active"><%= module.order %></span>
+                    </div>
+                  </td>
+                  <td>
+                    <i class="<%= module.icon || 'uil-circle' %> text-primary fs-20"></i>
+                  </td>
+                  <td>
+                    <strong><%= module.name %></strong>
+                    <% if (module.description) { %>
+                    <br><small class="text-muted"><%= module.description %></small>
+                    <% } %>
+                  </td>
+                  <td><code><%= module.code %></code></td>
+                  <td>
+                    <% if (module.route) { %>
+                    <code><%= module.route %></code>
+                    <% } else { %>
+                    <span class="text-muted">-</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (module.parent_id) { %>
+                    <%= module.parent_id.name %>
+                    <% } else { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-info color-info userDatatable-content-status active">Root</span>
+                    </div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (module.isActive) { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
+                    </div>
+                    <% } else { %>
+                    <div class="userDatatable-content d-inline-block">
+                      <span class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
+                    </div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
+                      <li>
+                        <% if (userPermissions && userPermissions.modules && userPermissions.modules.includes('read')) { %>
+                        <a href="<%= locals.base %>settings/modules/permissions/<%= module._id %>/<%- locale %>" class="view">
+                          <i class="uil-eye"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                      <li>
+                        <% if (userPermissions && userPermissions.modules && userPermissions.modules.includes('update')) { %>
+                        <a href="#" class="edit" data-id="<%= module._id %>" data-name="<%= module.name %>" data-code="<%= module.code %>" data-route="<%= module.route %>" data-icon="<%= module.icon %>" data-parent="<%= module.parent_id ? module.parent_id._id : '' %>" data-order="<%= module.order %>" data-description="<%= module.description %>" data-active="<%= module.isActive %>" data-bs-toggle="modal" data-bs-target="#modal-edit-module">
+                          <i class="uil-edit"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                      <li>
+                        <% if (userPermissions && userPermissions.modules && userPermissions.modules.includes('delete')) { %>
+                        <a href="#" class="remove" data-id="<%= module._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
+                          <i class="uil-trash"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+                <% }) %>
+                <% } else { %>
+                <tr>
+                  <td colspan="8" class="text-center">No modules found</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-end pt-30">
+            <nav class="dm-page">
+              <ul class="dm-pagination d-flex">
+                <li class="dm-pagination__item">
+                  <% if (totalPages > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                    <span class="la la-angle-left"></span>
+                  </a>
+
+                  <% for (let i = 1; i <= totalPages; i++) { %>
+                  <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                    <span class="page-number"><%= i %></span>
+                  </a>
+                  <% } %>
+
+                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                    <span class="la la-angle-right"></span>
+                  </a>
+                  <% } %>
+
+                </li>
+                <li class="dm-pagination__item">
+                  <div class="paging-option">
+                    <select name="page-number" class="page-selection">
+                      <option value="2" <%= limit == 2 ? 'selected' : '' %>>2/page</option>
+                      <option value="10" <%= limit == 10 ? 'selected' : '' %>>10/page</option>
+                      <option value="20" <%= limit == 20 ? 'selected' : '' %>>20/page</option>
+                    </select>
+                  </div>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal-delete modal fade" id="modal-delete" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-info" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="modal-info-body d-flex">
+          <div class="modal-info-icon warning">
+            <img src="<%- locals.base %>img/svg/alert-circle.svg" alt="alert-circle" class="svg">
+          </div>
+          <div class="modal-info-text">
+            <h6>Do you want to delete this module?</h6>
+            <p>This action cannot be undone.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
+
+        <!-- ✅ Form Submit Here -->
+        <form id="modalDeleteForm" method="POST" class="d-inline">
+          <!-- No need for _method override, backend uses POST for delete -->
+          <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Adding Position -->
+<div class="modal-tambah-module modal fade show" id="modal-tambah-module" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white ">
+      <form method="POST" action="<%= locals.base %>settings/modules/create/<%- locale %>">
+        <div class="modal-header">
+          <h6 class="modal-title">Tambah Module</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Module Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="e.g., Product Management" required>
+            <% if (locals.errors && errors.name) { %>
+            <div class="invalid-feedback">
+              <%= errors.name.message %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="code" class="form-label">Module Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.code ? 'is-invalid' : '' %>" id="code" name="code" value="<%= locals.input ? input.code : '' %>" placeholder="e.g., products" required>
+            <% if (locals.errors && errors.code) { %>
+            <div class="invalid-feedback">
+              <%= errors.code.message %>
+            </div>
+            <% } %>
+            <div class="form-text">Use lowercase, no spaces. This will be used for permission checks.</div>
+          </div>
+
+          <!-- Route -->
+          <div class="mb-3">
+            <label for="route" class="form-label">Route/URL Path</label>
+            <input type="text" class="form-control" id="route" name="route" value="<%= locals.input ? input.route : '' %>" placeholder="e.g., /products">
+            <div class="form-text">The URL path for this module (optional)</div>
+          </div>
+
+          <!-- Icon -->
+          <div class="mb-3">
+            <label for="icon" class="form-label">Icon Class</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="<%= (locals.input && input.icon) ? input.icon : 'uil-grid' %>" id="iconPreview"></i>
+              </span>
+              <input type="text" class="form-control" id="icon" name="icon" value="<%= locals.input ? input.icon : 'uil-create-dashboard' %>" placeholder="e.g., uil-box">
+            </div>
+            <div class="form-text">
+              Use IconScout classes. Browse icons at
+              <a href="https://icon-sets.iconify.design/" target="_blank">icon-set.iconify.design</a>
+            </div>
+          </div>
+
+          <!-- Parent Module -->
+          <div class="mb-3">
+            <label for="parent_id" class="form-label">Parent Module</label>
+            <select class="form-control" id="parent_id" name="parent_id">
+              <option value="">None (Root Module)</option>
+              <% if (parentModules && parentModules.length > 0) { %>
+              <% parentModules.forEach(parent => { %>
+              <option value="<%= parent._id %>" <%= (locals.input && input.parent_id == parent._id) ? 'selected' : '' %>>
+                <%= parent.name %>
+              </option>
+              <% }) %>
+              <% } %>
+            </select>
+            <div class="form-text">Select if this is a sub-module</div>
+          </div>
+
+          <!-- Order -->
+          <div class="mb-3">
+            <label for="order" class="form-label">Display Order</label>
+            <input type="number" class="form-control" id="order" name="order" value="<%= locals.input ? input.order : '0' %>" min="0">
+            <div class="form-text">Lower numbers appear first in the menu</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Brief description of this module"><%= locals.input ? input.description : '' %></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%= (!locals.input || (locals.input && input.isActive === 'on')) ? 'checked' : '' %>>
+              <label class="form-check-label" for="isActive">
+                Active Status
+              </label>
+            </div>
+            <div class="form-text">Only active modules appear in the menu</div>
+          </div>
+
+          <!-- Auto-generated Permissions Info -->
+          <div class="alert-icon-big alert alert-info " role="alert">
+            <div class="alert-icon">
+              <i class="uil-info-circle"></i>
+            </div>
+            <div class="alert-content">
+              <h6 class='alert-heading'>Auto-generated Permissions</h6>
+              <p class="mb-2">When you create this module, the following permissions will be automatically generated:</p>
+              <ul class="mb-2">
+                <li><strong>Create</strong> - Allow users to create new items</li>
+                <li><strong>Read</strong> - Allow users to view items</li>
+                <li><strong>Update</strong> - Allow users to edit existing items</li>
+                <li><strong>Delete</strong> - Allow users to remove items</li>
+              </ul>
+              <small>You can add more custom permissions later from the module's permission page.</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Module</button>
+            <a href="<%= locals.base %>settings/modules/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancel
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Editing Module -->
+<div class="modal-edit-module modal fade" id="modal-edit-module" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content modal-bg-white">
+      <form method="POST" id="editModuleForm">
+        <div class="modal-header">
+          <h6 class="modal-title">Edit Module</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label for="edit-name" class="form-label">Module Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-name" name="name" required>
+          </div>
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="edit-code" class="form-label">Module Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-code" name="code" required>
+            <div class="form-text">Use lowercase, no spaces. This will be used for permission checks.</div>
+          </div>
+
+          <!-- Route -->
+          <div class="mb-3">
+            <label for="edit-route" class="form-label">Route/URL Path</label>
+            <input type="text" class="form-control" id="edit-route" name="route">
+          </div>
+
+          <!-- Icon -->
+          <div class="mb-3">
+            <label for="edit-icon" class="form-label">Icon Class</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="uil-grid" id="edit-iconPreview"></i>
+              </span>
+              <input type="text" class="form-control" id="edit-icon" name="icon">
+            </div>
+          </div>
+
+          <!-- Parent Module -->
+          <div class="mb-3">
+            <label for="edit-parent_id" class="form-label">Parent Module</label>
+            <select class="form-control" id="edit-parent_id" name="parent_id">
+              <option value="">None (Root Module)</option>
+              <% if (parentModules && parentModules.length > 0) { %>
+              <% parentModules.forEach(parent => { %>
+              <option value="<%= parent._id %>"><%= parent.name %></option>
+              <% }) %>
+              <% } %>
+            </select>
+          </div>
+
+          <!-- Order -->
+          <div class="mb-3">
+            <label for="edit-order" class="form-label">Display Order</label>
+            <input type="number" class="form-control" id="edit-order" name="order" min="0">
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="edit-description" class="form-label">Description</label>
+            <textarea class="form-control" id="edit-description" name="description" rows="3"></textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive">
+              <label class="form-check-label" for="edit-isActive">
+                Active Status
+              </label>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Update Module</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle Delete
+  document.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const moduleId = this.getAttribute('data-id');
+      const form = document.getElementById('modalDeleteForm');
+      // Backend uses POST method for delete
+      form.action = "<%= locals.base %>settings/modules/delete/" + moduleId + "/<%- locale %>";
+      form.method = "POST";
+    });
+  });
+
+  document.querySelector('.page-selection').addEventListener('change', function() {
+    const selectedLimit = this.value;
+    const params = new URLSearchParams(window.location.search);
+    params.set('limit', selectedLimit);
+    params.set('page', 1);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  });
+
+  // Update icon preview
+  document.getElementById('icon').addEventListener('input', function(e) {
+    const iconPreview = document.getElementById('iconPreview');
+    iconPreview.className = e.target.value || 'uil-create-dashboard';
+  });
+
+  // Auto-generate code from name
+  document.getElementById('name').addEventListener('input', function(e) {
+    const codeField = document.getElementById('code');
+    if (!codeField.value || codeField.value === generateCode(e.target.previousValue)) {
+      codeField.value = generateCode(e.target.value);
+    }
+    e.target.previousValue = e.target.value;
+  });
+
+  document.querySelectorAll('.edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = document.getElementById('editModuleForm');
+      const id = btn.dataset.id;
+
+      // Set form action
+      form.action = `<%= locals.base %>settings/modules/update/${id}/<%- locale %>`;
+
+      // Isi data field
+      form.querySelector('#edit-name').value = btn.dataset.name || '';
+      form.querySelector('#edit-code').value = btn.dataset.code || '';
+      form.querySelector('#edit-route').value = btn.dataset.route || '';
+      form.querySelector('#edit-icon').value = btn.dataset.icon || '';
+      form.querySelector('#edit-order').value = btn.dataset.order || '';
+      form.querySelector('#edit-description').value = btn.dataset.description || '';
+      form.querySelector('#edit-parent_id').value = btn.dataset.parent || '';
+      form.querySelector('#edit-isActive').checked = btn.dataset.active === 'true';
+
+      // Preview icon
+      document.getElementById('edit-iconPreview').className = btn.dataset.icon || 'uil-grid';
+    });
+  });
+
+  // Icon preview on typing
+  document.getElementById('edit-icon').addEventListener('input', function(e) {
+    const iconPreview = document.getElementById('edit-iconPreview');
+    iconPreview.className = e.target.value || 'uil-grid';
+  });
+
+  function generateCode(name) {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }
+</script>

@@ -1,0 +1,180 @@
+<div class="sidebar sidebar-collapse" id="sidebar">
+  <div class="sidebar__menu-group">
+    <ul class="sidebar_nav">
+      <% 
+      // Helper function to check if user has permission
+      const hasPermission = (moduleCode) => {
+        return userMenu && userMenu.some(menu => menu.code === moduleCode);
+      };
+      
+      // Helper function to check if any child has permission
+      const hasChildPermission = (childCodes) => {
+        return childCodes.some(code => hasPermission(code));
+      };
+      %>
+      
+      <!-- Dashboard - Always visible if user has any dashboard permission -->
+      <% if (hasChildPermission(['dashboard', 'dashboard-analytics', 'dashboard-marketing', 'dashboard-operasional', 'dashboard-logistics', 'dashboard-keuangan', 'dashboard-hrd', 'dashboard-cabang'])) { %>
+      <li class="has-child <%- name === 'dashboard_analytics' || name === 'dashboard_marketing' || name === 'dashboard_operasional' || name === 'dashboard_logistics' || name === 'dashboard_keuangan' || name === 'dashboard_hrd' || name === 'dashboard_cabang'?'open':'' %>">
+        <a href="#" class="<%- name === 'dashboard_analytics' || name === 'dashboard_marketing' || name === 'dashboard_operasional' || name === 'dashboard_logistics' || name === 'dashboard_keuangan' || name === 'dashboard_hrd' || name === 'dashboard_cabang'?'active':'' %>">
+          <span class="nav-icon uil uil-create-dashboard"></span>
+          <span class="menu-text"><%- __('dashboard-menu-title') %></span>
+          <span class="toggle-icon"></span>
+        </a>
+        <ul>
+          <li class="<%- name === 'dashboard_analytics' ? 'active':'' %>">
+            <a href="<%- locals.base %>dashboard/analytics/<%- locale %>"><%- __('dashboard-analytics') %></a>
+          </li>
+        </ul>
+      </li>
+      <% } %>
+
+      <!-- Dynamic Menu Generation -->
+      <% if (userMenu && userMenu.length > 0) { %>
+        <% 
+        // Group modules by categories
+        const menuCategories = {
+          'PENJUALAN': ['sales', 'products', 'pelanggan', 'packing', 'harga', 'ekspedisi'],
+          'KEUANGAN': ['finance', 'akun', 'jurnal-umum', 'arus-kas', 'kas-kecil', 'kas-bantuan', 'bank', 'piutang', 'laba-rugi', 'neraca', 'pajak'],
+          'OPERASIONAL': ['inventory', 'kiriman-barang', 'pengambilan-barang', 'muat-barang', 'antar-cabang', 'transit-cabang', 'lansir-barang'],
+          'ADMINISTRASI': ['administrasi', 'cabang', 'divisi', 'kendaraan', 'surat', 'tagihan', 'retur', 'overdue', 'invoice'],
+          'HRD': ['hr', 'karyawan', 'absensi', 'gaji', 'cuti', 'laporan'],
+          'SETTINGS': ['branches', 'divisions', 'positions', 'users', 'roles', 'modules', 'settings']
+        };
+        
+        // Display each category
+        Object.entries(menuCategories).forEach(([category, moduleCodes]) => {
+          const categoryModules = userMenu.filter(menu => moduleCodes.includes(menu.code));
+          
+          if (categoryModules.length > 0) { %>
+            <li class="menu-title mt-30">
+              <span><%= category %></span>
+            </li>
+            
+            <% categoryModules.forEach(module => { 
+              // Check if module has children
+              const hasChildren = module.children && module.children.length > 0;
+              
+              if (hasChildren) { %>
+                <li class="has-child <%- module.children.some(child => name === child.code) ? 'open' : '' %>">
+                  <a href="#" class="<%- module.children.some(child => name === child.code) ? 'active' : '' %>">
+                    <span class="nav-icon <%= module.icon || 'bx bx-circle' %>"></span>
+                    <span class="menu-text"><%= module.name %></span>
+                    <span class="toggle-icon"></span>
+                  </a>
+                  <ul>
+                    <% module.children.forEach(child => { %>
+                    <li class="<%- name === child.code ? 'active' : '' %>">
+                      <a href="<%- locals.base + child.route + '/' + locale %>"><%= child.name %></a>
+                    </li>
+                    <% }) %>
+                  </ul>
+                </li>
+              <% } else { %>
+                <li>
+                  <a href="<%- locals.base + module.route + '/' + locale %>" class="<%- name === module.code ? 'active' : '' %>">
+                    <span class="nav-icon <%= module.icon || 'bx bx-circle' %>"></span>
+                    <span class="menu-text"><%= module.name %></span>
+                  </a>
+                </li>
+              <% } 
+            }); 
+          }
+        });
+        
+        // Display uncategorized modules
+        const categorizedCodes = Object.values(menuCategories).flat();
+        const uncategorizedModules = userMenu.filter(menu => !categorizedCodes.includes(menu.code) && !menu.parent_id);
+        
+        if (uncategorizedModules.length > 0) { %>
+          <li class="menu-title mt-30">
+            <span>OTHER</span>
+          </li>
+          
+          <% uncategorizedModules.forEach(module => { %>
+            <li>
+              <a href="<%- locals.base + module.route + '/' + locale %>" class="<%- name === module.code ? 'active' : '' %>">
+                <span class="nav-icon <%= module.icon || 'bx bx-circle' %>"></span>
+                <span class="menu-text"><%= module.name %></span>
+              </a>
+            </li>
+          <% }); 
+        } %>
+      <% } %>
+
+      <!-- Settings Menu - Show only if user has admin permissions -->
+      <% if (hasChildPermission(['branches', 'divisions', 'positions', 'users', 'roles', 'modules', 'settings'])) { %>
+      <li class="menu-title mt-30">
+        <span>SETTINGS</span>
+      </li>
+      <li class="has-child <%- ['settings', 'branches', 'divisions', 'positions', 'users', 'roles', 'modules'].includes(name) ? 'open' : '' %>">
+        <a href="#" class="<%- ['settings', 'branches', 'divisions', 'positions', 'users', 'roles', 'modules'].includes(name) ? 'active' : '' %>">
+          <span class="nav-icon uil uil-setting"></span>
+          <span class="menu-text"><%- __('setting-menu-title') %></span>
+          <span class="toggle-icon"></span>
+        </a>
+        <ul>
+          <% if (hasPermission('settings')) { %>
+          <li>
+            <a class="<%- name === 'settings' ? 'active' : '' %>" href="<%- locals.base %>settings/<%- locale %>"><%- __('setting') %></a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('branches')) { %>
+          <li>
+            <a class="<%- name === 'branches' ? 'active' : '' %>" href="<%- locals.base %>administrasi/branches/index/<%- locale %>">Branches</a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('divisions')) { %>
+          <li>
+            <a class="<%- name === 'divisions' ? 'active' : '' %>" href="<%- locals.base %>admin/divisions/<%- locale %>">Divisions</a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('positions')) { %>
+          <li>
+            <a class="<%- name === 'positions' ? 'active' : '' %>" href="<%- locals.base %>admin/positions/<%- locale %>">Positions</a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('users')) { %>
+          <li>
+            <a href="<%- locals.base %>admin/users/<%- locale %>" class="<%- name === 'users' ? 'active' : '' %>">Users</a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('roles')) { %>
+          <li>
+            <a class="<%- name === 'roles' ? 'active' : '' %>" href="<%- locals.base %>admin/roles/<%- locale %>">Roles</a>
+          </li>
+          <% } %>
+          
+          <% if (hasPermission('modules')) { %>
+          <li>
+            <a class="<%- name === 'modules' ? 'active' : '' %>" href="<%- locals.base %>settings/modules/index/<%- locale %>">Modules</a>
+          </li>
+          <% } %>
+        </ul>
+      </li>
+      <% } %>
+
+      <!-- Static menu items that are always visible -->
+      <li class="menu-title mt-30">
+        <span>HELP</span>
+      </li>
+      <li>
+        <a href="<%- locals.base %>pages/support-center/<%- locale %>" class="<%- name === 'support_center' ? 'active' : '' %>">
+          <span class="nav-icon uil uil-headphones"></span>
+          <span class="menu-text"><%- __('support-menu-title') %></span>
+        </a>
+      </li>
+      <li>
+        <a href="<%- locals.base %>pages/faq/<%- locale %>" class="<%- name === 'faq' ? 'active' : '' %>">
+          <span class="nav-icon uil uil-question-circle"></span>
+          <span class="menu-text"><%- __('faq-menu-title') %></span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
