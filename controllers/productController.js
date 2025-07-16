@@ -1,3 +1,4 @@
+const { name } = require("ejs");
 const mongoose = require("mongoose");
 const Product = mongoose.model("Product", require("../schemas/productSchema"));
 const User = mongoose.model("User", require("../schemas/userSchema"));
@@ -14,10 +15,11 @@ const index = async (req, res) => {
       .populate('created_by', 'name')
       .sort({ name: 1 });
 
-    res.render("../views/products/index", {
+    res.render("../views/pages/penjualan/produk/index.ejs", {
       title: "Products",
       products: products,
-      layout: "../views/layout/app.ejs"
+      layout: "../views/layout/app.ejs",
+      name: "products"
     });
   } catch (error) {
     console.error(error);

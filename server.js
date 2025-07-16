@@ -34,7 +34,6 @@ const page_routes = require("./routes/pages");
 const auth_routes = require("./routes/auth");
 const customer_routes = require("./routes/customer");
 const website_routes = require("./routes/website");
-const penjualan_routes = require("./routes/penjualanRoutes");
 const keuangan_routes = require("./routes/keuanganRoutes");
 const operasional_routes = require("./routes/operasionalRoutes");
 const administrasi_routes = require("./routes/administrasiRoutes");
@@ -48,6 +47,18 @@ const user_routes = require("./routes/userRoutes");
 const role_routes = require("./routes/roleRoutes");
 const branch_routes = require("./routes/branchesRoutes");
 const position_routes = require("./routes/positionRoutes");
+
+// Penjualan Routes
+const penjualan_routes = require("./routes/penjualanRoutes");
+const barang_routes = require("./routes/barangRoutes");
+const ekspedisi_routes = require("./routes/ekspedisiRoutes");
+const harga_routes = require("./routes/hargaRoutes");
+const packing_routes = require("./routes/packingRoutes");
+const pelanggan_routes = require("./routes/pelangganRoutes");
+
+// Keuangan Routes
+const akun_routes = require("./routes/akunRoutes");
+const aruskas_routes = require("./routes/aruskasRoutes");
 
 // register all the assets
 app.use(BASE_URL + "css", express.static(__dirname + "/public/css"));
@@ -115,18 +126,33 @@ app.use(BASE_URL + "feature", feature_routes);
 app.use(BASE_URL + "pages", page_routes);
 app.use(BASE_URL + "", auth_routes);
 app.use(BASE_URL + "customer", customer_routes);
-app.use(BASE_URL + "penjualan", penjualan_routes);
 app.use(BASE_URL + "keuangan", keuangan_routes);
 app.use(BASE_URL + "operasional", operasional_routes);
 app.use(BASE_URL + "administrasi", administrasi_routes);
 app.use(BASE_URL + "hrd", hrd_routes);
-app.use(BASE_URL + "products", product_routes);
-app.use(BASE_URL + "administrasi/division", division_routes);
+
+// Settings Routes
 app.use(BASE_URL + "settings/users", user_routes);
 app.use(BASE_URL + "settings/roles", role_routes);
 app.use(BASE_URL + "settings/modules", module_routes);
+
+// Administrasi Routes
 app.use(BASE_URL + "administrasi/branches", branch_routes);
 app.use(BASE_URL + "administrasi/position", position_routes);
+app.use(BASE_URL + "administrasi/division", division_routes);
+
+// Penjualan Routes
+app.use(BASE_URL + "penjualan/pos", penjualan_routes);
+app.use(BASE_URL + "penjualan/barang", barang_routes);
+app.use(BASE_URL + "penjualan/produk", product_routes);
+app.use(BASE_URL + "penjualan/ekspedisi", ekspedisi_routes);
+app.use(BASE_URL + "penjualan/harga", harga_routes);
+app.use(BASE_URL + "penjualan/packing", packing_routes);
+app.use(BASE_URL + "penjualan/pelanggan", pelanggan_routes);
+
+// Keuangan Routes
+app.use(BASE_URL + "keuangan/akun", akun_routes);
+app.use(BASE_URL + "keuangan/aruskas", aruskas_routes);
 
 app.use(localeMiddleware.activeLocale);
 

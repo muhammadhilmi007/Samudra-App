@@ -1,6 +1,20 @@
 <div class="sidebar sidebar-collapse" id="sidebar">
   <div class="sidebar__menu-group">
     <ul class="sidebar_nav">
+      <% 
+      // Helper function to check if user has permission
+      const hasPermission = (moduleCode) => {
+        return userMenu && userMenu.some(menu => menu.code === moduleCode);
+      };
+      
+      // Helper function to check if any child has permission
+      const hasChildPermission = (childCodes) => {
+        return childCodes.some(code => hasPermission(code));
+      };
+      %>
+
+      <!-- Dashboard - Always visible if user has any dashboard permission -->
+      <% if (hasPermission('dashboard')) { %>
       <li class="has-child <%- name === 'dashboard_analytics' || name === 'dashboard_marketing' || name === 'dashboard_operasional' || name === 'dashboard_logistics' || name === 'dashboard_keuangan' || name === 'dashboard_hrd' || name === 'dashboard_cabang'?'open':'' %>">
         <a href="#" class="<%- name === 'dashboard_analytics' || name === 'dashboard_marketing' || name === 'dashboard_operasional' || name === 'dashboard_logistics' || name === 'dashboard_keuangan' || name === 'dashboard_hrd' || name === 'dashboard_cabang'?'active':'' %>">
           <span class="nav-icon uil uil-create-dashboard"></span>
@@ -21,19 +35,20 @@
             <a href="<%- locals.base %>dashboard/logistics/<%- locale %>"><%- __('dashboard-logistics') %></a>
           </li>
           <li class="<%- name === 'dashboard_keuangan' ? 'active':'' %>">
-            <a href="<%- locals.base %>dashboard/keuangan/<%- locale %>">
-              <%- __('dashboard-keuangan') %></a>
+            <a href="<%- locals.base %>dashboard/keuangan/<%- locale %>"><%- __('dashboard-keuangan') %></a>
           </li>
           <li class="<%- name === 'dashboard_hrd' ? 'active':'' %>">
-            <a href="<%- locals.base %>dashboard/hrd/<%- locale %>">
-              <%- __('dashboard-hrd') %></a>
+            <a href="<%- locals.base %>dashboard/hrd/<%- locale %>"><%- __('dashboard-hrd') %></a>
           </li>
           <li class="<%- name === 'dashboard_cabang' ? 'active':'' %>">
-            <a href="<%- locals.base %>dashboard/cabang/<%- locale %>">
-              <%- __('dashboard-cabang') %></a>
+            <a href="<%- locals.base %>dashboard/cabang/<%- locale %>"><%- __('dashboard-cabang') %></a>
           </li>
         </ul>
       </li>
+      <% } %>
+
+      <!-- Website Menu -->
+      <% if (hasPermission('website')) { %>
       <li class="has-child <%- name === 'landing' || name === 'cek_resi' || name === 'cek_harga' || name === 'lokasi' || name === 'berita' ?'open':'' %>">
         <a href="#" class="<%- name === 'landing' || name === 'cek_resi' || name === 'cek_harga' || name === 'lokasi' || name === 'berita' ?'active':'' %>">
           <span class="nav-icon uil uil-window-section"></span>
@@ -58,271 +73,408 @@
           </li>
         </ul>
       </li>
+      <% } %>
+
+      <!-- PENJUALAN Section -->
+      <% if (hasChildPermission(['penjualan', 'products', 'barang', 'pelanggan', 'packing', 'harga', 'ekspedisi'])) { %>
       <li class="menu-title mt-30">
         <span>PENJUALAN</span>
       </li>
+
+      <% if (hasPermission('penjualan')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/penjualan/<%- locale %>" class="<%- name === 'penjualan' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/pos/index/<%- locale %>" class="<%- name === 'penjualan' ?'active':'' %>">
           <span class="nav-icon uil uil-shop"></span>
           <span class="menu-text"><%- __('penjualan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('products')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/produk/<%- locale %>" class="<%- name === 'produk' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/produk/index/<%- locale %>" class="<%- name === 'products' ?'active':'' %>">
           <span class="nav-icon uil uil-box"></span>
           <span class="menu-text"><%- __('produk') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('barang')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/barang/<%- locale %>" class="<%- name === 'barang' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/barang/index/<%- locale %>" class="<%- name === 'barang' ?'active':'' %>">
           <span class="nav-icon uil uil-box"></span>
           <span class="menu-text"><%- __('barang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('pelanggan')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/pelanggan/<%- locale %>" class="<%- name === 'pelanggan' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/pelanggan/index/<%- locale %>" class="<%- name === 'pelanggan' ?'active':'' %>">
           <span class="nav-icon uil uil-user"></span>
           <span class="menu-text"><%- __('pelanggan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('packing')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/packing/<%- locale %>" class="<%- name === 'packing' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/packing/index/<%- locale %>" class="<%- name === 'packing' ?'active':'' %>">
           <span class="nav-icon uil uil-package"></span>
           <span class="menu-text"><%- __('packing') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('harga')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/harga/<%- locale %>" class="<%- name === 'harga' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/harga/index/<%- locale %>" class="<%- name === 'harga' ?'active':'' %>">
           <span class="nav-icon uil uil-dollar-alt"></span>
           <span class="menu-text"><%- __('harga') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('ekspedisi')) { %>
       <li>
-        <a href="<%- locals.base %>penjualan/ekspedisi/<%- locale %>" class="<%- name === 'mitraekspedisi' ?'active':'' %>">
+        <a href="<%- locals.base %>penjualan/ekspedisi/index/<%- locale %>" class="<%- name === 'mitraekspedisi' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('mitra ekspedisi') %></span>
         </a>
       </li>
+      <% } %>
+      <% } %>
+
+      <!-- KEUANGAN Section -->
+      <% if (hasChildPermission(['finance', 'akun', 'jurnal-umum', 'aruskas', 'kas-kecil', 'kas-bantuan', 'bank', 'piutang', 'laba-rugi', 'neraca', 'pajak'])) { %>
       <li class="menu-title mt-30">
         <span>KEUANGAN</span>
       </li>
+
+      <% if (hasPermission('akun')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/akun/<%- locale %>" class="<%- name === 'akun' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/akun/index/<%- locale %>" class="<%- name === 'akun' ?'active':'' %>">
           <span class="nav-icon uil uil-chart"></span>
           <span class="menu-text"><%- __('akun') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('jurnal-umum')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/jurnal-umum/<%- locale %>" class="<%- name === 'jurnal_umum' ?'active':'' %>">
           <span class="nav-icon uil uil-file-alt"></span>
           <span class="menu-text"><%- __('jurnal umum') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('aruskas')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/arus-kas/<%- locale %>" class="<%- name === 'arus_kas' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/aruskas/index/<%- locale %>" class="<%- name === 'arus_kas' ?'active':'' %>">
           <span class="nav-icon uil uil-file-redo-alt"></span>
           <span class="menu-text"><%- __('arus kas') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('kas-kecil')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/kas-kecil/<%- locale %>" class="<%- name === 'kas_kecil' ?'active':'' %>">
           <span class="nav-icon uil uil-file-plus"></span>
           <span class="menu-text"><%- __('kas kecil') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('kas-bantuan')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/kas-bantuan/<%- locale %>" class="<%- name === 'kas_bantuan' ?'active':'' %>">
           <span class="nav-icon uil uil-money-stack"></span>
           <span class="menu-text"><%- __('kas bantuan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('bank')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/bank/<%- locale %>" class="<%- name === 'bank' ?'active':'' %>">
           <span class="nav-icon uil uil-wallet"></span>
           <span class="menu-text"><%- __('bank') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('piutang')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/piutang/<%- locale %>" class="<%- name === 'piutang' ?'active':'' %>">
           <span class="nav-icon uil uil-file-contract-dollar"></span>
           <span class="menu-text"><%- __('piutang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('laba-rugi')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/laba-rugi/<%- locale %>" class="<%- name === 'laba_rugi' ?'active':'' %>">
           <span class="nav-icon uil uil-graph-bar"></span>
           <span class="menu-text"><%- __('laba rugi') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('neraca')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/neraca/<%- locale %>" class="<%- name === 'neraca' ?'active':'' %>">
           <span class="nav-icon uil uil-balance-scale"></span>
           <span class="menu-text"><%- __('neraca') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('pajak')) { %>
       <li>
         <a href="<%- locals.base %>keuangan/pajak/<%- locale %>" class="<%- name === 'pajak' ?'active':'' %>">
           <span class="nav-icon uil uil-file-lock-alt"></span>
           <span class="menu-text"><%- __('pajak') %></span>
         </a>
       </li>
+      <% } %>
+      <% } %>
+
+      <!-- OPERASIONAL Section -->
+      <% if (hasChildPermission(['inventory', 'kiriman-barang', 'pengambilan-barang', 'muat-barang', 'antar-cabang', 'transit-cabang', 'lansir-barang'])) { %>
       <li class="menu-title mt-30">
         <span>OPERASIONAL</span>
       </li>
+
+      <% if (hasPermission('kiriman-barang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/kiriman-barang/<%- locale %>" class="<%- name === 'kiriman_barang' ?'active':'' %>">
           <span class="nav-icon uil uil-parcel"></span>
           <span class="menu-text"><%- __('kiriman barang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('pengambilan-barang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/pengambilan-barang/<%- locale %>" class="<%- name === 'pengambilan_barang' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('pengambilan barang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('muat-barang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/muat-barang/<%- locale %>" class="<%- name === 'muat_barang' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('muat barang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('antar-cabang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/antar-cabang/<%- locale %>" class="<%- name === 'antar_cabang' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('antar cabang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('transit-cabang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/transit-cabang/<%- locale %>" class="<%- name === 'transit_cabang' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('transit cabang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('lansir-barang')) { %>
       <li>
         <a href="<%- locals.base %>operasional/lansir-barang/<%- locale %>" class="<%- name === 'lansir_barang' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('lansir barang') %></span>
         </a>
       </li>
+      <% } %>
+      <% } %>
+
+      <!-- ADMINISTRASI Section -->
+      <% if (hasChildPermission(['branches', 'divisions', 'positions', 'kendaraan', 'surat', 'tagihan', 'retur', 'overdue', 'invoice'])) { %>
       <li class="menu-title mt-30">
         <span>ADMINISTRASI</span>
       </li>
+
+      <% if (hasPermission('branches')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/branches/index/<%- locale %>" class="<%- name === 'branches' ?'active':'' %>">
           <span class="nav-icon uil uil-building"></span>
           <span class="menu-text"><%- __('cabang') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('divisions')) { %>
       <li>
-        <a href="<%- locals.base %>administrasi/division/index/<%- locale %>" class="<%- name === 'index' ?'active':'' %>">
+        <a href="<%- locals.base %>administrasi/division/index/<%- locale %>" class="<%- name === 'divisions' ?'active':'' %>">
           <span class="nav-icon uil uil-channel"></span>
           <span class="menu-text"><%- __('divisi') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('positions')) { %>
       <li>
-        <a href="<%- locals.base %>administrasi/position/index/<%- locale %>" class="<%- name === 'position' ?'active':'' %>">
+        <a href="<%- locals.base %>administrasi/position/index/<%- locale %>" class="<%- name === 'positions' ?'active':'' %>">
           <span class="nav-icon uil uil-user-arrows"></span>
           <span class="menu-text"><%- __('jabatan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('kendaraan')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/kendaraan/<%- locale %>" class="<%- name === 'kendaraan' ?'active':'' %>">
           <span class="nav-icon uil uil-truck"></span>
           <span class="menu-text"><%- __('kendaraan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('surat')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/surat/<%- locale %>" class="<%- name === 'surat' ?'active':'' %>">
           <span class="nav-icon uil uil-newspaper"></span>
           <span class="menu-text"><%- __('surat') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('tagihan')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/tagihan/<%- locale %>" class="<%- name === 'tagihan' ?'active':'' %>">
           <span class="nav-icon uil uil-file-edit-alt"></span>
           <span class="menu-text"><%- __('tagihan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('retur')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/retur/<%- locale %>" class="<%- name === 'retur' ?'active':'' %>">
           <span class="nav-icon uil uil-history"></span>
           <span class="menu-text"><%- __('retur') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('overdue')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/overdue/<%- locale %>" class="<%- name === 'overdue' ?'active':'' %>">
           <span class="nav-icon uil uil-stopwatch"></span>
           <span class="menu-text"><%- __('overdue') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('invoice')) { %>
       <li>
         <a href="<%- locals.base %>administrasi/invoice/<%- locale %>" class="<%- name === 'invoice' ?'active':'' %>">
           <span class="nav-icon uil uil-invoice"></span>
           <span class="menu-text"><%- __('invoice') %></span>
         </a>
       </li>
+      <% } %>
+      <% } %>
+
+      <!-- HRD Section -->
+      <% if (hasChildPermission(['hr', 'karyawan', 'absensi', 'gaji', 'cuti', 'laporan'])) { %>
       <li class="menu-title mt-30">
         <span>HRD</span>
       </li>
+
+      <% if (hasPermission('karyawan')) { %>
       <li>
         <a href="<%- locals.base %>hrd/karyawan/<%- locale %>" class="<%- name === 'karyawan' ?'active':'' %>">
           <span class="nav-icon uil uil-user"></span>
           <span class="menu-text"><%- __('karyawan') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('absensi')) { %>
       <li>
         <a href="<%- locals.base %>hrd/absensi/<%- locale %>" class="<%- name === 'absensi' ?'active':'' %>">
           <span class="nav-icon uil uil-calender"></span>
           <span class="menu-text"><%- __('absensi dan kehadiran') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('gaji')) { %>
       <li>
         <a href="<%- locals.base %>hrd/gaji/<%- locale %>" class="<%- name === 'gaji' ?'active':'' %>">
           <span class="nav-icon uil uil-money-bill"></span>
           <span class="menu-text"><%- __('gaji dan slip') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('cuti')) { %>
       <li>
         <a href="<%- locals.base %>hrd/cuti/<%- locale %>" class="<%- name === 'cuti' ?'active':'' %>">
           <span class="nav-icon uil uil-medkit"></span>
           <span class="menu-text"><%- __('cuti dan izin') %></span>
         </a>
       </li>
+      <% } %>
+
+      <% if (hasPermission('laporan')) { %>
       <li>
         <a href="<%- locals.base %>hrd/laporan/<%- locale %>" class="<%- name === 'laporan' ?'active':'' %>">
           <span class="nav-icon uil uil-file-edit-alt"></span>
           <span class="menu-text"><%- __('laporan') %></span>
         </a>
       </li>
+      <% } %>
+      <% } %>
+
+      <!-- Settings Menu - Show only if user has admin permissions -->
+      <% if (hasChildPermission(['modules', 'roles', 'users', 'settings'])) { %>
       <li class="menu-title mt-30">
         <span>SETTINGS</span>
       </li>
-      <li class="has-child <%- name === 'modules' || name === 'permission' || name === 'roles' || name === 'users' ?'open':'' %>">
-        <a href="#" class="<%- name === 'modules' || name === 'permission' || name === 'roles' || name === 'users' ?'active':'' %>">
+      <li class="has-child <%- name === 'modules' || name === 'permissions' || name === 'roles' || name === 'users' ?'open':'' %>">
+        <a href="#" class="<%- name === 'modules' || name === 'permissions' || name === 'roles' || name === 'users' ?'active':'' %>">
           <span class="nav-icon uil uil-setting"></span>
           <span class="menu-text"><%- __('setting-menu-title') %></span>
           <span class="toggle-icon"></span>
         </a>
         <ul>
+          <% if (hasPermission('modules')) { %>
           <li>
             <a href="<%- locals.base %>settings/modules/index/<%- locale %>" class="<%- name === 'modules' ?'active':'' %>"><%- __('modules') %></a>
           </li>
-          <li>
-            <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
-            <a href="<%- locals.base %>settings/roles/<%= roles[0]._id %>/permissions/<%- locale %>" class="<%- name === 'permissions' ?'active':'' %>"><%- __('permission') %></a>
-            <% } else { %>
-            <a class="<%- name === 'permissions' ?'active':'' %> disabled" href="#" title="No role available"><%- __('permission') %></a>
-            <% } %>
-          </li>
+          <% } %>
+
+          <% if (hasPermission('roles')) { %>
           <li>
             <a href="<%- locals.base %>settings/roles/index/<%- locale %>" class="<%- name === 'roles' ?'active':'' %>"><%- __('roles') %></a>
           </li>
+          <% } %>
+
+          <% if (hasPermission('users')) { %>
           <li>
             <a href="<%- locals.base %>settings/users/index/<%- locale %>" class="<%- name === 'users' ?'active':'' %>"><%- __('users') %></a>
           </li>
+          <% } %>
         </ul>
       </li>
+      <% } %>
     </ul>
   </div>
 </div>
