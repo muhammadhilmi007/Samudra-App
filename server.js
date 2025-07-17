@@ -59,6 +59,14 @@ const pelanggan_routes = require("./routes/pelangganRoutes");
 // Keuangan Routes
 const akun_routes = require("./routes/akunRoutes");
 const aruskas_routes = require("./routes/aruskasRoutes");
+const bank_routes = require("./routes/bankRoutes");
+const jurnal_routes = require("./routes/jurnalumumRoutes");
+const kasbantuan_routes = require("./routes/kasbantuanRoutes");
+const kaskecil_routes = require("./routes/kaskecilRoutes");
+const labarugi_routes = require("./routes/labarugiRoutes");
+const neraca_routes = require("./routes/neracaRoutes");
+const pajak_routes = require("./routes/pajakRoutes");
+const piutang_routes = require("./routes/piutangRoutes");
 
 // register all the assets
 app.use(BASE_URL + "css", express.static(__dirname + "/public/css"));
@@ -153,6 +161,14 @@ app.use(BASE_URL + "penjualan/pelanggan", pelanggan_routes);
 // Keuangan Routes
 app.use(BASE_URL + "keuangan/akun", akun_routes);
 app.use(BASE_URL + "keuangan/aruskas", aruskas_routes);
+app.use(BASE_URL + "keuangan/bank", bank_routes);
+app.use(BASE_URL + "keuangan/jurnalumum", jurnal_routes);
+app.use(BASE_URL + "keuangan/kasbantuan", kasbantuan_routes);
+app.use(BASE_URL + "keuangan/kaskecil", kaskecil_routes);
+app.use(BASE_URL + "keuangan/labarugi", labarugi_routes);
+app.use(BASE_URL + "keuangan/neraca", neraca_routes);
+app.use(BASE_URL + "keuangan/pajak", pajak_routes);
+app.use(BASE_URL + "keuangan/piutang", piutang_routes);
 
 app.use(localeMiddleware.activeLocale);
 

@@ -146,7 +146,7 @@
       <% } %>
 
       <!-- KEUANGAN Section -->
-      <% if (hasChildPermission(['finance', 'akun', 'jurnal-umum', 'aruskas', 'kas-kecil', 'kas-bantuan', 'bank', 'piutang', 'laba-rugi', 'neraca', 'pajak'])) { %>
+      <% if (hasChildPermission(['finance', 'akun', 'jurnalumum', 'aruskas', 'kaskecil', 'kasbantuan', 'bank', 'piutang', 'labarugi', 'neraca', 'pajak'])) { %>
       <li class="menu-title mt-30">
         <span>KEUANGAN</span>
       </li>
@@ -160,9 +160,9 @@
       </li>
       <% } %>
 
-      <% if (hasPermission('jurnal-umum')) { %>
+      <% if (hasPermission('jurnalumum')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/jurnal-umum/<%- locale %>" class="<%- name === 'jurnal_umum' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/jurnalumum/index/<%- locale %>" class="<%- name === 'jurnalumum' ?'active':'' %>">
           <span class="nav-icon uil uil-file-alt"></span>
           <span class="menu-text"><%- __('jurnal umum') %></span>
         </a>
@@ -171,25 +171,25 @@
 
       <% if (hasPermission('aruskas')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/aruskas/index/<%- locale %>" class="<%- name === 'arus_kas' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/aruskas/index/<%- locale %>" class="<%- name === 'aruskas' ?'active':'' %>">
           <span class="nav-icon uil uil-file-redo-alt"></span>
           <span class="menu-text"><%- __('arus kas') %></span>
         </a>
       </li>
       <% } %>
 
-      <% if (hasPermission('kas-kecil')) { %>
+      <% if (hasPermission('kaskecil')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/kas-kecil/<%- locale %>" class="<%- name === 'kas_kecil' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/kaskecil/index/<%- locale %>" class="<%- name === 'kaskecil' ?'active':'' %>">
           <span class="nav-icon uil uil-file-plus"></span>
           <span class="menu-text"><%- __('kas kecil') %></span>
         </a>
       </li>
       <% } %>
 
-      <% if (hasPermission('kas-bantuan')) { %>
+      <% if (hasPermission('kasbantuan')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/kas-bantuan/<%- locale %>" class="<%- name === 'kas_bantuan' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/kasbantuan/index/<%- locale %>" class="<%- name === 'kasbantuan' ?'active':'' %>">
           <span class="nav-icon uil uil-money-stack"></span>
           <span class="menu-text"><%- __('kas bantuan') %></span>
         </a>
@@ -198,7 +198,7 @@
 
       <% if (hasPermission('bank')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/bank/<%- locale %>" class="<%- name === 'bank' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/bank/index/<%- locale %>" class="<%- name === 'bank' ?'active':'' %>">
           <span class="nav-icon uil uil-wallet"></span>
           <span class="menu-text"><%- __('bank') %></span>
         </a>
@@ -207,16 +207,16 @@
 
       <% if (hasPermission('piutang')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/piutang/<%- locale %>" class="<%- name === 'piutang' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/piutang/index/<%- locale %>" class="<%- name === 'piutang' ?'active':'' %>">
           <span class="nav-icon uil uil-file-contract-dollar"></span>
           <span class="menu-text"><%- __('piutang') %></span>
         </a>
       </li>
       <% } %>
 
-      <% if (hasPermission('laba-rugi')) { %>
+      <% if (hasPermission('labarugi')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/laba-rugi/<%- locale %>" class="<%- name === 'laba_rugi' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/labarugi/index/<%- locale %>" class="<%- name === 'labarugi' ?'active':'' %>">
           <span class="nav-icon uil uil-graph-bar"></span>
           <span class="menu-text"><%- __('laba rugi') %></span>
         </a>
@@ -225,7 +225,7 @@
 
       <% if (hasPermission('neraca')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/neraca/<%- locale %>" class="<%- name === 'neraca' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/neraca/index/<%- locale %>" class="<%- name === 'neraca' ?'active':'' %>">
           <span class="nav-icon uil uil-balance-scale"></span>
           <span class="menu-text"><%- __('neraca') %></span>
         </a>
@@ -234,7 +234,7 @@
 
       <% if (hasPermission('pajak')) { %>
       <li>
-        <a href="<%- locals.base %>keuangan/pajak/<%- locale %>" class="<%- name === 'pajak' ?'active':'' %>">
+        <a href="<%- locals.base %>keuangan/pajak/index/<%- locale %>" class="<%- name === 'pajak' ?'active':'' %>">
           <span class="nav-icon uil uil-file-lock-alt"></span>
           <span class="menu-text"><%- __('pajak') %></span>
         </a>
