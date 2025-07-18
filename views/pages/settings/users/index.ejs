@@ -150,6 +150,13 @@
                   <td>
                     <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
                       <li>
+                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('read')) { %>
+                        <a href="<%= locals.base %>settings/users/detail/<%- locale %>" class="view">
+                          <i class="uil-eye"></i>
+                        </a>
+                        <% } %>
+                      </li>
+                      <li>
                         <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update')) { %>
                         <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-users" data-id="<%= user._id %>" data-name="<%= user.name %>" data-email="<%= user.email %>" data-password="" data-branch="<%= user.branch_id ? user.branch_id._id : '' %>" data-division="<%= user.division_id ? user.division_id._id : '' %>" data-position="<%= user.position_id ? user.position_id._id : '' %>" data-role="<%= user.role_id ? user.role_id._id : '' %>" data-active="<%= user.isActive ? 'on' : '' %>">
                           <i class="uil uil-edit"></i>

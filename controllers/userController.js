@@ -81,6 +81,14 @@ const index = async (req, res) => {
   }
 };
 
+// Show Profile Page
+const detail = (request, response, next) => {
+  response.render("../views/pages/settings/users/profiles/profile_setting.ejs", {
+    title: "Profile",
+    name: "profile",
+  });
+};
+
 // Show create form
 const create = async (req, res) => {
   try {
@@ -431,4 +439,5 @@ module.exports = {
   update,
   destroy,
   getRolesByFilters,
+  detail,
 };

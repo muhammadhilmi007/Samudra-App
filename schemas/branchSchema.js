@@ -1,36 +1,42 @@
 const mongoose = require("mongoose");
+const { trim } = require("validator");
 
-const branchSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Branch name is required!"],
-    unique: true
+const branchSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Branch name is required!"],
+      unique: true,
+      trim: true,
+    },
+    code: {
+      type: String,
+      required: [true, "Branch code is required!"],
+      unique: true,
+      trim: true,
+    },
+    address: {
+      type: String,
+      required: false,
+    },
+    phone: {
+      type: String,
+      required: false,
+    },
+    type: {
+      type: String,
+      enum: ["pusat", "cabang"],
+      default: "cabang",
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
-  code: {
-    type: String,
-    required: [true, "Branch code is required!"],
-    unique: true
-  },
-  address: {
-    type: String,
-    required: false
-  },
-  phone: {
-    type: String,
-    required: false
-  },
-  type: {
-    type: String,
-    enum: ['pusat', 'cabang'],
-    default: 'cabang',
-    required: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
 module.exports = branchSchema;

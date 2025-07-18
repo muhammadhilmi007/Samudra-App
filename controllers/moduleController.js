@@ -218,7 +218,6 @@ const update = async (req, res) => {
   }
 };
 
-// Manage module permissions - PERBAIKAN
 const permissions = async (req, res) => {
   try {
     const module = await Module.findById(req.params.id);

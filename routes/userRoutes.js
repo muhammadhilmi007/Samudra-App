@@ -13,6 +13,7 @@ router.use(permissionMiddleware.loadUserPermissions);
 
 // User Management
 router.get('/index/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.index);
+router.get('/detail/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.detail);
 router.get('/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.create);
 router.post('/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.store);
 router.get('/edit/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.edit);
