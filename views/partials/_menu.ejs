@@ -399,7 +399,7 @@
 
       <% if (hasPermission('karyawan')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/karyawan/<%- locale %>" class="<%- name === 'karyawan' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/karyawan/index/<%- locale %>" class="<%- name === 'karyawan' ?'active':'' %>">
           <span class="nav-icon uil uil-user"></span>
           <span class="menu-text"><%- __('karyawan') %></span>
         </a>
@@ -408,7 +408,7 @@
 
       <% if (hasPermission('absensi')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/absensi/<%- locale %>" class="<%- name === 'absensi' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/absensi/index/<%- locale %>" class="<%- name === 'absensi' ?'active':'' %>">
           <span class="nav-icon uil uil-calender"></span>
           <span class="menu-text"><%- __('absensi dan kehadiran') %></span>
         </a>
@@ -417,7 +417,7 @@
 
       <% if (hasPermission('gaji')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/gaji/<%- locale %>" class="<%- name === 'gaji' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/gaji/index/<%- locale %>" class="<%- name === 'gaji' ?'active':'' %>">
           <span class="nav-icon uil uil-money-bill"></span>
           <span class="menu-text"><%- __('gaji dan slip') %></span>
         </a>
@@ -426,7 +426,7 @@
 
       <% if (hasPermission('cuti')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/cuti/<%- locale %>" class="<%- name === 'cuti' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/cuti/index/<%- locale %>" class="<%- name === 'cuti' ?'active':'' %>">
           <span class="nav-icon uil uil-medkit"></span>
           <span class="menu-text"><%- __('cuti dan izin') %></span>
         </a>
@@ -435,7 +435,7 @@
 
       <% if (hasPermission('laporan')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/laporan/<%- locale %>" class="<%- name === 'laporan' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/laporan/index/<%- locale %>" class="<%- name === 'laporan' ?'active':'' %>">
           <span class="nav-icon uil uil-file-edit-alt"></span>
           <span class="menu-text"><%- __('laporan') %></span>
         </a>

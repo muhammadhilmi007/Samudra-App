@@ -68,6 +68,13 @@ const neraca_routes = require("./routes/neracaRoutes");
 const pajak_routes = require("./routes/pajakRoutes");
 const piutang_routes = require("./routes/piutangRoutes");
 
+// HRD Routes
+const absensi_routes = require("./routes/absensiRoutes");
+const cuti_routes = require("./routes/cutiRoutes");
+const gaji_routes = require("./routes/gajiRoutes");
+const karyawan_routes = require("./routes/karyawanRoutes");
+const laporan_routes = require("./routes/laporanRoutes");
+
 // register all the assets
 app.use(BASE_URL + "css", express.static(__dirname + "/public/css"));
 app.use(BASE_URL + "js", express.static(__dirname + "/public/js"));
@@ -169,6 +176,13 @@ app.use(BASE_URL + "keuangan/labarugi", labarugi_routes);
 app.use(BASE_URL + "keuangan/neraca", neraca_routes);
 app.use(BASE_URL + "keuangan/pajak", pajak_routes);
 app.use(BASE_URL + "keuangan/piutang", piutang_routes);
+
+// HRD Absensi
+app.use(BASE_URL + "hrd/absensi", absensi_routes);
+app.use(BASE_URL + "hrd/cuti", cuti_routes);
+app.use(BASE_URL + "hrd/gaji", gaji_routes);
+app.use(BASE_URL + "hrd/karyawan", karyawan_routes);
+app.use(BASE_URL + "hrd/laporan", laporan_routes);
 
 app.use(localeMiddleware.activeLocale);
 
