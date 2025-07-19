@@ -24,13 +24,13 @@ async function seedDatabase() {
 
     // Clear existing data (optional - comment out if you want to preserve data)
     console.log('Clearing existing data...');
-    await Branch.deleteMany({});
-    await Division.deleteMany({});
-    await Position.deleteMany({});
-    await Module.deleteMany({});
-    await Permission.deleteMany({});
-    await Role.deleteMany({});
-    await RolePermission.deleteMany({});
+    // await Branch.deleteMany({});
+    // await Division.deleteMany({});
+    // await Position.deleteMany({});
+    // await Module.deleteMany({});
+    // await Permission.deleteMany({});
+    // await Role.deleteMany({});
+    // await RolePermission.deleteMany({});
     await User.deleteMany({});
 
     // Create Branches (including Pusat)
@@ -268,16 +268,85 @@ async function seedDatabase() {
     // Create Users
     console.log('Creating users...');
 
-    // Direktur Utama
-    await User.create({
-      name: 'Direktur Utama',
-      email: 'direktur@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'DIR')._id,
-      position_id: positions.find(p => p.code === 'CEO')._id,
-      role_id: direktorRole._id
-    });
+    await User.insertMany([
+      {
+        username: 'direktur',
+        firstname: 'Direktur',
+        lastname: 'Utama',
+        email: 'direktur@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'DIR')._id,
+        position: positions.find(p => p.code === 'CEO')._id,
+        role: direktorRole._id
+      },
+      {
+        username: 'mgr.ops',
+        firstname: 'Manager',
+        lastname: 'Operasional',
+        email: 'mgr.operasional@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'OPS')._id,
+        position: positions.find(p => p.code === 'MGR')._id,
+        role: mgrOperasionalRole._id
+      },
+      {
+        username: 'mgr.mkt',
+        firstname: 'Manager',
+        lastname: 'Pemasaran',
+        email: 'mgr.pemasaran@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'MKT')._id,
+        position: positions.find(p => p.code === 'MGR')._id,
+        role: mgrPemasaranRole._id
+      },
+      {
+        username: 'mgr.fin',
+        firstname: 'Manager',
+        lastname: 'Keuangan',
+        email: 'mgr.keuangan@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'FIN')._id,
+        position: positions.find(p => p.code === 'MGR')._id,
+        role: mgrKeuanganRole._id
+      },
+      {
+        username: 'mgr.adm',
+        firstname: 'Manager',
+        lastname: 'Administrasi',
+        email: 'mgr.administrasi@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'ADM')._id,
+        position: positions.find(p => p.code === 'MGR')._id,
+        role: mgrAdministrasiRole._id
+      },
+      {
+        username: 'mgr.hrd',
+        firstname: 'Manager',
+        lastname: 'HRD',
+        email: 'mgr.hrd@samudra.com',
+        password: hashedPassword,
+        branch: pusatBranch._id,
+        division: divisions.find(d => d.code === 'HRD')._id,
+        position: positions.find(p => p.code === 'MGR')._id,
+        role: mgrHRDRole._id
+      },
+      {
+        username: 'kcb.jkt',
+        firstname: 'Kepala',
+        lastname: 'Cabang Jakarta',
+        email: 'kcb.jakarta@samudra.com',
+        password: hashedPassword,
+        branch: jakartaBranch._id,
+        division: divisions.find(d => d.code === 'OPS')._id,
+        position: positions.find(p => p.code === 'KCB')._id,
+        role: kepalaCabangRole._id
+      }
+    ]);
 
     // Manager Operasional
     await User.create({

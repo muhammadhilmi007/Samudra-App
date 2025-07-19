@@ -1,0 +1,175 @@
+<div class="container-fluid mt-30">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h6>Live Tracking - <%= truckMitra.firstname %> <%= truckMitra.lastname %></h6>
+        </div>
+        <div class="card-body">
+          <div id="map" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h6>Current Status</h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="tracking-status">
+              <option value="On Trip">On Trip</option>
+              <option value="Idle">Idle</option>
+              <option value="Stopped">Stopped</option>
+              <option value="Rest">Rest</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Speed (km/h)</label>
+            <input type="number" class="form-control" id="tracking-speed" readonly>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Activity</label>
+            <select class="form-select" id="activity-type">
+              <option value="">Select Activity</option>
+              <option value="Berangkat">Berangkat</option>
+              <option value="Sampai">Sampai</option>
+              <option value="Isi BBM">Isi BBM</option>
+              <option value="Muat Barang">Muat Barang</option>
+              <option value="Istirahat">Istirahat</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="activity-notes" rows="3"></textarea>
+          </div>
+
+          <button class="btn btn-primary w-100" onclick="logActivity()">
+            Log Activity
+          </button>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-header">
+          <h6>Delivery Statistics</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Deliveries:</span>
+            <strong><%= truckMitra.deliveryStats.totalDeliveries %></strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Avg Duration:</span>
+            <strong><%= truckMitra.deliveryStats.averageDuration %> mins</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Distance:</span>
+            <strong><%= truckMitra.deliveryStats.totalDistance %> km</strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Last Delivery:</span>
+            <strong>
+              <%= truckMitra.deliveryStats.lastDeliveredAt ? 
+                  new Date(truckMitra.deliveryStats.lastDeliveredAt).toLocaleDateString() : 
+                  'N/A' %>
+            </strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize map and tracking
+  let map, marker;
+  const truckId = '<%= truckMitra._id %>';
+
+  function initMap() {
+    // Initialize map centered on Indonesia
+    map = L.map('map').setView([-6.2088, 106.8456], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add marker
+    marker = L.marker([-6.2088, 106.8456]).addTo(map);
+
+    // Start tracking
+    startTracking();
+  }
+
+  function startTracking() {
+    // Get location every 30 seconds
+    setInterval(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(updateLocation);
+      }
+    }, 30000);
+  }
+
+  function updateLocation(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const speed = position.coords.speed || 0;
+
+    // Update map
+    marker.setLatLng([lat, lng]);
+    map.panTo([lat, lng]);
+
+    // Update speed display
+    document.getElementById('tracking-speed').value = Math.round(speed * 3.6); // Convert m/s to km/h
+
+    // Send to server
+    fetch(`<%= locals.base %>administrasi/truck-mitra/api/location/${truckId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        latitude: lat,
+        longitude: lng,
+        speed: speed,
+        status: document.getElementById('tracking-status').value
+      })
+    });
+  }
+
+  function logActivity() {
+    const activity = document.getElementById('activity-type').value;
+    const notes = document.getElementById('activity-notes').value;
+
+    if (!activity) {
+      alert('Please select an activity');
+      return;
+    }
+
+    fetch(`<%= locals.base %>administrasi/truck-mitra/api/activity/${truckId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activity: activity,
+          description: notes
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Activity logged successfully');
+          document.getElementById('activity-type').value = '';
+          document.getElementById('activity-notes').value = '';
+        }
+      });
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initMap);
+</script>

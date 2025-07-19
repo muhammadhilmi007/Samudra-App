@@ -6,7 +6,7 @@ const localeMiddleware = require("../middlewares/locale");
 
 // Controllers
 const DivisionController = require("../controllers/divisionController");
-const UserController = require('../controllers/userController');
+const UserController = require("../controllers/userController");
 
 // Apply authentication middleware to all admin routes
 router.use(authMiddleware.isAuthenticated);
@@ -51,6 +51,10 @@ router.post(
 );
 
 // AJAX Endpoints
-router.get('/api/roles', authMiddleware.isAuthenticated, UserController.getRolesByFilters);
+router.get(
+  "/api/roles",
+  authMiddleware.isAuthenticated,
+  UserController.getRolesByFilters
+);
 
 module.exports = router;

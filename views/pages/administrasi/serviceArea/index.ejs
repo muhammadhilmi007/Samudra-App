@@ -1,0 +1,137 @@
+<div class="container-fluid mt-30">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title">Service Areas</h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>">
+                  <i class="las la-home"></i>Dashboard
+                </a>
+              </li>
+              <li class="breadcrumb-item"><a href="#">Administrasi</a></li>
+              <li class="breadcrumb-item active">Service Areas</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6>Service Area Management</h6>
+            <div>
+              <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#modal-import">
+                <i class="uil-file-import"></i> Import Areas
+              </button>
+              <a href="<%= locals.base %>administrasi/service-areas/create/<%- locale %>" class="btn btn-sm btn-primary">
+                <i class="uil-plus"></i> Add Service Area
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Filter by Branch -->
+          <div class="mb-3">
+            <select class="form-select" id="filterBranch" onchange="filterByBranch(this)">
+              <option value="">All Branches</option>
+              <% branches.forEach(branch => { %>
+              <option value="<%= branch._id %>" <%= selectedBranch === branch._id.toString() ? 'selected' : '' %>>
+                <%= branch.name %>
+              </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th>Province</th>
+                  <th>City</th>
+                  <th>District</th>
+                  <th>Sub District</th>
+                  <th>Postal Code</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (serviceAreas && serviceAreas.length > 0) { %>
+                <% serviceAreas.forEach(area => { %>
+                <tr>
+                  <td><%= area.branchId?.name || '-' %></td>
+                  <td><%= area.province %></td>
+                  <td><%= area.city %></td>
+                  <td><%= area.district || '-' %></td>
+                  <td><%= area.subDistrict || '-' %></td>
+                  <td><%= area.postalCode || '-' %></td>
+                  <td>
+                    <% if (area.status === 'Active') { %>
+                    <span class="badge bg-success">Active</span>
+                    <% } else { %>
+                    <span class="badge bg-danger">Inactive</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteArea('<%= area._id %>')">
+                      <i class="uil-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% }) %>
+                <% } else { %>
+                <tr>
+                  <td colspan="8" class="text-center">No service areas found</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="modal-import" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Service Areas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select Branch</label>
+          <select class="form-select" id="import-branch">
+            <option value="">Select Branch</option>
+            <% branches.forEach(branch => { %>
+            <option value="<%= branch._id %>"><%= branch.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        
+        <div id="import-area-container">
+          <!-- Dynamic area selection will be loaded here -->
+        </div>
+        
+        <button class="btn btn-primary" onclick="addImportRow()">
+          <i class="uil-plus"></i> Add Row
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" onclick="importAreas()">Import Areas</button>
+      </div>
+    </div>
+  </div>
+</div>

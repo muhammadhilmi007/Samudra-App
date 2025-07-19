@@ -19,30 +19,35 @@ router.get(
   permissionMiddleware.checkPermission("branches", "read"),
   BranchController.index
 );
+
 router.get(
   "/create/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("branches", "create"),
   BranchController.create
 );
+
 router.post(
   "/create/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("branches", "create"),
   BranchController.store
 );
+
 router.get(
   "/edit/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("branches", "update"),
   BranchController.edit
 );
+
 router.post(
   "/update/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
   permissionMiddleware.checkPermission("branches", "update"),
   BranchController.update
 );
+
 router.post(
   "/delete/:id/:language(en|gr|ar)",
   [localeMiddleware.localized, authMiddleware.isAuthenticated],
@@ -50,9 +55,43 @@ router.post(
   BranchController.destroy
 );
 
-// AJAX Endpoints
+// === OPTIONAL: Tambahan untuk fitur berdasarkan schema baru ===
+
+// Ambil koordinat lokasi cabang (GeoJSON)
 router.get(
-  "/api/roles",
+  "/location/:id/:language(en|gr|ar)",
+  [localeMiddleware.localized, authMiddleware.isAuthenticated],
+  permissionMiddleware.checkPermission("branches", "read"),
+  BranchController.getLocation
+);
+
+// Ambil daftar cabang induk (untuk parent selection dropdown)
+router.get(
+  "/api/parents/:language(en|gr|ar)",
+  [localeMiddleware.localized, authMiddleware.isAuthenticated],
+  permissionMiddleware.checkPermission("branches", "read"),
+  BranchController.getParentBranches
+);
+
+// Autocomplete manager (pegawai)
+router.get(
+  "/api/managers/:id/:language(en|gr|ar)",
+  [localeMiddleware.localized, authMiddleware.isAuthenticated],
+  permissionMiddleware.checkPermission("branches", "read"),
+  BranchController.getManagers
+);
+
+// AJAX Endpoint untuk dynamic filter cabang
+router.get(
+  "/api/branches/:language(en|gr|ar)",
+  [localeMiddleware.localized, authMiddleware.isAuthenticated],
+  permissionMiddleware.checkPermission("branches", "read"),
+  BranchController.getBranches
+);
+
+// Roles API
+router.get(
+  "/api/roles/",
   authMiddleware.isAuthenticated,
   UserController.getRolesByFilters
 );

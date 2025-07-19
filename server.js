@@ -72,7 +72,7 @@ const piutang_routes = require("./routes/piutangRoutes");
 const absensi_routes = require("./routes/absensiRoutes");
 const cuti_routes = require("./routes/cutiRoutes");
 const gaji_routes = require("./routes/gajiRoutes");
-const karyawan_routes = require("./routes/karyawanRoutes");
+const karyawan_routes = require("./routes/employeeRoutes");
 const laporan_routes = require("./routes/laporanRoutes");
 
 // register all the assets

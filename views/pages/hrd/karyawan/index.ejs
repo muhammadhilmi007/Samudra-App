@@ -1,28 +1,324 @@
 <div class="container-fluid mt-30">
-    <div class="social-dash-wrap">
-        <!-- <div class="row">
-            <div class="col-lg-12">
-                <div class="breadcrumb-main">
-                    <h4 class="text-capitalize breadcrumb-title"><%- __('blank-menu-title') %></h4>
-                    <div class="breadcrumb-action justify-content-center flex-wrap">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#"><i class="las la-home"></i>Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><%- __('blank-menu-title') %></li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <p class="color-dark fw-500 fs-20 mb-0">Karyawan Page</p>
-                    </div>
-                </div>
-            </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <!-- Success/Error Messages -->
+      <% if (successMessage) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+      <% if (errorMessage) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title"><%- __('Karyawan') %></h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title') %></a>
+              </li>
+              <li class="breadcrumb-item"><a href="#">HRD</a></li>
+              <li class="breadcrumb-item active" aria-current="page"><%- __('Karyawan') %></li>
+            </ol>
+          </nav>
         </div>
+      </div>
     </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="support-ticket-system support-ticket-system--search">
+        <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between">
+          <div class="d-flex flex-wrap justify-content-center breadcrumb-main__wrapper">
+            <div class="d-flex align-items-center ticket__title justify-content-center me-md-25 mb-md-0 mb-20">
+              <h5 class="card-title mb-0">All Employees</h5>
+            </div>
+          </div>
+          <div class="action-btn">
+            <% if (userPermissions && userPermissions.employees && userPermissions.employees.includes('create')) { %>
+            <a href="<%= locals.base %>hrd/karyawan/create/<%- locale %>" class="btn btn-primary">
+              <i class="uil-plus"></i> Add New Employee
+            </a>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="support-form datatable-support-form d-flex justify-content-between align-items-center flex-wrap">
+          <div class="support-form__search d-flex">
+            <div class="support-order-search me-3">
+              <form action="<%= locals.base %>hrd/karyawan/index/<%- locale %>" method="GET" class="support-order-search__form">
+                <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
+                <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= search %>" placeholder="Search employees..." aria-label="Search" />
+              </form>
+            </div>
+
+            <% if (branches && branches.length > 0) { %>
+            <select class="form-select me-2" name="branch" onchange="filterByBranch(this)">
+              <option value="">All Branches</option>
+              <% branches.forEach(branch => { %>
+              <option value="<%= branch._id %>" <%= selectedBranch === branch._id.toString() ? 'selected' : '' %>><%= branch.name %></option>
+              <% }) %>
+            </select>
+            <% } %>
+
+            <select class="form-select" name="status" onchange="filterByStatus(this)">
+              <option value="">All Status</option>
+              <option value="Active" <%= selectedStatus === 'Active' ? 'selected' : '' %>>Active</option>
+              <option value="Inactive" <%= selectedStatus === 'Inactive' ? 'selected' : '' %>>Inactive</option>
+              <option value="Resigned" <%= selectedStatus === 'Resigned' ? 'selected' : '' %>>Resigned</option>
+              <option value="Mutated" <%= selectedStatus === 'Mutated' ? 'selected' : '' %>>Mutated</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Employees Table -->
+        <div class="userDatatable userDatatable--ticket userDatatable--ticket--2">
+          <div class="table-responsive">
+            <table class="table mb-0 table-hover">
+              <thead>
+                <tr class="userDatatable-header">
+                  <th>Employee Code</th>
+                  <th>Name</th>
+                  <th>Position</th>
+                  <th>Branch</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Join Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (employees && employees.length > 0) { %>
+                <% employees.forEach(employee => { %>
+                <tr>
+                  <td><code><%= employee.employeeCode %></code></td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <% if (employee.fotoProfile) { %>
+                      <img src="<%= employee.fotoProfile %>" class="rounded-circle wh-34" alt="profile">
+                      <% } else { %>
+                      <span class="userDatatable-title-initial"><%= employee.firstname.charAt(0) %></span>
+                      <% } %>
+                      <span class="ms-2"><%= employee.firstname %> <%= employee.lastname || '' %></span>
+                    </div>
+                  </td>
+                  <td><%= employee.positionId?.name || '-' %></td>
+                  <td><%= employee.branchId?.name || '-' %></td>
+                  <td><%= employee.contact?.email || '-' %></td>
+                  <td><%= employee.contact?.noPhone || '-' %></td>
+                  <td><%= new Date(employee.joinDate).toLocaleDateString() %></td>
+                  <td>
+                    <% if (employee.status === 'Active') { %>
+                    <span class="badge bg-opacity-success color-success">Active</span>
+                    <% } else if (employee.status === 'Inactive') { %>
+                    <span class="badge bg-opacity-warning color-warning">Inactive</span>
+                    <% } else if (employee.status === 'Resigned') { %>
+                    <span class="badge bg-opacity-danger color-danger">Resigned</span>
+                    <% } else if (employee.status === 'Mutated') { %>
+                    <span class="badge bg-opacity-info color-info">Mutated</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <ul class="orderDatatable_actions mb-0 d-flex flex-wrap">
+                      <li>
+                        <a href="<%= locals.base %>administrasi/employees/detail/<%= employee._id %>/<%- locale %>" class="view">
+                          <i class="uil-eye"></i>
+                        </a>
+                      </li>
+                      <% if (userPermissions && userPermissions.employees && userPermissions.employees.includes('update')) { %>
+                      <li>
+                        <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-mutate" data-id="<%= employee._id %>" data-name="<%= employee.firstname %> <%= employee.lastname || '' %>">
+                          <i class="uil-exchange"></i>
+                        </a>
+                      </li>
+                      <% if (employee.status === 'Active') { %>
+                      <li>
+                        <a href="#" class="remove" data-bs-toggle="modal" data-bs-target="#modal-resign" data-id="<%= employee._id %>" data-name="<%= employee.firstname %> <%= employee.lastname || '' %>">
+                          <i class="uil-user-times"></i>
+                        </a>
+                      </li>
+                      <% } %>
+                      <% } %>
+                    </ul>
+                  </td>
+                </tr>
+                <% }) %>
+                <% } else { %>
+                <tr>
+                  <td colspan="9" class="text-center">No employees found</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-end pt-30">
+            <nav class="dm-page">
+              <ul class="dm-pagination d-flex">
+                <li class="dm-pagination__item">
+                  <% if (totalPages > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= selectedBranch ? '&branch=' + selectedBranch : '' %><%= selectedStatus ? '&status=' + selectedStatus : '' %>" class="dm-pagination__link pagination-control">
+                    <span class="la la-angle-left"></span>
+                  </a>
+
+                  <% for (let i = 1; i <= totalPages; i++) { %>
+                  <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= selectedBranch ? '&branch=' + selectedBranch : '' %><%= selectedStatus ? '&status=' + selectedStatus : '' %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                    <span class="page-number"><%= i %></span>
+                  </a>
+                  <% } %>
+
+                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= selectedBranch ? '&branch=' + selectedBranch : '' %><%= selectedStatus ? '&status=' + selectedStatus : '' %>" class="dm-pagination__link pagination-control">
+                    <span class="la la-angle-right"></span>
+                  </a>
+                  <% } %>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Mutate Modal -->
+<div class="modal fade" id="modal-mutate" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+      <form id="mutateForm" method="POST">
+        <div class="modal-header">
+          <h6 class="modal-title">Mutate Employee</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Mutate employee: <strong id="mutate-employee-name"></strong></p>
+
+          <div class="mb-3">
+            <label for="mutate-branch" class="form-label">New Branch <span class="text-danger">*</span></label>
+            <select class="form-control" id="mutate-branch" name="branchId" required>
+              <option value="">Select Branch</option>
+              <% if (branches && branches.length > 0) { %>
+              <% branches.forEach(branch => { %>
+              <option value="<%= branch._id %>" data-name="<%= branch.name %>"><%= branch.name %></option>
+              <% }) %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="mutate-reason" class="form-label">Reason</label>
+            <textarea class="form-control" id="mutate-reason" name="reason" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Mutate Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Resign Modal -->
+<div class="modal fade" id="modal-resign" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+      <form id="resignForm" method="POST">
+        <div class="modal-header">
+          <h6 class="modal-title">Process Resignation</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Process resignation for: <strong id="resign-employee-name"></strong></p>
+
+          <div class="mb-3">
+            <label for="resign-date" class="form-label">Resignation Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="resign-date" name="resignDate" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="resign-reason" class="form-label">Reason</label>
+            <textarea class="form-control" id="resign-reason" name="reason" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Process Resignation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Filter functions
+  function filterByBranch(select) {
+    const params = new URLSearchParams(window.location.search);
+    if (select.value) {
+      params.set('branch', select.value);
+    } else {
+      params.delete('branch');
+    }
+    params.set('page', 1);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  }
+
+  function filterByStatus(select) {
+    const params = new URLSearchParams(window.location.search);
+    if (select.value) {
+      params.set('status', select.value);
+    } else {
+      params.delete('status');
+    }
+    params.set('page', 1);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  }
+
+  // Modal handlers
+  document.querySelectorAll('.edit').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const name = this.dataset.name;
+      document.getElementById('mutate-employee-name').textContent = name;
+      document.getElementById('mutateForm').action = `<%= locals.base %>administrasi/employees/mutate/${id}/<%- locale %>`;
+
+      // Add branch name to form data
+      document.getElementById('mutate-branch').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const branchName = selectedOption.dataset.name;
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'branchName';
+        hiddenInput.value = branchName;
+        this.form.appendChild(hiddenInput);
+      });
+    });
+  });
+
+  document.querySelectorAll('.remove').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const name = this.dataset.name;
+      document.getElementById('resign-employee-name').textContent = name;
+      document.getElementById('resignForm').action = `<%= locals.base %>administrasi/employees/resign/${id}/<%- locale %>`;
+    });
+  });
+</script>

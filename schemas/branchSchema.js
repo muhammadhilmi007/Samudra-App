@@ -1,27 +1,18 @@
 const mongoose = require("mongoose");
-const { trim } = require("validator");
 
 const branchSchema = mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Branch name is required!"],
-      unique: true,
-      trim: true,
-    },
     code: {
       type: String,
       required: [true, "Branch code is required!"],
       unique: true,
       trim: true,
     },
-    address: {
+    name: {
       type: String,
-      required: false,
-    },
-    phone: {
-      type: String,
-      required: false,
+      required: [true, "Branch name is required!"],
+      unique: true,
+      trim: true,
     },
     type: {
       type: String,
@@ -29,9 +20,52 @@ const branchSchema = mongoose.Schema(
       default: "cabang",
       required: true,
     },
+    address: {
+      street: { type: String },
+      city: { type: String },
+      district: { type: String },
+      province: { type: String },
+      postalCode: { type: String },
+      country: { type: String, default: "Indonesia" },
+    },
+    contact: {
+      phone: { type: String },
+      email: { type: String },
+      fax: { type: String },
+    },
+    manager: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      default: null,
+    },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      default: null,
+    },
     isActive: {
-      type: Boolean,
-      default: true,
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: [0, 0],
+      },
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {
@@ -39,4 +73,5 @@ const branchSchema = mongoose.Schema(
   }
 );
 
+branchSchema.index({ location: "2dsphere" });
 module.exports = branchSchema;

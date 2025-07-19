@@ -72,23 +72,25 @@
             <table class="table mb-0 table-hover">
               <thead>
                 <tr class="userDatatable-header">
-                  <th>Name</th>
                   <th>Code</th>
+                  <th>Name</th>
                   <th>Type</th>
-                  <th>Address</th>
+                  <th>City</th>
                   <th>Phone</th>
+                  <th>Manager</th>
+                  <th>Parent</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 <% if (branches && branches.length > 0) { %>
                 <% branches.forEach(branch => { %>
                 <tr>
+                  <td><code><%= branch.code %></code></td>
                   <td>
                     <strong><%= branch.name %></strong>
                   </td>
-                  <td><code><%= branch.code %></code></td>
                   <td>
                     <% if (branch.type === 'pusat') { %>
                     <div class="userDatatable-content d-inline-block">
@@ -100,8 +102,10 @@
                     </div>
                     <% } %>
                   </td>
-                  <td><%= branch.address || '-' %></td>
-                  <td><%= branch.phone || '-' %></td>
+                  <td><%= branch.address?.city || '-' %></td>
+                  <td><%= branch.contact?.phone || '-' %></td>
+                  <td><%= branch.manager?.name || '-' %></td>
+                  <td><%= branch.parent?.name || '-' %></td>
                   <td>
                     <% if (branch.isActive) { %>
                     <div class="userDatatable-content d-inline-block">
