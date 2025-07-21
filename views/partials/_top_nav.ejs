@@ -1022,19 +1022,17 @@
                 <div class="dropdown-custom">
                     <% switch (locale) {
                         case 'en' : %>
-                            <a href="javascript:;" class="nav-item-toggle"><img src="<%- locals.base %>img/eng.png" alt="" class="rounded-circle"></a>
-                            <% break;                        
+                            <a href="javascript:;" class="nav-item-toggle"><img class="radius-xl" src="<%- locals.base %>img/eng.png" alt=""></a>
+                            <% break;
                         case 'gr' : %>
-                            <a href="javascript:;" class="nav-item-toggle"><img src="<%- locals.base %>img/ger.png" alt="" class="rounded-circle"></a>
-                            <% break;                        
+                            <a href="javascript:;" class="nav-item-toggle"><img class="radius-xl" src="<%- locals.base %>img/ger.png" alt=""></a>
+                            <% break;
                         case 'ar' : %>
-                            <a href="javascript:;" class="nav-item-toggle"><img src="<%- locals.base %>img/iraq.png" alt="" class="rounded-circle"></a>
+                            <a href="javascript:;" class="nav-item-toggle"><img class="radius-xl" src="<%- locals.base %>img/iraq.png" alt=""></a>
                             <% break;
                         default : %>
-                            <a href="javascript:;" class="nav-item-toggle"><img src="<%- locals.base %>img/eng.png" alt="" class="rounded-circle"></a>
-                            <% break;
-                        
-                    } %>
+                            <a href="javascript:;" class="nav-item-toggle"><img class="radius-xl" src="<%- locals.base %>img/eng.png" alt=""></a>
+                    <% } %>
                     <div class="dropdown-wrapper dropdown-wrapper--small">
                         <a href="<%- currentRoute + '/en' %>"><img src="<%- locals.base %>img/eng.png" alt=""> English</a>
                         <a href="<%- currentRoute + '/gr' %>"><img src="<%- locals.base %>img/ger.png" alt=""> German</a>
@@ -1044,17 +1042,33 @@
             </li>
             <li class="nav-author">
                 <div class="dropdown-custom">
-                    <a href="javascript:;" class="nav-item-toggle"><img src="<%- locals.base %>img/author-nav.jpg" alt="" class="rounded-circle">
-                        <span class="nav-item__title"><%- session.name %><i class="las la-angle-down nav-item__arrow"></i></span>
+                    <a href="javascript:;" class="nav-item-toggle">
+                        <% if (locals.user && locals.user.photoProfile) { %>
+                            <img src="<%- locals.base %><%= locals.user.photoProfile %>" alt="<%- locals.fullName %>" class="rounded-circle">
+                        <% } else { %>
+                            <img src="<%- locals.base %>img/author-nav.jpg" alt="Default Avatar" class="rounded-circle">
+                        <% } %>
+                        <span class="nav-item__title"><%- locals.fullName || 'Guest' %><i class="las la-angle-down nav-item__arrow"></i></span>
                     </a>
                     <div class="dropdown-wrapper">
                         <div class="nav-author__info">
                             <div class="author-img">
-                                <img src="<%- locals.base %>img/author-nav.jpg" alt="" class="rounded-circle">
+                                <% if (locals.user && locals.user.photoProfile) { %>
+                                    <img src="<%- locals.base %><%= locals.user.photoProfile %>" alt="<%- locals.fullName %>" class="rounded-circle">
+                                <% } else { %>
+                                    <img src="<%- locals.base %>img/author-nav.jpg" alt="Default Avatar" class="rounded-circle">
+                                <% } %>
                             </div>
                             <div>
-                                <h6> <%- session.name %></h6>
-                                <span>UI Designer</span>
+                                <% if (locals.user && locals.user.role_id) { %>
+                                    <h6><%- locals.fullName %></h6>
+                                    <span><%- locals.user.role_id.name %></span>
+                                <% } else if (locals.user) { %>
+                                    <h6><%- locals.fullName %></h6>
+                                    <span>No Role</span>
+                                <% } else { %>
+                                    <h6>Guest</h6>
+                                <% } %>
                             </div>
                         </div>
                         <div class="nav-author__options">
@@ -1080,12 +1094,10 @@
                                         <i class="uil uil-bell"></i> Help</a>
                                 </li>
                             </ul>
-                            <a href="" onclick="                                   
-                                event.preventDefault()
-                                document.getElementById('logout').submit()" class="nav-author__signout">
+                            <a href="" onclick="event.preventDefault(); document.getElementById('logout').submit();" class="nav-author__signout">
                                 <i class="uil uil-sign-out-alt"></i> Sign Out</a>
-                                <form style="display:none;" id="logout" action="<%- locals.base %>logout" method="POST">
-                                </form>
+                            <form style="display:none;" id="logout" action="<%- locals.base %>logout" method="POST">
+                            </form>
                         </div>
                     </div>
                 </div>

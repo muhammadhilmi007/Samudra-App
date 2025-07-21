@@ -22,16 +22,21 @@ async function seedDatabase() {
     await mongoose.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`);
     console.log('Connected to MongoDB');
 
-    // Clear existing data (optional - comment out if you want to preserve data)
-    console.log('Clearing existing data...');
-    // await Branch.deleteMany({});
-    // await Division.deleteMany({});
-    // await Position.deleteMany({});
-    // await Module.deleteMany({});
-    // await Permission.deleteMany({});
-    // await Role.deleteMany({});
-    // await RolePermission.deleteMany({});
-    await User.deleteMany({});
+    // Clear existing data by dropping collections
+    console.log('Clearing existing data by dropping collections...');
+    const collections = [User, RolePermission, Role, Permission, Module, Position, Division, Branch];
+    for (const collection of collections) {
+        try {
+            await collection.collection.drop();
+            console.log(`Dropped ${collection.modelName} collection.`);
+        } catch (error) {
+            if (error.code === 26) {
+                console.log(`${collection.modelName} collection did not exist, skipping drop.`);
+            } else {
+                throw error;
+            }
+        }
+    }
 
     // Create Branches (including Pusat)
     console.log('Creating branches...');
@@ -122,163 +127,75 @@ async function seedDatabase() {
 
     const createdPermissions = await Permission.insertMany(permissions);
 
-    // Create Roles
-    console.log('Creating roles...');
-    const roles = [];
-    const hashedPassword = await bcrypt.hash('password123', 12);
+    // Hash a generic password
+    const hashedPassword = await bcrypt.hash('password123', 10);
 
-    // 1. Direktur Utama Role (Pusat)
-    const direktorRole = await Role.create({
-      name: 'Direktur Utama',
-      description: 'Chief Executive Officer - Full System Access',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'DIR')._id,
-      position_id: positions.find(p => p.code === 'CEO')._id
+    // Create a Super Admin Role
+    console.log('Creating super admin role...');
+    const superAdminRole = await Role.create({
+      name: 'Super Administrator',
+      description: 'Has all permissions across all branches',
+      branch_id: pusatBranch._id, // Tied to pusat for context, but isSuperAdmin grants global access
+      division_id: divisions.find(d => d.code === 'IT')._id,
+      position_id: positions.find(p => p.code === 'CEO')._id,
+      isSuperAdmin: true,
+      isActive: true
     });
 
-    // Give all permissions to Direktur Utama
-    const direktorPermissions = createdPermissions.map(permission => ({
-      role_id: direktorRole._id,
-      permission_id: permission._id,
-      allowed: true
+    // Assign all permissions to Super Admin role
+    const allPermissions = await Permission.find({});
+    const rolePermissionsSuperAdmin = allPermissions.map(p => ({
+      role_id: superAdminRole._id,
+      permission_id: p._id
     }));
-    await RolePermission.insertMany(direktorPermissions);
+    await RolePermission.insertMany(rolePermissionsSuperAdmin);
 
-    // 2. Manager Operasional (Pusat)
-    const mgrOperasionalRole = await Role.create({
-      name: 'Manager Operasional',
-      description: 'Operational Manager - Pusat',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id
-    });
-
-    // Give operational-related permissions
-    const opsModules = ['dashboard', 'products', 'inventory', 'purchasing', 'reports'];
-    const mgrOpsPermissions = createdPermissions
-      .filter(p => opsModules.includes(p.module_code))
-      .map(permission => ({
-        role_id: mgrOperasionalRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(mgrOpsPermissions);
-
-    // 3. Manager Pemasaran (Pusat)
-    const mgrPemasaranRole = await Role.create({
-      name: 'Manager Pemasaran',
-      description: 'Marketing Manager - Pusat',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'MKT')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id
-    });
-
-    // Give marketing-related permissions
-    const mktModules = ['dashboard', 'products', 'sales', 'reports'];
-    const mgrMktPermissions = createdPermissions
-      .filter(p => mktModules.includes(p.module_code))
-      .map(permission => ({
-        role_id: mgrPemasaranRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(mgrMktPermissions);
-
-    // 4. Manager Keuangan (Pusat)
-    const mgrKeuanganRole = await Role.create({
-      name: 'Manager Keuangan',
-      description: 'Finance Manager - Pusat',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'FIN')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id
-    });
-
-    // Give finance-related permissions
-    const finModules = ['dashboard', 'finance', 'reports', 'sales', 'purchasing'];
-    const mgrFinPermissions = createdPermissions
-      .filter(p => finModules.includes(p.module_code))
-      .map(permission => ({
-        role_id: mgrKeuanganRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(mgrFinPermissions);
-
-    // 5. Manager Administrasi (Pusat)
-    const mgrAdministrasiRole = await Role.create({
-      name: 'Manager Administrasi',
-      description: 'Administration Manager - Pusat',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'ADM')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id
-    });
-
-    // Give admin-related permissions
-    const admModules = ['dashboard', 'users', 'branches', 'reports'];
-    const mgrAdmPermissions = createdPermissions
-      .filter(p => admModules.includes(p.module_code) && p.action === 'read')
-      .map(permission => ({
-        role_id: mgrAdministrasiRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(mgrAdmPermissions);
-
-    // 6. Manager HRD (Pusat)
-    const mgrHRDRole = await Role.create({
-      name: 'Manager HRD',
-      description: 'Human Resources Manager - Pusat',
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'HRD')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id
-    });
-
-    // Give HR-related permissions
-    const hrdModules = ['dashboard', 'hr', 'users', 'reports'];
-    const mgrHRDPermissions = createdPermissions
-      .filter(p => hrdModules.includes(p.module_code))
-      .map(permission => ({
-        role_id: mgrHRDRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(mgrHRDPermissions);
-
-    // 7. Kepala Cabang Role (for each branch)
+    // Create other specific roles
+    console.log('Creating specific roles...');
     const jakartaBranch = branches.find(b => b.code === 'JKT-01');
-    const kepalaCabangRole = await Role.create({
-      name: 'Kepala Cabang Jakarta',
-      description: 'Branch Manager for Jakarta',
-      branch_id: jakartaBranch._id,
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'KCB')._id
-    });
 
-    // Give branch-level permissions
-    const branchModules = ['dashboard', 'products', 'sales', 'inventory', 'reports'];
-    const kcbPermissions = createdPermissions
-      .filter(p => branchModules.includes(p.module_code))
-      .map(permission => ({
-        role_id: kepalaCabangRole._id,
-        permission_id: permission._id,
-        allowed: true
-      }));
-    await RolePermission.insertMany(kcbPermissions);
+    const direkturRole = await Role.create({ name: 'Direktur Utama', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'DIR')._id, position_id: positions.find(p => p.code === 'CEO')._id });
+    const mgrOperasionalRole = await Role.create({ name: 'Manager Operasional', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'OPS')._id, position_id: positions.find(p => p.code === 'MGR')._id });
+    const mgrPemasaranRole = await Role.create({ name: 'Manager Pemasaran', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'MKT')._id, position_id: positions.find(p => p.code === 'MGR')._id });
+    const mgrKeuanganRole = await Role.create({ name: 'Manager Keuangan', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'FIN')._id, position_id: positions.find(p => p.code === 'MGR')._id });
+    const mgrAdministrasiRole = await Role.create({ name: 'Manager Administrasi', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'ADM')._id, position_id: positions.find(p => p.code === 'MGR')._id });
+    const mgrHRDRole = await Role.create({ name: 'Manager HRD', branch_id: pusatBranch._id, division_id: divisions.find(d => d.code === 'HRD')._id, position_id: positions.find(p => p.code === 'MGR')._id });
+    const kepalaCabangRole = await Role.create({ name: 'Kepala Cabang', branch_id: jakartaBranch._id, division_id: divisions.find(d => d.code === 'OPS')._id, position_id: positions.find(p => p.code === 'KCB')._id });
+
+
 
     // Create Users
     console.log('Creating users...');
-
-    await User.insertMany([
+    const usersToCreate = [
       {
-        username: 'direktur',
+        username: 'admin',
+        firstname: 'Super',
+        lastname: 'Admin',
+        email: 'admin@samudra.com',
+        password: hashedPassword,
+        phoneNumber: '081200000001',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'IT')._id,
+        position_id: positions.find(p => p.code === 'CEO')._id,
+        role_id: superAdminRole._id,
+        isActive: true
+      },
+      {
+        username: 'dir.utama',
         firstname: 'Direktur',
         lastname: 'Utama',
         email: 'direktur@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'DIR')._id,
-        position: positions.find(p => p.code === 'CEO')._id,
-        role: direktorRole._id
+        phoneNumber: '081200000002',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'DIR')._id,
+        position_id: positions.find(p => p.code === 'CEO')._id,
+        role_id: direkturRole._id,
+        isActive: true
       },
       {
         username: 'mgr.ops',
@@ -286,10 +203,14 @@ async function seedDatabase() {
         lastname: 'Operasional',
         email: 'mgr.operasional@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'OPS')._id,
-        position: positions.find(p => p.code === 'MGR')._id,
-        role: mgrOperasionalRole._id
+        phoneNumber: '081200000003',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'OPS')._id,
+        position_id: positions.find(p => p.code === 'MGR')._id,
+        role_id: mgrOperasionalRole._id,
+        isActive: true
       },
       {
         username: 'mgr.mkt',
@@ -297,10 +218,14 @@ async function seedDatabase() {
         lastname: 'Pemasaran',
         email: 'mgr.pemasaran@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'MKT')._id,
-        position: positions.find(p => p.code === 'MGR')._id,
-        role: mgrPemasaranRole._id
+        phoneNumber: '081200000004',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'MKT')._id,
+        position_id: positions.find(p => p.code === 'MGR')._id,
+        role_id: mgrPemasaranRole._id,
+        isActive: true
       },
       {
         username: 'mgr.fin',
@@ -308,10 +233,14 @@ async function seedDatabase() {
         lastname: 'Keuangan',
         email: 'mgr.keuangan@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'FIN')._id,
-        position: positions.find(p => p.code === 'MGR')._id,
-        role: mgrKeuanganRole._id
+        phoneNumber: '081200000005',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'FIN')._id,
+        position_id: positions.find(p => p.code === 'MGR')._id,
+        role_id: mgrKeuanganRole._id,
+        isActive: true
       },
       {
         username: 'mgr.adm',
@@ -319,10 +248,14 @@ async function seedDatabase() {
         lastname: 'Administrasi',
         email: 'mgr.administrasi@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'ADM')._id,
-        position: positions.find(p => p.code === 'MGR')._id,
-        role: mgrAdministrasiRole._id
+        phoneNumber: '081200000006',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'ADM')._id,
+        position_id: positions.find(p => p.code === 'MGR')._id,
+        role_id: mgrAdministrasiRole._id,
+        isActive: true
       },
       {
         username: 'mgr.hrd',
@@ -330,10 +263,14 @@ async function seedDatabase() {
         lastname: 'HRD',
         email: 'mgr.hrd@samudra.com',
         password: hashedPassword,
-        branch: pusatBranch._id,
-        division: divisions.find(d => d.code === 'HRD')._id,
-        position: positions.find(p => p.code === 'MGR')._id,
-        role: mgrHRDRole._id
+        phoneNumber: '081200000007',
+        photoProfile: null,
+        status: true, // Pusat
+        branch_id: null,
+        division_id: divisions.find(d => d.code === 'HRD')._id,
+        position_id: positions.find(p => p.code === 'MGR')._id,
+        role_id: mgrHRDRole._id,
+        isActive: true
       },
       {
         username: 'kcb.jkt',
@@ -341,91 +278,34 @@ async function seedDatabase() {
         lastname: 'Cabang Jakarta',
         email: 'kcb.jakarta@samudra.com',
         password: hashedPassword,
-        branch: jakartaBranch._id,
-        division: divisions.find(d => d.code === 'OPS')._id,
-        position: positions.find(p => p.code === 'KCB')._id,
-        role: kepalaCabangRole._id
+        phoneNumber: '081300000001',
+        photoProfile: null,
+        status: false, // Cabang
+        branch_id: jakartaBranch._id,
+        division_id: divisions.find(d => d.code === 'OPS')._id,
+        position_id: positions.find(p => p.code === 'KCB')._id,
+        role_id: kepalaCabangRole._id,
+        isActive: true
       }
-    ]);
+    ];
 
-    // Manager Operasional
-    await User.create({
-      name: 'Manager Operasional',
-      email: 'mgr.operasional@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrOperasionalRole._id
-    });
-
-    // Manager Pemasaran
-    await User.create({
-      name: 'Manager Pemasaran',
-      email: 'mgr.pemasaran@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'MKT')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrPemasaranRole._id
-    });
-
-    // Manager Keuangan
-    await User.create({
-      name: 'Manager Keuangan',
-      email: 'mgr.keuangan@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'FIN')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrKeuanganRole._id
-    });
-
-    // Manager Administrasi
-    await User.create({
-      name: 'Manager Administrasi',
-      email: 'mgr.administrasi@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'ADM')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrAdministrasiRole._id
-    });
-
-    // Manager HRD
-    await User.create({
-      name: 'Manager HRD',
-      email: 'mgr.hrd@samudra.com',
-      password: hashedPassword,
-      branch_id: pusatBranch._id,
-      division_id: divisions.find(d => d.code === 'HRD')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrHRDRole._id
-    });
-
-    // Kepala Cabang Jakarta
-    await User.create({
-      name: 'Kepala Cabang Jakarta',
-      email: 'kcb.jakarta@samudra.com',
-      password: hashedPassword,
-      branch_id: jakartaBranch._id,
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'KCB')._id,
-      role_id: kepalaCabangRole._id
-    });
+    await User.insertMany(usersToCreate);
 
     console.log('Database seeded successfully!');
     console.log('\n=== LOGIN CREDENTIALS ===');
-    console.log('\nDirektur Level:');
-    console.log('1. Direktur Utama - email: direktur@samudra.com, password: password123');
+    console.log('Password for all users: password123');
+    console.log('\nSuper Admin:');
+    console.log('- User: admin, Email: admin@samudra.com');
+    console.log('\nDirektur Level (Pusat):');
+    console.log('- User: dir.utama, Email: direktur@samudra.com');
     console.log('\nManager Level (Pusat):');
-    console.log('2. Manager Operasional - email: mgr.operasional@samudra.com, password: password123');
-    console.log('3. Manager Pemasaran - email: mgr.pemasaran@samudra.com, password: password123');
-    console.log('4. Manager Keuangan - email: mgr.keuangan@samudra.com, password: password123');
-    console.log('5. Manager Administrasi - email: mgr.administrasi@samudra.com, password: password123');
-    console.log('6. Manager HRD - email: mgr.hrd@samudra.com, password: password123');
+    console.log('- User: mgr.ops, Email: mgr.operasional@samudra.com');
+    console.log('- User: mgr.mkt, Email: mgr.pemasaran@samudra.com');
+    console.log('- User: mgr.fin, Email: mgr.keuangan@samudra.com');
+    console.log('- User: mgr.adm, Email: mgr.administrasi@samudra.com');
+    console.log('- User: mgr.hrd, Email: mgr.hrd@samudra.com');
     console.log('\nCabang Level:');
-    console.log('7. Kepala Cabang Jakarta - email: kcb.jakarta@samudra.com, password: password123');
+    console.log('- User: kcb.jkt, Email: kcb.jakarta@samudra.com');
 
     process.exit(0);
   } catch (error) {

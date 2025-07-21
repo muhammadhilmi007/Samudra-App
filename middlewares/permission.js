@@ -10,13 +10,13 @@ const checkPermission = (moduleCode, action) => {
   return async (req, res, next) => {
     try {
       // Get user from session
-      const userEmail = req.session.user?.email;
-      if (!userEmail) {
+      const userId = req.session.user?._id;
+      if (!userId) {
         return res.redirect(res.locals.base);
       }
 
       // Get user with role and branch
-      const user = await User.findOne({ email: userEmail })
+      const user = await User.findById(userId)
         .populate('role_id')
         .populate('branch_id');
         
@@ -99,14 +99,19 @@ const getUserPermissions = async (roleId) => {
   }
 };
 
-// Middleware to load user permissions for all requests
+// Middleware to load user permissions and user data for all requests
 const loadUserPermissions = async (req, res, next) => {
   try {
     if (req.session.user) {
-      const user = await User.findOne({ email: req.session.user.email });
-      if (user && user.role_id) {
-        req.userPermissions = await getUserPermissions(user.role_id);
-        res.locals.userPermissions = req.userPermissions;
+      const user = await User.findById(req.session.user._id);
+      if (user) {
+        res.locals.user = user; // Make user object available in all views
+        res.locals.fullName = `${user.firstname} ${user.lastname}`.trim(); // For convenience
+
+        if (user.role_id) {
+          req.userPermissions = await getUserPermissions(user.role_id);
+          res.locals.userPermissions = req.userPermissions;
+        }
       }
     }
     next();

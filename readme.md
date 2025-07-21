@@ -43,7 +43,14 @@ Before you begin the installation process, ensure you have the following prerequ
     Mongodb Start
     ```
 
-6. Start the Application:
+6. Seed the Database (Optional):
+   If you want to populate the database with initial data for testing and development, run the following command:
+   ```
+   node seed/seedUsers.js
+   ```
+   This will create default branches, divisions, positions, roles, permissions, and users, including a super admin.
+
+7. Start the Application:
    To run the Samudra App Admin Dashboard in your local environment, execute the following command:
     ```
     npm start
@@ -53,21 +60,21 @@ Before you begin the installation process, ensure you have the following prerequ
     This command runs the application using "nodemon," which automatically restarts the server on file changes.
 
 
-7. Compiling SCSS
+8. Compiling SCSS
    To compile SCSS files into CSS, use the following command:
     ```
     npm run compile:scss
     ```
     This command compiles "public/scss/custom.scss" to "public/css/all-custom.css" using the "sass" compiler.
 
-8. Watching SCSS
+9. Watching SCSS
    To automatically watch for changes in SCSS files and compile them into CSS, use the following command:
     ```
     npm run watch:scss
     ```
     Any changes in "public/scss" will trigger automatic compilation to "public/css."
 
-9. Right-to-Left (RTL) Support
+10. Right-to-Left (RTL) Support
    To generate a right-to-left (RTL) version of the CSS, use the following command:
     ```
     npm run rtl

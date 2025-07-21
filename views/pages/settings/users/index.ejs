@@ -48,6 +48,9 @@
             </div>
           </div>
           <div class="action-btn mt-sm-0 mt-15">
+            <a href="#" class="btn px-20 btn-success" data-bs-toggle="modal" data-bs-target="#modal-export">
+              <i class="las la-file-export fs-16"></i>Export
+            </a>
             <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
             <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
               <i class="las la-plus fs-16"></i>Add New User
@@ -75,7 +78,8 @@
             <table class="table mb-0 table-hover">
               <thead>
                 <tr class="userDatatable-header">
-                  <th>Name</th>
+                  <th>Username</th>
+                  <th>Full Name</th>
                   <th>Email</th>
                   <th>Branch</th>
                   <th>Division</th>
@@ -90,8 +94,11 @@
                 <% if (users && users.length> 0) { %> <% users.forEach(user=> { %>
                 <tr>
                   <td>
+                    <%= user.username %>
+                  </td>
+                  <td>
                     <strong>
-                      <%= user.name %>
+                      <%= user.firstname %> <%= user.lastname %>
                     </strong>
                     <% if (session && session.user && user.email===session.user.email) { %>
                     <span class="badge bg-info ms-1">You</span>
@@ -158,10 +165,21 @@
                       </li>
                       <li>
                         <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update')) { %>
-                        <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-users" data-id="<%= user._id %>" data-name="<%= user.name %>" data-email="<%= user.email %>" data-password="" data-branch="<%= user.branch_id ? user.branch_id._id : '' %>" data-division="<%= user.division_id ? user.division_id._id : '' %>" data-position="<%= user.position_id ? user.position_id._id : '' %>" data-role="<%= user.role_id ? user.role_id._id : '' %>" data-active="<%= user.isActive ? 'on' : '' %>">
+                        <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-users"
+                          data-id="<%= user._id %>"
+                          data-username="<%= user.username || '' %>"
+                          data-firstname="<%= user.firstname || '' %>"
+                          data-lastname="<%= user.lastname || '' %>"
+                          data-email="<%= user.email || '' %>"
+                          data-phonenumber="<%= user.phoneNumber || '' %>"
+                          data-photo="<%= user.photoProfile || '' %>"
+                          data-status="<%= user.status %>"
+                          data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
+                          data-division="<%= user.division_id ? user.division_id._id : '' %>"
+                          data-position="<%= user.position_id ? user.position_id._id : '' %>"
+                          data-active="<%= user.isActive %>">
                           <i class="uil uil-edit"></i>
                         </a>
-
                         <% } %>
                       </li>
                       <li>
@@ -249,6 +267,30 @@
   </div>
 </div>
 
+<!-- Modal for Export Confirmation -->
+<div class="modal-export modal fade" id="modal-export" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-info" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="modal-info-body d-flex">
+          <div class="modal-info-icon success">
+            <img src="<%- locals.base %>img/svg/check-circle.svg" alt="check-circle" class="svg">
+          </div>
+          <div class="modal-info-text">
+            <h6>Export Data Pengguna</h6>
+            <p>Pilih format file untuk diekspor:</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= locals.base %>settings/users/export/excel/<%- locale %>" class="btn btn-success btn-sm">Excel</a>
+        <a href="<%= locals.base %>settings/users/export/csv/<%- locale %>" class="btn btn-primary btn-sm">CSV</a>
+        <button type="button" class="btn btn-light btn-outlined btn-sm" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal for Adding Users -->
 <div class="modal-tambah-users modal fade show" id="modal-tambah-users" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
@@ -261,15 +303,28 @@
           </button>
         </div>
         <div class="modal-body">
-          <!-- Name -->
+          <!-- Username -->
           <div class="mb-3">
-            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter full name" required>
-            <% if (locals.errors && errors.name) { %>
-            <div class="invalid-feedback">
-              <%= errors.name.message %>
-            </div>
+            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+            <input type="text" class="form-control <%= locals.errors && errors.username ? 'is-invalid' : '' %>" id="username" name="username" value="<%= locals.input ? input.username : '' %>" placeholder="Enter username" required>
+            <% if (locals.errors && errors.username) { %>
+            <div class="invalid-feedback"><%= errors.username.message %></div>
             <% } %>
+          </div>
+
+          <!-- First Name & Last Name -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control <%= locals.errors && errors.firstname ? 'is-invalid' : '' %>" id="firstname" name="firstname" value="<%= locals.input ? input.firstname : '' %>" placeholder="Enter first name" required>
+              <% if (locals.errors && errors.firstname) { %>
+              <div class="invalid-feedback"><%= errors.firstname.message %></div>
+              <% } %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="lastname" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="lastname" name="lastname" value="<%= locals.input ? input.lastname : '' %>" placeholder="Enter last name">
+            </div>
           </div>
 
           <!-- Email -->
@@ -277,9 +332,16 @@
             <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
             <input type="email" class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" id="email" name="email" value="<%= locals.input ? input.email : '' %>" placeholder="Enter email address" required>
             <% if (locals.errors && errors.email) { %>
-            <div class="invalid-feedback">
-              <%= errors.email.message %>
-            </div>
+            <div class="invalid-feedback"><%= errors.email.message %></div>
+            <% } %>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="mb-3">
+            <label for="phoneNumber" class="form-label">Phone Number</label>
+            <input type="text" class="form-control <%= locals.errors && errors.phoneNumber ? 'is-invalid' : '' %>" id="phoneNumber" name="phoneNumber" value="<%= locals.input ? input.phoneNumber : '' %>" placeholder="Enter phone number">
+            <% if (locals.errors && errors.phoneNumber) { %>
+            <div class="invalid-feedback"><%= errors.phoneNumber.message %></div>
             <% } %>
           </div>
 
@@ -292,24 +354,39 @@
               <%= errors.password.message %>
             </div>
             <% } %>
-            <div class="form-text">Minimum 8 characters recommended</div>
+            <div class="form-text">Minimum 8 characters, with uppercase, lowercase, numbers, and symbols.</div>
+          </div>
+
+          <!-- Photo Profile -->
+          <div class="mb-3">
+            <label for="photoProfile" class="form-label">Photo Profile</label>
+            <input class="form-control" type="file" id="photoProfile" name="photoProfile" accept="image/png, image/jpeg, image/jpg">
+            <div class="form-text">Max file size 2MB. Allowed formats: JPG, JPEG, PNG.</div>
+            <img id="photoPreview" src="#" alt="Image Preview" class="mt-2" style="display: none; max-width: 100px; border-radius: 5px;"/>
+          </div>
+
+          <!-- Status (Pusat/Cabang) -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="status" name="status">
+              <label class="form-check-label" for="status">User Kantor Pusat</label>
+            </div>
+            <div class="form-text">Jika aktif, pengguna akan terdaftar sebagai user kantor pusat dan tidak perlu memilih cabang.</div>
           </div>
 
           <!-- Branch -->
-          <div class="mb-3">
+          <div class="mb-3" id="branch-selection">
             <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id" name="branch_id" required <%= branches.length === 1 ? 'readonly' : '' %>>
+            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id" name="branch_id" required>
               <option value="">Select Branch</option>
               <% branches.forEach(branch => { %>
-              <option value="<%= branch._id %>" <%= (locals.input && input.branch_id == branch._id) ? 'selected' : '' %>>
-                <%= branch.name %>
-              </option>
+                <% if(branch.type !== 'pusat') { %>
+                  <option value="<%= branch._id %>" <%= (locals.input && input.branch_id == branch._id) ? 'selected' : '' %>><%= branch.name %></option>
+                <% } %>
               <% }) %>
             </select>
             <% if (locals.errors && errors.branch_id) { %>
-            <div class="invalid-feedback">
-              <%= errors.branch_id.message %>
-            </div>
+            <div class="invalid-feedback"><%= errors.branch_id.message %></div>
             <% } %>
           </div>
 
@@ -384,41 +461,77 @@
 <div class="modal-edit-users modal fade" id="modal-edit-users" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content modal-bg-white ">
-      <form method="POST" action="" id="editUserForm">
+      <form method="POST" action="" id="editUserForm" enctype="multipart/form-data">
         <input type="hidden" name="_method" value="PUT" />
         <div class="modal-header">
-          <h6 class="modal-title">Edit Users</h6>
+          <h6 class="modal-title">Edit User</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
           </button>
         </div>
         <div class="modal-body">
-          <!-- Name -->
+          <!-- Username -->
           <div class="mb-3">
-            <label for="edit-name" class="form-label">Full Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit-name" name="name" placeholder="Enter full name" required>
+            <label for="edit-username" class="form-label">Username <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-username" name="username" required>
+          </div>
+
+          <!-- First Name & Last Name -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit-firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="edit-firstname" name="firstname" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-lastname" class="form-label">Last Name</label>
+              <input type="text" class="form-control" id="edit-lastname" name="lastname">
+            </div>
           </div>
 
           <!-- Email -->
           <div class="mb-3">
             <label for="edit-email" class="form-label">Email Address <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" id="edit-email" name="email" placeholder="Enter email address" required>
+            <input type="email" class="form-control" id="edit-email" name="email" required>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="mb-3">
+            <label for="edit-phoneNumber" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="edit-phoneNumber" name="phoneNumber">
           </div>
 
           <!-- Password -->
           <div class="mb-3">
             <label for="edit-password" class="form-label">Password</label>
             <input type="password" class="form-control" id="edit-password" name="password" placeholder="Leave blank to keep current password">
-            <div class="form-text">Leave blank if you don't want to change the password</div>
+            <div class="form-text">Leave blank if you don't want to change the password.</div>
+          </div>
+
+          <!-- Photo Profile -->
+          <div class="mb-3">
+            <label for="edit-photoProfile" class="form-label">Photo Profile</label>
+            <input class="form-control" type="file" id="edit-photoProfile" name="photoProfile" accept="image/png, image/jpeg, image/jpg">
+            <div class="form-text">Max file size 2MB. Leave blank to keep current photo.</div>
+            <img id="edit-photoPreview" src="#" alt="Image Preview" class="mt-2" style="max-width: 100px; border-radius: 5px;"/>
+          </div>
+
+          <!-- Status (Pusat/Cabang) -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="edit-status" name="status">
+              <label class="form-check-label" for="edit-status">User Kantor Pusat</label>
+            </div>
           </div>
 
           <!-- Branch -->
-          <div class="mb-3">
+          <div class="mb-3" id="edit-branch-selection">
             <label for="edit-branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
             <select class="form-control" id="edit-branch_id" name="branch_id" required>
               <option value="">Select Branch</option>
               <% branches.forEach(branch => { %>
-              <option value="<%= branch._id %>"><%= branch.name %></option>
+                <% if(branch.type !== 'pusat') { %>
+                  <option value="<%= branch._id %>"><%= branch.name %></option>
+                <% } %>
               <% }) %>
             </select>
           </div>
@@ -445,21 +558,12 @@
             </select>
           </div>
 
-          <!-- Status -->
+          <!-- Active Status -->
           <div class="mb-3">
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive">
-              <label class="form-check-label" for="edit-isActive">
-                Active Status
-              </label>
+              <label class="form-check-label" for="edit-isActive">Active Status</label>
             </div>
-            <div class="form-text">Active users can login to the system</div>
-          </div>
-
-          <!-- Role Info -->
-          <div class="alert alert-info">
-            <i class="bx bx-info-circle"></i>
-            The system will automatically assign or create a role based on the selected Branch, Division, and Position combination.
           </div>
         </div>
         <div class="modal-footer">
@@ -493,28 +597,98 @@
     window.location.href = `${window.location.pathname}?${params.toString()}`;
   });
 
+  const statusToggle = document.getElementById('status');
+  const branchSelection = document.getElementById('branch-selection');
+  const branchSelect = document.getElementById('branch_id');
+  const photoInput = document.getElementById('photoProfile');
+  const photoPreview = document.getElementById('photoPreview');
+
+  statusToggle.addEventListener('change', function() {
+    if (this.checked) {
+      branchSelection.style.display = 'none';
+      branchSelect.required = false;
+    } else {
+      branchSelection.style.display = 'block';
+      branchSelect.required = true;
+    }
+  });
+
+  photoInput.addEventListener('change', function(){
+    const [file] = this.files;
+    if (file) {
+      photoPreview.style.display = 'block';
+      photoPreview.src = URL.createObjectURL(file);
+    }
+  });
+
+  const editStatusToggle = document.getElementById('edit-status');
+  const editBranchSelection = document.getElementById('edit-branch-selection');
+  const editBranchSelect = document.getElementById('edit-branch_id');
+  const editPhotoInput = document.getElementById('edit-photoProfile');
+  const editPhotoPreview = document.getElementById('edit-photoPreview');
+
+  function toggleEditBranch(isPusat) {
+      if (isPusat) {
+        editBranchSelection.style.display = 'none';
+        editBranchSelect.required = false;
+      } else {
+        editBranchSelection.style.display = 'block';
+        editBranchSelect.required = true;
+      }
+  }
+
+  editStatusToggle.addEventListener('change', function() {
+    toggleEditBranch(this.checked);
+  });
+
+  editPhotoInput.addEventListener('change', function(){
+    const [file] = this.files;
+    if (file) {
+      editPhotoPreview.style.display = 'block';
+      editPhotoPreview.src = URL.createObjectURL(file);
+    }
+  });
+
   document.querySelectorAll('.edit').forEach(btn => {
     btn.addEventListener('click', function() {
       const id = this.dataset.id;
-      const name = this.dataset.name;
+      const username = this.dataset.username;
+      const firstname = this.dataset.firstname;
+      const lastname = this.dataset.lastname;
       const email = this.dataset.email;
+      const phoneNumber = this.dataset.phonenumber;
+      const photo = this.dataset.photo;
+      const status = this.dataset.status === 'true';
       const branch = this.dataset.branch;
       const division = this.dataset.division;
       const position = this.dataset.position;
-      const isActive = this.dataset.active === 'on';
+      const isActive = this.dataset.active === 'true';
 
-      // Set action URL
       const form = document.getElementById('editUserForm');
-      form.action = "<%= locals.base %>settings/users/update/" + id + "/<%- locale %>";
+      form.action = `<%= locals.base %>settings/users/update/${id}/<%- locale %>`;
 
-      // Set field values
-      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-username').value = username;
+      document.getElementById('edit-firstname').value = firstname;
+      document.getElementById('edit-lastname').value = lastname;
       document.getElementById('edit-email').value = email;
-      document.getElementById('edit-password').value = ''; // leave blank
-      document.getElementById('edit-branch_id').value = branch;
+      document.getElementById('edit-phoneNumber').value = phoneNumber;
+      document.getElementById('edit-password').value = '';
       document.getElementById('edit-division_id').value = division;
       document.getElementById('edit-position_id').value = position;
       document.getElementById('edit-isActive').checked = isActive;
+      document.getElementById('edit-status').checked = status;
+
+      if (photo) {
+        editPhotoPreview.style.display = 'block';
+        editPhotoPreview.src = `<%- locals.base %>${photo}`;
+      } else {
+        editPhotoPreview.style.display = 'none';
+      }
+
+      toggleEditBranch(status);
+      if (!status) {
+        document.getElementById('edit-branch_id').value = branch;
+      }
     });
   });
 </script>

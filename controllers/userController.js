@@ -11,6 +11,38 @@ const Position = mongoose.model(
   require("../schemas/positionSchema")
 );
 const Role = mongoose.model("Role", require("../schemas/roleSchema"));
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Multer storage configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/profiles/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+// File filter for images
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png/;
+  const mimetype = allowedTypes.test(file.mimetype);
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+}).single('photoProfile');
 
 // List all users
 const index = async (req, res) => {
@@ -31,7 +63,9 @@ const index = async (req, res) => {
     if (search) {
       query = {
         $or: [
-          { name: { $regex: search, $options: "i" } },
+          { username: { $regex: search, $options: "i" } },
+          { firstname: { $regex: search, $options: "i" } },
+          { lastname: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
           { branch: { $regex: search, $options: "i" } },
           { division: { $regex: search, $options: "i" } },
@@ -129,82 +163,84 @@ const create = async (req, res) => {
 // Store new user
 const store = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ email: req.session.user.email });
+    const {
+      username, firstname, lastname, email, password, phoneNumber,
+      division_id, position_id, status
+    } = req.body;
 
-    // For non-admin users, force the branch to be their own branch
-    let branchId = req.body.branch_id;
-    if (!req.session.user.email.includes("admin@")) {
-      branchId = currentUser.branch_id;
+    let userBranchId = req.body.branch_id;
+    const isPusat = status === 'on';
+
+    if (isPusat) {
+      const branchPusat = await Branch.findOne({ type: 'pusat' });
+      if (branchPusat) {
+        userBranchId = branchPusat._id;
+      } else {
+        // Handle case where 'pusat' branch is not found
+        req.session.errorMessage = "Kantor Pusat branch not found!";
+        return res.redirect(req.get('referer'));
+      }
+    } else {
+      if (!userBranchId) {
+        req.session.errorMessage = "Branch is required for non-pusat user!";
+        return res.redirect(req.get('referer'));
+      }
     }
 
-    // Find or create role based on branch, division, position
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     let role = await Role.findOne({
-      branch_id: branchId,
-      division_id: req.body.division_id,
-      position_id: req.body.position_id,
+      branch_id: userBranchId,
+      division_id: division_id,
+      position_id: position_id,
       isActive: true,
     });
 
     if (!role) {
-      // Create a default role if not exists
-      const branch = await Branch.findById(branchId);
-      const division = await Division.findById(req.body.division_id);
-      const position = await Position.findById(req.body.position_id);
+      const branch = await Branch.findById(userBranchId);
+      const division = await Division.findById(division_id);
+      const position = await Position.findById(position_id);
 
       role = new Role({
         name: `${position.name} - ${division.name} - ${branch.name}`,
         description: `Default role for ${position.name} in ${division.name} at ${branch.name}`,
-        branch_id: branchId,
-        division_id: req.body.division_id,
-        position_id: req.body.position_id,
+        branch_id: userBranchId,
+        division_id: division_id,
+        position_id: position_id,
         isActive: true,
       });
       await role.save();
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(req.body.password, 12);
-
     const user = new User({
-      name: req.body.name,
-      email: req.body.email,
+      username,
+      firstname,
+      lastname,
+      email,
       password: hashedPassword,
-      branch_id: branchId,
-      division_id: req.body.division_id,
-      position_id: req.body.position_id,
+      phoneNumber,
+      photoProfile: req.file ? 'uploads/profiles/' + req.file.filename : null,
+      status: isPusat,
+      branch_id: isPusat ? null : userBranchId,
+      division_id,
+      position_id,
       role_id: role._id,
-      isActive: req.body.isActive === "on",
+      isActive: req.body.isActive === 'on',
     });
 
     await user.save();
     req.session.successMessage = "User created successfully!";
-    res.redirect(
-      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-    );
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+
   } catch (error) {
     console.error(error);
-
-    let branchQuery = { isActive: true };
-    if (!req.session.user.email.includes("admin@")) {
-      const currentUser = await User.findOne({ email: req.session.user.email });
-      branchQuery._id = currentUser.branch_id;
+    // If validation fails, delete uploaded file
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
     }
-
-    const branches = await Branch.find(branchQuery).sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({
-      level: 1,
-    });
-
-    res.render("../views/pages/settings/users/create.ejs", {
-      title: "Create User",
-      branches: branches,
-      divisions: divisions,
-      positions: positions,
-      layout: "../views/layout/app.ejs",
-      errors: error.errors,
-      input: req.body,
-    });
+    req.session.errorMessage = error.message || "Failed to create user!";
+    res.redirect(req.get('referer'));
   }
 };
 
@@ -213,7 +249,7 @@ const edit = async (req, res) => {
   try {
     const currentUser = await User.findOne({ email: req.session.user.email });
 
-    // Check if user can edit this user
+    // Check if user can update this user
     let userQuery = { _id: req.params.id };
     if (!req.session.user.email.includes("admin@")) {
       userQuery.branch_id = currentUser.branch_id;
@@ -270,101 +306,99 @@ const edit = async (req, res) => {
 // Update user
 const update = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ email: req.session.user.email });
-
-    // Check if user can update this user
-    let userQuery = { _id: req.params.id };
-    if (!req.session.user.email.includes("admin@")) {
-      userQuery.branch_id = currentUser.branch_id;
-    }
-
-    const user = await User.findOne(userQuery);
+    const user = await User.findById(req.params.id);
     if (!user) {
-      req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(
-        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-      );
+      req.session.errorMessage = "User not found!";
+      return res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
     }
 
-    // Update user fields
-    user.name = req.body.name;
-    user.email = req.body.email;
+    const {
+      username, firstname, lastname, email, password, phoneNumber,
+      division_id, position_id, status
+    } = req.body;
 
-    // Update password if provided
-    if (req.body.password && req.body.password.trim() !== "") {
-      user.password = await bcrypt.hash(req.body.password, 12);
-    }
+    user.username = username;
+    user.firstname = firstname;
+    user.lastname = lastname;
+    user.email = email;
+    user.phoneNumber = phoneNumber;
+    user.division_id = division_id;
+    user.position_id = position_id;
+    user.isActive = req.body.isActive === 'on';
 
-    // For non-admin users, don't allow branch changes
-    if (req.session.user.email.includes("admin@")) {
+    const isPusat = status === 'on';
+    user.status = isPusat;
+
+    if (isPusat) {
+      user.branch_id = null;
+    } else {
+      if (!req.body.branch_id) {
+        req.session.errorMessage = "Branch is required for non-pusat user!";
+        return res.redirect(req.get('referer'));
+      }
       user.branch_id = req.body.branch_id;
     }
 
-    user.division_id = req.body.division_id;
-    user.position_id = req.body.position_id;
+    if (req.file) {
+      // Delete old photo if it exists
+      if (user.photoProfile) {
+        const oldPath = path.join(__dirname, '..', 'public', user.photoProfile);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+      user.photoProfile = 'uploads/profiles/' + req.file.filename;
+    }
 
-    // If role_id is provided, use it; otherwise find/create role
-    if (req.body.role_id) {
-      user.role_id = req.body.role_id;
-    } else {
-      let role = await Role.findOne({
-        branch_id: user.branch_id,
-        division_id: req.body.division_id,
-        position_id: req.body.position_id,
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    // Find or create role
+    let roleBranchId = user.branch_id;
+    if (isPusat) {
+      const branchPusat = await Branch.findOne({ type: 'pusat' });
+      roleBranchId = branchPusat ? branchPusat._id : null;
+    }
+
+    let role = await Role.findOne({
+      branch_id: roleBranchId,
+      division_id: division_id,
+      position_id: position_id,
+      isActive: true,
+    });
+
+    if (!role && roleBranchId) {
+      const branch = await Branch.findById(roleBranchId);
+      const division = await Division.findById(division_id);
+      const position = await Position.findById(position_id);
+
+      role = new Role({
+        name: `${position.name} - ${division.name} - ${branch.name}`,
+        description: `Default role for ${position.name} in ${division.name} at ${branch.name}`,
+        branch_id: roleBranchId,
+        division_id: division_id,
+        position_id: position_id,
         isActive: true,
       });
-
-      if (!role) {
-        const branch = await Branch.findById(user.branch_id);
-        const division = await Division.findById(req.body.division_id);
-        const position = await Position.findById(req.body.position_id);
-
-        role = new Role({
-          name: `${position.name} - ${division.name} - ${branch.name}`,
-          description: `Default role for ${position.name} in ${division.name} at ${branch.name}`,
-          branch_id: user.branch_id,
-          division_id: req.body.division_id,
-          position_id: req.body.position_id,
-          isActive: true,
-        });
-        await role.save();
-      }
+      await role.save();
+    }
+    if (role) {
       user.role_id = role._id;
     }
 
-    user.isActive = req.body.isActive === "on";
-
     await user.save();
     req.session.successMessage = "User updated successfully!";
-    res.redirect(
-      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-    );
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+
   } catch (error) {
     console.error(error);
-
-    let branchQuery = { isActive: true };
-    if (!req.session.user.email.includes("admin@")) {
-      branchQuery._id = currentUser.branch_id;
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
     }
-
-    const branches = await Branch.find(branchQuery).sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({
-      level: 1,
-    });
-    const roles = await Role.find({ isActive: true });
-
-    res.render("../views/pages/settings/users/edit.ejs", {
-      title: "Edit User",
-      user: User,
-      branches: branches,
-      divisions: divisions,
-      positions: positions,
-      roles: roles,
-      layout: "../views/layout/app.ejs",
-      errors: error.errors,
-      input: req.body,
-    });
+    req.session.errorMessage = error.message || "Failed to update user!";
+    res.redirect(req.get('referer'));
   }
 };
 
@@ -432,6 +466,7 @@ const getRolesByFilters = async (req, res) => {
 };
 
 module.exports = {
+  upload,
   index,
   create,
   store,

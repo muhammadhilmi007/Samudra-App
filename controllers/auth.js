@@ -61,8 +61,11 @@ const signup = async (request, response, next) => {
     }
 
     let userInfo = {
-      name: request.body.name,
+      username: request.body.username,
+      firstname: request.body.firstname,
+      lastname: request.body.lastname,
       email: request.body.email,
+      phoneNumber: request.body.phoneNumber,
       branch_id: request.body.branch_id,
       division_id: request.body.division_id,
       position_id: request.body.position_id,
@@ -74,16 +77,25 @@ const signup = async (request, response, next) => {
       hashedPassword = await bcrypt.hash(request.body.password, 12);
     }
 
-    let user = new User({ ...userInfo, password: hashedPassword });
+    const status = request.body.status === 'pusat'; // true for Pusat, false for Cabang
+
+    let user = new User({ 
+      ...userInfo, 
+      password: hashedPassword,
+      status: status,
+      branch_id: status ? null : request.body.branch_id, // Branch is null if status is 'pusat'
+    });
     await user.save();
 
+    // Automatically log in the user after registration
     request.session.user = {
-      name: userInfo.name,
-      email: userInfo.email,
-      branch_id: userInfo.branch_id,
-      division_id: userInfo.division_id,
-      position_id: userInfo.position_id,
-      role_id: userInfo.role_id
+      _id: user._id,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      photoProfile: user.photoProfile,
+      role_id: user.role_id
     };
     request.session.save();
     
@@ -105,9 +117,11 @@ const signup = async (request, response, next) => {
       layout: "../views/auth/auth_layout.ejs",
       errors: error.errors,
       input: {
-        name: request.body.name,
+        username: request.body.username,
+        firstname: request.body.firstname,
+        lastname: request.body.lastname,
         email: request.body.email,
-        password: request.body.password,
+        phoneNumber: request.body.phoneNumber,
         branch_id: request.body.branch_id,
         division_id: request.body.division_id,
         position_id: request.body.position_id
@@ -150,12 +164,13 @@ const authenticate = async (request, response, next) => {
     await findUser.save();
 
     let userInfo = {
-      name: findUser.name,
+      _id: findUser._id,
+      username: findUser.username,
+      firstname: findUser.firstname,
+      lastname: findUser.lastname,
       email: findUser.email,
-      branch_id: findUser.branch_id,
-      division_id: findUser.division_id,
-      position_id: findUser.position_id,
-      role_id: findUser.role_id?._id
+      photoProfile: findUser.photoProfile,
+      role_id: findUser.role_id?._id,
     };
     
     request.session.user = userInfo;

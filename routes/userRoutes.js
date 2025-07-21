@@ -15,9 +15,9 @@ router.use(permissionMiddleware.loadUserPermissions);
 router.get('/index/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.index);
 router.get('/detail/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'read'), UserController.detail);
 router.get('/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.create);
-router.post('/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.store);
+router.post('/create/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'create'), UserController.upload, UserController.store);
 router.get('/edit/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.edit);
-router.post('/update/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.update);
+router.post('/update/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'update'), UserController.upload, UserController.update);
 router.post('/delete/:id/:language(en|gr|ar)',[localeMiddleware.localized, authMiddleware.isAuthenticated], permissionMiddleware.checkPermission('users', 'delete'), UserController.destroy);
 
 // AJAX Endpoints
