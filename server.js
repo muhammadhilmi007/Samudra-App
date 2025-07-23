@@ -81,6 +81,7 @@ app.use(BASE_URL + "js", express.static(__dirname + "/public/js"));
 app.use(BASE_URL + "img", express.static(__dirname + "/public/img"));
 app.use(BASE_URL + "fonts", express.static(__dirname + "/public/fonts"));
 app.use(BASE_URL + "json", express.static(__dirname + "/public/js/json"));
+app.use(BASE_URL + "uploads", express.static(__dirname + "/public/uploads"));
 
 // i18n configuration
 const i18n = new I18n();

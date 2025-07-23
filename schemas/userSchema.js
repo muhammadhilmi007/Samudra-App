@@ -38,6 +38,7 @@ const userSchema = mongoose.Schema(
     photoProfile: {
         type: String,
         required: false,
+        default: null,
     },
     status: { // true = Pusat, false = Cabang
         type: Boolean,
@@ -53,6 +54,27 @@ const userSchema = mongoose.Schema(
       ref: "Branch",
       required: false,
       default: null,
+      validate: {
+        validator: function(v) {
+          // If status is false (Cabang), branch_id is required
+          if (!this.status && !v) {
+            return false;
+          }
+          // If status is true (Pusat), branch_id should be null
+          if (this.status && v) {
+            return false;
+          }
+          return true;
+        },
+        message: function(props) {
+          if (!this.status && !props.value) {
+            return "Branch is required for non-headquarters users";
+          }
+          if (this.status && props.value) {
+            return "Headquarters users should not have a branch";
+          }
+        }
+      }
     },
     division_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -82,6 +104,24 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Indexes for performance
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ branch_id: 1, division_id: 1, position_id: 1 });
+
+// Pre-save hook to handle branch_id based on status
+userSchema.pre('save', function(next) {
+  if (this.status === true) {
+    this.branch_id = null;
+  }
+  next();
+});
+
+// Virtual for full name
+userSchema.virtual('fullName').get(function() {
+  return `${this.firstname} ${this.lastname}`.trim();
+});
 
 userSchema.plugin(validator, { message: "Error, expected {PATH} to be unique. Value: {VALUE}" });
 

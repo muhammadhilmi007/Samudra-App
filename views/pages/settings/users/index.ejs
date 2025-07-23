@@ -3,39 +3,40 @@
     <div class="col-lg-12">
       <!-- Success/Error Messages -->
       <% if (successMessage) { %>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <%= successMessage %>
-        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
-          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
-        </button>
-      </div>
-      <% } %>
-      <% if (errorMessage) { %>
-      <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <%= errorMessage %>
-        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
-          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
-        </button>
-      </div>
-      <% } %>
-      <div class="breadcrumb-main">
-        <h4 class="text-capitalize breadcrumb-title">
-          <%- __('User Management') %>
-        </h4>
-        <div class="breadcrumb-action justify-content-center flex-wrap">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item">
-                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%- __('dashboard-menu-title') %></a>
-              </li>
-              <li class="breadcrumb-item"><a href="#">Admin</a></li>
-              <li class="breadcrumb-item active" aria-current="page">
-                <%- __('Users') %>
-              </li>
-            </ol>
-          </nav>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= successMessage %>
+            <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+              <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+            </button>
         </div>
-      </div>
+        <% } %>
+          <% if (errorMessage) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= errorMessage %>
+                <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+                  <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+                </button>
+            </div>
+            <% } %>
+              <div class="breadcrumb-main">
+                <h4 class="text-capitalize breadcrumb-title">
+                  <%- __('User Management') %>
+                </h4>
+                <div class="breadcrumb-action justify-content-center flex-wrap">
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                        <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%-
+                            __('dashboard-menu-title') %></a>
+                      </li>
+                      <li class="breadcrumb-item"><a href="#">Settings</a></li>
+                      <li class="breadcrumb-item active" aria-current="page">
+                        <%- __('Users') %>
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+              </div>
     </div>
   </div>
   <div class="row">
@@ -47,25 +48,64 @@
               <h5 class="card-title mb-0">All Users</h4>
             </div>
           </div>
-          <div class="action-btn mt-sm-0 mt-15">
-            <a href="#" class="btn px-20 btn-success" data-bs-toggle="modal" data-bs-target="#modal-export">
-              <i class="las la-file-export fs-16"></i>Export
-            </a>
-            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
-            <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
-              <i class="las la-plus fs-16"></i>Add New User
-            </a>
-            <% } %>
+          <div>
+            <ul class="d-flex flex-wrap justify-content-center gap-10">
+              <li>
+                <a href="#" class="btn px-20 btn-success" data-bs-toggle="modal" data-bs-target="#modal-export">
+                  <i class="las la-file-export fs-16"></i>Export
+                </a>
+              </li>
+              <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
+                <li>
+                  <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
+                    <i class="las la-plus fs-16"></i>Add New User
+                  </a>
+                </li>
+                <% } %>
+            </ul>
           </div>
         </div>
 
-        <!-- Search Division -->
-        <div class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
+        <div
+          class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
+          <div class="support-form__input">
+            <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET"
+              class="d-flex flex-wrap gap-10">
+              <div class="support-form__input-status">
+                <label>Branch:</label>
+                <div class="dm-select">
+                  <select name="branch" class="form-control" id="branch">
+                    <option value="">All</option>
+                    <option value="pusat">Pusat</option>
+                    <% branches.forEach(b=> { %>
+                      <option value="<%= b._id %>" <%=branch==b._id ? 'selected' : '' %>><%= b.name %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+              </div>
+              <div class="support-form__input-status">
+                <label>Status:</label>
+                <div class="dm-select">
+                  <select name="status" class="form-control" id="status">
+                    <option value="">All</option>
+                    <option value="active" <%=status=='active' ? 'selected' : '' %>>Active</option>
+                    <option value="inactive" <%=status=='inactive' ? 'selected' : '' %>>Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <input type="hidden" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>">
+              <button type="submit" class="support-form__input-button btn btn-primary">Search</button>
+            </form>
+          </div>
+          <!-- Search Division -->
           <div class="support-form__search">
             <div class="support-order-search">
-              <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET" class="support-order-search__form">
+              <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET"
+                class="support-order-search__form">
                 <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
-                <input class="form-control border-0 box-shadow-none" type="search" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
+                <input class="form-control border-0 box-shadow-none" type="search" name="search"
+                  value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
               </form>
 
             </div>
@@ -79,7 +119,6 @@
               <thead>
                 <tr class="userDatatable-header">
                   <th>Username</th>
-                  <th>Full Name</th>
                   <th>Email</th>
                   <th>Branch</th>
                   <th>Division</th>
@@ -92,148 +131,181 @@
               </thead>
               <tbody>
                 <% if (users && users.length> 0) { %> <% users.forEach(user=> { %>
-                <tr>
-                  <td>
-                    <%= user.username %>
-                  </td>
-                  <td>
-                    <strong>
-                      <%= user.firstname %> <%= user.lastname %>
-                    </strong>
-                    <% if (session && session.user && user.email===session.user.email) { %>
-                    <span class="badge bg-info ms-1">You</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <%= user.email %>
-                  </td>
-                  <td>
-                    <%= user.branch_id ? user.branch_id.name : '-' %>
-                  </td>
-                  <td>
-                    <%= user.division_id ? user.division_id.name : '-' %>
-                  </td>
-                  <td>
-                    <%= user.position_id ? user.position_id.name : '-' %>
-                  </td>
-                  <td>
-                    <% if (user.role_id) { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-info color-white userDatatable-content-status active">
-                        <%= user.role_id.name %>
-                      </span>
-                    </div>
-                    <% } else { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-info color-white userDatatable-content-status activetext-muted">No role</span>
-                    </div>
-                    <span class="text-muted">No role</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (user.isActive) { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
-                    </div>
-                    <% } else { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
-                    </div>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (user.lastLogin) { %>
-                    <%= new Date(user.lastLogin).toLocaleDateString() %>
-                    <br />
-                    <small class="text-muted">
-                      <%= new Date(user.lastLogin).toLocaleTimeString() %>
-                    </small>
-                    <% } else { %>
-                    <div class="userDatatable-content d-inline-block">
-                      <span class="bg-opacity-danger color-danger userDatatable-content-status active">Never</span>
-                    </div>
-                    <% } %>
-                  </td>
-                  <td>
-                    <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
-                      <li>
-                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('read')) { %>
-                        <a href="<%= locals.base %>settings/users/detail/<%- locale %>" class="view">
-                          <i class="uil-eye"></i>
-                        </a>
+                    <tr>
+                      <td>
+                        <div class="contact-personal-info d-flex gap-10">
+                          <% if (user.photoProfile) { %>
+                            <img src="<%= locals.base %><%= user.photoProfile %>" alt="<%= user.fullName %>"
+                              class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                            <% } else { %>
+                              <div
+                                class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center me-2"
+                                style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">
+                                  <%= user.firstname.charAt(0).toUpperCase() %>
+                                </span>
+                              </div>
+                              <% } %>
+                                <div>
+                                  <strong>
+                                    <%= user.fullName %>
+                                  </strong>
+                                  <% if (session && session.user && user.email===session.user.email) { %>
+                                    <span class="badge bg-info ms-1">You</span>
+                                    <% } %>
+                                      <br>
+                                      <small class="text-muted">@<%= user.username %></small>
+                                </div>
+                        </div>
+                      </td>
+                      <td>
+                        <%= user.email %>
+                      </td>
+                      <td>
+                        <%= user.branch_id ? user.branch_id.name : 'Pusat' %>
+                      </td>
+                      <td>
+                        <%= user.division_id ? user.division_id.name : '-' %>
+                      </td>
+                      <td>
+                        <%= user.position_id ? user.position_id.name : '-' %>
+                      </td>
+                      <td>
+                        <% if (user.role_id) { %>
+                          <div class="userDatatable-content d-inline-block">
+                            <span class="bg-info color-white userDatatable-content-status active">
+                              <%= user.role_id.name %>
+                            </span>
+                          </div>
+                          <% } else { %>
+                            <div class="userDatatable-content d-inline-block">
+                              <span class="bg-info color-white userDatatable-content-status activetext-muted">No
+                                role</span>
+                            </div>
+                            <span class="text-muted">No role</span>
+                            <% } %>
+                      </td>
+                      <td>
+                        <% if (user.isActive) { %>
+                          <div class="userDatatable-content d-inline-block">
+                            <span
+                              class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
+                          </div>
+                          <% } else { %>
+                            <div class="userDatatable-content d-inline-block">
+                              <span
+                                class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
+                            </div>
+                            <% } %>
+                      </td>
+                      <td>
+                        <% if (user.lastLogin) { %>
+                          <%= new Date(user.lastLogin).toLocaleDateString() %>
+                            <br />
+                            <small class="text-muted">
+                              <%= new Date(user.lastLogin).toLocaleTimeString() %>
+                            </small>
+                            <% } else { %>
+                              <div class="userDatatable-content d-inline-block">
+                                <span
+                                  class="bg-opacity-danger color-danger userDatatable-content-status active">Never</span>
+                              </div>
+                              <% } %>
+                      </td>
+                      <td>
+                        <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
+                          <li>
+                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('read')) {
+                              %>
+                              <a href="<%= locals.base %>settings/users/detail/<%= user._id %>/<%- locale %>"
+                                class="view" data-bs-toggle="tooltip" title="View Details">
+                                <i class="uil-eye"></i>
+                              </a>
+                              <% } %>
+                          </li>
+                          <li>
+                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update'))
+                              { %>
+                              <a href="#" class="edit" title="Edit User" data-bs-toggle="modal"
+                                data-bs-target="#modal-edit-users" data-id="<%= user._id %>"
+                                data-username="<%= user.username || '' %>" data-firstname="<%= user.firstname || '' %>"
+                                data-lastname="<%= user.lastname || '' %>" data-email="<%= user.email || '' %>"
+                                data-phonenumber="<%= user.phoneNumber || '' %>"
+                                data-photo="<%= user.photoProfile || '' %>" data-status="<%= user.status %>"
+                                data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
+                                data-division="<%= user.division_id ? user.division_id._id : '' %>"
+                                data-position="<%= user.position_id ? user.position_id._id : '' %>"
+                                data-active="<%= user.isActive %>">
+                                <i class="uil uil-edit"></i>
+                              </a>
+                              <% } %>
+                          </li>
+                          <li>
+                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('delete')
+                              && (!session || !session.user || user.email !==session.user.email)) { %>
+                              <a href="#" class="remove" data-id="<%= user._id %>" data-bs-toggle="modal"
+                                data-bs-target="#modal-delete" title="Delete User">
+                                <i class="uil uil-trash-alt"></i>
+                              </a>
+                              <% } %>
+                          </li>
+                        </ul>
+                      </td>
+                    </tr>
+                    <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="9" class="text-center">No users found</td>
+                        </tr>
                         <% } %>
-                      </li>
-                      <li>
-                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update')) { %>
-                        <a href="#" class="edit" data-bs-toggle="modal" data-bs-target="#modal-edit-users"
-                          data-id="<%= user._id %>"
-                          data-username="<%= user.username || '' %>"
-                          data-firstname="<%= user.firstname || '' %>"
-                          data-lastname="<%= user.lastname || '' %>"
-                          data-email="<%= user.email || '' %>"
-                          data-phonenumber="<%= user.phoneNumber || '' %>"
-                          data-photo="<%= user.photoProfile || '' %>"
-                          data-status="<%= user.status %>"
-                          data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
-                          data-division="<%= user.division_id ? user.division_id._id : '' %>"
-                          data-position="<%= user.position_id ? user.position_id._id : '' %>"
-                          data-active="<%= user.isActive %>">
-                          <i class="uil uil-edit"></i>
-                        </a>
-                        <% } %>
-                      </li>
-                      <li>
-                        <% if (userPermissions && userPermissions.users && userPermissions.users.includes('delete') &&
-                          (!session || !session.user || user.email !==session.user.email)) { %>
-                        <a href="#" class="remove" data-id="<%= user._id %>" data-bs-toggle="modal" data-bs-target="#modal-delete">
-                          <i class="uil uil-trash-alt"></i>
-                        </a>
-                        <% } %>
-                      </li>
-                    </ul>
-                  </td>
-                </tr>
-                <% }) %>
-                <% } else { %>
-                <tr>
-                  <td colspan="9" class="text-center">No users found</td>
-                </tr>
-                <% } %>
               </tbody>
             </table>
           </div>
-          <div class="d-flex justify-content-end pt-30">
-            <nav class="dm-page">
-              <ul class="dm-pagination d-flex">
-                <li class="dm-pagination__item">
-                  <% if (totalPages > 1) { %>
-                  <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
-                    <span class="la la-angle-left"></span>
-                  </a>
+          <div class="d-flex justify-content-between align-items-center flex-wrap pt-30">
+            <div class="dm-pagination__item">
+              <span class="text-muted">
+                Showing <%= (currentPage - 1) * limit + 1 %> to <%= Math.min(currentPage * limit, total || 0) %> of
+                    <%= total || 0 %> entries
+              </span>
+            </div>
+            <div class="d-flex justify-content-end pt-30">
+              <nav class="dm-page">
+                <ul class="dm-pagination d-flex">
+                  <li class="dm-pagination__item">
+                    <% if (totalPages> 1) { %>
+                      <a
+                        href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>">
+                        <span class="la la-angle-left"></span>
+                      </a>
 
-                  <% for (let i = 1; i <= totalPages; i++) { %>
-                  <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
-                    <span class="page-number"><%= i %></span>
-                  </a>
-                  <% } %>
+                      <% for (let i=1; i <=totalPages; i++) { %>
+                        <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>"
+                          class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                          <span class="page-number">
+                            <%= i %>
+                          </span>
+                        </a>
+                        <% } %>
 
-                  <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
-                    <span class="la la-angle-right"></span>
-                  </a>
-                  <% } %>
+                          <a
+                            href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>">
+                            <span class="la la-angle-right"></span>
+                          </a>
+                          <% } %>
 
-                </li>
-                <li class="dm-pagination__item">
-                  <div class="paging-option">
-                    <select name="page-number" class="page-selection">
-                      <option value="2" <%= limit == 2 ? 'selected' : '' %>>2/page</option>
-                      <option value="10" <%= limit == 10 ? 'selected' : '' %>>10/page</option>
-                      <option value="20" <%= limit == 20 ? 'selected' : '' %>>20/page</option>
-                    </select>
-                  </div>
-                </li>
-              </ul>
-            </nav>
+                  </li>
+                  <li class="dm-pagination__item">
+                    <div class="paging-option">
+                      <select name="page-number" class="page-selection">
+                        <option value="2" <%=limit==2 ? 'selected' : '' %>>2/page</option>
+                        <option value="10" <%=limit==10 ? 'selected' : '' %>>10/page</option>
+                        <option value="20" <%=limit==20 ? 'selected' : '' %>>20/page</option>
+                      </select>
+                    </div>
+                  </li>
+                </ul>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
@@ -283,8 +355,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a href="<%= locals.base %>settings/users/export/excel/<%- locale %>" class="btn btn-success btn-sm">Excel</a>
-        <a href="<%= locals.base %>settings/users/export/csv/<%- locale %>" class="btn btn-primary btn-sm">CSV</a>
+        <a href="#" class="btn btn-success btn-sm" id="excel"><i
+            class="uil uil-file-download"></i>Excel</a>
+        <a href="#" class="btn btn-primary btn-sm" id="csv"><i
+            class="uil uil-file-download"></i>CSV</a>
         <button type="button" class="btn btn-light btn-outlined btn-sm" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
@@ -295,7 +369,7 @@
 <div class="modal-tambah-users modal fade show" id="modal-tambah-users" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
     <div class="modal-content modal-bg-white ">
-      <form method="POST" action="<%= locals.base %>settings/users/create/<%- locale %>">
+      <form method="POST" action="<%= locals.base %>settings/users/create/<%- locale %>" enctype="multipart/form-data">
         <div class="modal-header">
           <h6 class="modal-title">Tambah Users</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
@@ -306,63 +380,82 @@
           <!-- Username -->
           <div class="mb-3">
             <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-            <input type="text" class="form-control <%= locals.errors && errors.username ? 'is-invalid' : '' %>" id="username" name="username" value="<%= locals.input ? input.username : '' %>" placeholder="Enter username" required>
+            <input type="text" class="form-control <%= locals.errors && errors.username ? 'is-invalid' : '' %>"
+              id="username" name="username" value="<%= locals.input ? input.username : '' %>"
+              placeholder="Enter username" required>
             <% if (locals.errors && errors.username) { %>
-            <div class="invalid-feedback"><%= errors.username.message %></div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.username.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- First Name & Last Name -->
           <div class="row">
             <div class="col-md-6 mb-3">
               <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control <%= locals.errors && errors.firstname ? 'is-invalid' : '' %>" id="firstname" name="firstname" value="<%= locals.input ? input.firstname : '' %>" placeholder="Enter first name" required>
+              <input type="text" class="form-control <%= locals.errors && errors.firstname ? 'is-invalid' : '' %>"
+                id="firstname" name="firstname" value="<%= locals.input ? input.firstname : '' %>"
+                placeholder="Enter first name" required>
               <% if (locals.errors && errors.firstname) { %>
-              <div class="invalid-feedback"><%= errors.firstname.message %></div>
-              <% } %>
+                <div class="invalid-feedback">
+                  <%= errors.firstname.message %>
+                </div>
+                <% } %>
             </div>
             <div class="col-md-6 mb-3">
               <label for="lastname" class="form-label">Last Name</label>
-              <input type="text" class="form-control" id="lastname" name="lastname" value="<%= locals.input ? input.lastname : '' %>" placeholder="Enter last name">
+              <input type="text" class="form-control" id="lastname" name="lastname"
+                value="<%= locals.input ? input.lastname : '' %>" placeholder="Enter last name">
             </div>
           </div>
 
           <!-- Email -->
           <div class="mb-3">
             <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-            <input type="email" class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" id="email" name="email" value="<%= locals.input ? input.email : '' %>" placeholder="Enter email address" required>
+            <input type="email" class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" id="email"
+              name="email" value="<%= locals.input ? input.email : '' %>" placeholder="Enter email address" required>
             <% if (locals.errors && errors.email) { %>
-            <div class="invalid-feedback"><%= errors.email.message %></div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.email.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- Phone Number -->
           <div class="mb-3">
             <label for="phoneNumber" class="form-label">Phone Number</label>
-            <input type="text" class="form-control <%= locals.errors && errors.phoneNumber ? 'is-invalid' : '' %>" id="phoneNumber" name="phoneNumber" value="<%= locals.input ? input.phoneNumber : '' %>" placeholder="Enter phone number">
+            <input type="text" class="form-control <%= locals.errors && errors.phoneNumber ? 'is-invalid' : '' %>"
+              id="phoneNumber" name="phoneNumber" value="<%= locals.input ? input.phoneNumber : '' %>"
+              placeholder="Enter phone number">
             <% if (locals.errors && errors.phoneNumber) { %>
-            <div class="invalid-feedback"><%= errors.phoneNumber.message %></div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.phoneNumber.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- Password -->
           <div class="mb-3">
             <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-            <input type="password" class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>" id="password" name="password" placeholder="Enter password" required>
+            <input type="password" class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>"
+              id="password" name="password" placeholder="Enter password" required>
             <% if (locals.errors && errors.password) { %>
-            <div class="invalid-feedback">
-              <%= errors.password.message %>
-            </div>
-            <% } %>
-            <div class="form-text">Minimum 8 characters, with uppercase, lowercase, numbers, and symbols.</div>
+              <div class="invalid-feedback">
+                <%= errors.password.message %>
+              </div>
+              <% } %>
+                <div class="form-text">Minimum 8 characters, with uppercase, lowercase, numbers, and symbols.</div>
           </div>
 
           <!-- Photo Profile -->
           <div class="mb-3">
             <label for="photoProfile" class="form-label">Photo Profile</label>
-            <input class="form-control" type="file" id="photoProfile" name="photoProfile" accept="image/png, image/jpeg, image/jpg">
+            <input class="form-control" type="file" id="photoProfile" name="photoProfile"
+              accept="image/png, image/jpeg, image/jpg">
             <div class="form-text">Max file size 2MB. Allowed formats: JPG, JPEG, PNG.</div>
-            <img id="photoPreview" src="#" alt="Image Preview" class="mt-2" style="display: none; max-width: 100px; border-radius: 5px;"/>
+            <img id="photoPreview" src="#" alt="Image Preview" class="mt-2"
+              style="display: none; max-width: 100px; border-radius: 5px;" />
           </div>
 
           <!-- Status (Pusat/Cabang) -->
@@ -371,65 +464,76 @@
               <input class="form-check-input" type="checkbox" id="status" name="status">
               <label class="form-check-label" for="status">User Kantor Pusat</label>
             </div>
-            <div class="form-text">Jika aktif, pengguna akan terdaftar sebagai user kantor pusat dan tidak perlu memilih cabang.</div>
+            <div class="form-text">Jika aktif, pengguna akan terdaftar sebagai user kantor pusat dan tidak perlu memilih
+              cabang.</div>
           </div>
 
           <!-- Branch -->
           <div class="mb-3" id="branch-selection">
             <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id" name="branch_id" required>
+            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id"
+              name="branch_id" required>
               <option value="">Select Branch</option>
-              <% branches.forEach(branch => { %>
-                <% if(branch.type !== 'pusat') { %>
-                  <option value="<%= branch._id %>" <%= (locals.input && input.branch_id == branch._id) ? 'selected' : '' %>><%= branch.name %></option>
-                <% } %>
-              <% }) %>
+              <% branches.forEach(branch=> { %>
+                <% if(branch.type !=='pusat' ) { %>
+                  <option value="<%= branch._id %>" <%=(locals.input && input.branch_id==branch._id) ? 'selected' : ''
+                    %>><%= branch.name %>
+                  </option>
+                  <% } %>
+                    <% }) %>
             </select>
             <% if (locals.errors && errors.branch_id) { %>
-            <div class="invalid-feedback"><%= errors.branch_id.message %></div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.branch_id.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- Division -->
           <div class="mb-3">
             <label for="division_id" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.division_id ? 'is-invalid' : '' %>" id="division_id" name="division_id" required>
+            <select class="form-control <%= locals.errors && errors.division_id ? 'is-invalid' : '' %>" id="division_id"
+              name="division_id" required>
               <option value="">Select Division</option>
-              <% divisions.forEach(division => { %>
-              <option value="<%= division._id %>" <%= (locals.input && input.division_id == division._id) ? 'selected' : '' %>>
-                <%= division.name %>
-              </option>
-              <% }) %>
+              <% divisions.forEach(division=> { %>
+                <option value="<%= division._id %>" <%=(locals.input && input.division_id==division._id) ? 'selected'
+                  : '' %>>
+                  <%= division.name %>
+                </option>
+                <% }) %>
             </select>
             <% if (locals.errors && errors.division_id) { %>
-            <div class="invalid-feedback">
-              <%= errors.division_id.message %>
-            </div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.division_id.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- Position -->
           <div class="mb-3">
             <label for="position_id" class="form-label">Position <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.position_id ? 'is-invalid' : '' %>" id="position_id" name="position_id" required>
+            <select class="form-control <%= locals.errors && errors.position_id ? 'is-invalid' : '' %>" id="position_id"
+              name="position_id" required>
               <option value="">Select Position</option>
-              <% positions.forEach(position => { %>
-              <option value="<%= position._id %>" <%= (locals.input && input.position_id == position._id) ? 'selected' : '' %>>
-                <%= position.name %> (Level <%= position.level %>)
-              </option>
-              <% }) %>
+              <% positions.forEach(position=> { %>
+                <option value="<%= position._id %>" <%=(locals.input && input.position_id==position._id) ? 'selected'
+                  : '' %>>
+                  <%= position.name %> (Level <%= position.level %>)
+                </option>
+                <% }) %>
             </select>
             <% if (locals.errors && errors.position_id) { %>
-            <div class="invalid-feedback">
-              <%= errors.position_id.message %>
-            </div>
-            <% } %>
+              <div class="invalid-feedback">
+                <%= errors.position_id.message %>
+              </div>
+              <% } %>
           </div>
 
           <!-- Status -->
           <div class="mb-3">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%= (!locals.input || (locals.input && input.isActive === 'on')) ? 'checked' : '' %>>
+              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%=(!locals.input ||
+                (locals.input && input.isActive==='on' )) ? 'checked' : '' %>>
               <label class="form-check-label" for="isActive">
                 Active Status
               </label>
@@ -440,14 +544,16 @@
           <!-- Role Info -->
           <div class="alert alert-info">
             <i class="bx bx-info-circle"></i>
-            The system will automatically assign or create a role based on the selected Branch, Division, and Position combination.
+            The system will automatically assign or create a role based on the selected Branch, Division, and Position
+            combination.
           </div>
         </div>
         <div class="modal-footer">
           <!-- Buttons -->
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
-            <a href="<%= locals.base %>settings/users/create/<%- locale %>" class="btn btn-secondary" data-bs-dismiss="modal">
+            <a href="<%= locals.base %>settings/users/create/<%- locale %>" class="btn btn-secondary"
+              data-bs-dismiss="modal">
               Cancel
             </a>
           </div>
@@ -503,16 +609,19 @@
           <!-- Password -->
           <div class="mb-3">
             <label for="edit-password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="edit-password" name="password" placeholder="Leave blank to keep current password">
+            <input type="password" class="form-control" id="edit-password" name="password"
+              placeholder="Leave blank to keep current password">
             <div class="form-text">Leave blank if you don't want to change the password.</div>
           </div>
 
           <!-- Photo Profile -->
           <div class="mb-3">
             <label for="edit-photoProfile" class="form-label">Photo Profile</label>
-            <input class="form-control" type="file" id="edit-photoProfile" name="photoProfile" accept="image/png, image/jpeg, image/jpg">
+            <input class="form-control" type="file" id="edit-photoProfile" name="photoProfile"
+              accept="image/png, image/jpeg, image/jpg">
             <div class="form-text">Max file size 2MB. Leave blank to keep current photo.</div>
-            <img id="edit-photoPreview" src="#" alt="Image Preview" class="mt-2" style="max-width: 100px; border-radius: 5px;"/>
+            <img id="edit-photoPreview" src="#" alt="Image Preview" class="mt-2"
+              style="max-width: 100px; border-radius: 5px;" />
           </div>
 
           <!-- Status (Pusat/Cabang) -->
@@ -528,11 +637,13 @@
             <label for="edit-branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
             <select class="form-control" id="edit-branch_id" name="branch_id" required>
               <option value="">Select Branch</option>
-              <% branches.forEach(branch => { %>
-                <% if(branch.type !== 'pusat') { %>
-                  <option value="<%= branch._id %>"><%= branch.name %></option>
-                <% } %>
-              <% }) %>
+              <% branches.forEach(branch=> { %>
+                <% if(branch.type !=='pusat' ) { %>
+                  <option value="<%= branch._id %>">
+                    <%= branch.name %>
+                  </option>
+                  <% } %>
+                    <% }) %>
             </select>
           </div>
 
@@ -541,9 +652,11 @@
             <label for="edit-division_id" class="form-label">Division <span class="text-danger">*</span></label>
             <select class="form-control" id="edit-division_id" name="division_id" required>
               <option value="">Select Division</option>
-              <% divisions.forEach(division => { %>
-              <option value="<%= division._id %>"><%= division.name %></option>
-              <% }) %>
+              <% divisions.forEach(division=> { %>
+                <option value="<%= division._id %>">
+                  <%= division.name %>
+                </option>
+                <% }) %>
             </select>
           </div>
 
@@ -552,9 +665,11 @@
             <label for="edit-position_id" class="form-label">Position <span class="text-danger">*</span></label>
             <select class="form-control" id="edit-position_id" name="position_id" required>
               <option value="">Select Position</option>
-              <% positions.forEach(position => { %>
-              <option value="<%= position._id %>"><%= position.name %> (Level <%= position.level %>)</option>
-              <% }) %>
+              <% positions.forEach(position=> { %>
+                <option value="<%= position._id %>">
+                  <%= position.name %> (Level <%= position.level %>)
+                </option>
+                <% }) %>
             </select>
           </div>
 
@@ -568,7 +683,7 @@
         </div>
         <div class="modal-footer">
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Update User</button>
+            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i>Update User</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
@@ -580,7 +695,7 @@
 <script>
   // Handle Delete
   document.querySelectorAll('.remove').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
       const userId = this.getAttribute('data-id');
       const form = document.getElementById('modalDeleteForm');
       // Backend uses POST method for delete
@@ -589,7 +704,8 @@
     });
   });
 
-  document.querySelector('.page-selection').addEventListener('change', function() {
+  // Handle Page Selection
+  document.querySelector('.page-selection').addEventListener('change', function () {
     const selectedLimit = this.value;
     const params = new URLSearchParams(window.location.search);
     params.set('limit', selectedLimit);
@@ -603,7 +719,7 @@
   const photoInput = document.getElementById('photoProfile');
   const photoPreview = document.getElementById('photoPreview');
 
-  statusToggle.addEventListener('change', function() {
+  statusToggle.addEventListener('change', function () {
     if (this.checked) {
       branchSelection.style.display = 'none';
       branchSelect.required = false;
@@ -613,7 +729,7 @@
     }
   });
 
-  photoInput.addEventListener('change', function(){
+  photoInput.addEventListener('change', function () {
     const [file] = this.files;
     if (file) {
       photoPreview.style.display = 'block';
@@ -628,20 +744,20 @@
   const editPhotoPreview = document.getElementById('edit-photoPreview');
 
   function toggleEditBranch(isPusat) {
-      if (isPusat) {
-        editBranchSelection.style.display = 'none';
-        editBranchSelect.required = false;
-      } else {
-        editBranchSelection.style.display = 'block';
-        editBranchSelect.required = true;
-      }
+    if (isPusat) {
+      editBranchSelection.style.display = 'none';
+      editBranchSelect.required = false;
+    } else {
+      editBranchSelection.style.display = 'block';
+      editBranchSelect.required = true;
+    }
   }
 
-  editStatusToggle.addEventListener('change', function() {
+  editStatusToggle.addEventListener('change', function () {
     toggleEditBranch(this.checked);
   });
 
-  editPhotoInput.addEventListener('change', function(){
+  editPhotoInput.addEventListener('change', function () {
     const [file] = this.files;
     if (file) {
       editPhotoPreview.style.display = 'block';
@@ -650,7 +766,7 @@
   });
 
   document.querySelectorAll('.edit').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
       const id = this.dataset.id;
       const username = this.dataset.username;
       const firstname = this.dataset.firstname;
@@ -691,4 +807,30 @@
       }
     });
   });
+
+  // Auto-hide alerts after 5 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+      const bsAlert = new bootstrap.Alert(alert);
+      bsAlert.close();
+    });
+  }, 5000);
+
+  document.addEventListener('DOMContentLoaded', function () {
+  const excelBtn = document.getElementById('excel');
+  const csvBtn = document.getElementById('csv');
+
+  function updateExportLinks() {
+    const branch = document.getElementById('branch').value;
+    const status = document.getElementById('status').value;
+    const queryString = `?branch=${branch}&status=${status}`;
+
+    excelBtn.href = `<%= locals.base %>settings/users/export/excel/<%- locale %>${queryString}`;
+    csvBtn.href = `<%= locals.base %>settings/users/export/csv/<%- locale %>${queryString}`;
+  }
+
+  document.getElementById('branch').addEventListener('change', updateExportLinks);
+  document.getElementById('status').addEventListener('change', updateExportLinks);
+  updateExportLinks();
+});
 </script>

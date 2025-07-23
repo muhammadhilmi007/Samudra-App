@@ -270,9 +270,13 @@ async function seedDatabase() {
 
     // Direktur Utama
     await User.create({
-      name: 'Direktur Utama',
+      username: 'direkturutama',
+      firstname: 'Direktur',
+      lastname: 'Utama',
       email: 'direktur@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000001',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'DIR')._id,
       position_id: positions.find(p => p.code === 'CEO')._id,
@@ -281,9 +285,13 @@ async function seedDatabase() {
 
     // Manager Operasional
     await User.create({
-      name: 'Manager Operasional',
+      username: 'mgroperasional',
+      firstname: 'Manager',
+      lastname: 'Operasional',
       email: 'mgr.operasional@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000002',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'OPS')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
@@ -292,9 +300,13 @@ async function seedDatabase() {
 
     // Manager Pemasaran
     await User.create({
-      name: 'Manager Pemasaran',
+      username: 'mgrpemasaran',
+      firstname: 'Manager',
+      lastname: 'Pemasaran',
       email: 'mgr.pemasaran@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000003',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'MKT')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
@@ -303,9 +315,13 @@ async function seedDatabase() {
 
     // Manager Keuangan
     await User.create({
-      name: 'Manager Keuangan',
+      username: 'mgrkeuangan',
+      firstname: 'Manager',
+      lastname: 'Keuangan',
       email: 'mgr.keuangan@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000004',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'FIN')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
@@ -314,9 +330,13 @@ async function seedDatabase() {
 
     // Manager Administrasi
     await User.create({
-      name: 'Manager Administrasi',
+      username: 'mgradministrasi',
+      firstname: 'Manager',
+      lastname: 'Administrasi',
       email: 'mgr.administrasi@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000005',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'ADM')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
@@ -325,9 +345,13 @@ async function seedDatabase() {
 
     // Manager HRD
     await User.create({
-      name: 'Manager HRD',
+      username: 'mgrhrd',
+      firstname: 'Manager',
+      lastname: 'HRD',
       email: 'mgr.hrd@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000006',
+      status: true, // Pusat
       branch_id: pusatBranch._id,
       division_id: divisions.find(d => d.code === 'HRD')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
@@ -336,9 +360,13 @@ async function seedDatabase() {
 
     // Kepala Cabang Jakarta
     await User.create({
-      name: 'Kepala Cabang Jakarta',
+      username: 'kcbjakarta',
+      firstname: 'Kepala',
+      lastname: 'Cabang Jakarta',
       email: 'kcb.jakarta@samudra.com',
       password: hashedPassword,
+      phoneNumber: '081200000007',
+      status: false, // Cabang
       branch_id: jakartaBranch._id,
       division_id: divisions.find(d => d.code === 'OPS')._id,
       position_id: positions.find(p => p.code === 'KCB')._id,

@@ -11,54 +11,61 @@ const Position = mongoose.model(
   require("../schemas/positionSchema")
 );
 const Role = mongoose.model("Role", require("../schemas/roleSchema"));
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const ExcelJS = require("exceljs");
+const csv = require("csv-writer");
 
-// Multer storage configuration
+// Configure multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/profiles/');
+    const uploadDir = path.join(__dirname, "../public/uploads/profiles/");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "profile-" + uniqueSuffix + path.extname(file.originalname));
+  },
 });
 
-// File filter for images
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png/;
-  const mimetype = allowedTypes.test(file.mimetype);
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
-  }
-};
-
-const upload = multer({ 
+const upload = multer({
   storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
-}).single('photoProfile');
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = allowedTypes.test(file.mimetype);
 
-// List all users
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only JPEG, JPG, and PNG files are allowed"));
+    }
+  },
+}).single("photoProfile");
+
+// List all users with pagination
 const index = async (req, res) => {
   try {
-    const branches = await Branch.find().sort({ name: 1 });
-    const divisions = await Division.find().sort({ name: 1 });
-    const positions = await Position.find().sort({ name: 1 });
-
-    // Get current user to check their access level
-    const currentUser = await User.findOne({ email: req.session.user.email });
+    console.log("query user", req.session.user);
+    const currentUser = await User.findOne({ _id: req.session.user._id });
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
+    const branch = req.query.branch || "";   // <-- Ambil branch dari query
+    const status = req.query.status || "";   // <-- Ambil status dari query
 
     // Query for users - if not super admin, filter by branch
+    console.log("query", req.query);
     let query = {};
     if (search) {
       query = {
@@ -75,23 +82,40 @@ const index = async (req, res) => {
         ],
       };
     }
-    if (!req.session.user.email.includes("admin@")) {
+
+    // Filter branch dari query
+    if (branch) {
+      query.branch_id = branch;
+    }
+
+    // Filter status dari query
+    if (status) {
+      query.isActive = status === "active";
+    }
+
+    // Filter by branch for non-pusat users
+    if (currentUser.status === false && req.userBranchType !== "pusat") {
       query.branch_id = currentUser.branch_id;
     }
+    console.log("query", query);
 
     const [users, total] = await Promise.all([
       User.find(query)
-        .populate("branch_id")
-        .populate("division_id")
-        .populate("position_id")
-        .populate("role_id")
-        .sort({ name: 1 })
+        .populate("branch_id", "name")
+        .populate("division_id", "name")
+        .populate("position_id", "name")
+        .populate("role_id", "name")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
       User.countDocuments(query),
     ]);
 
     const totalPages = Math.ceil(total / limit);
+
+    const branches = await Branch.find({ isActive: "active" }).sort({ name: 1 });
+    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
+    const positions = await Position.find({ isActive: true }).sort({ name: 1 });
 
     res.render("../views/pages/settings/users/index.ejs", {
       title: "View Users",
@@ -103,7 +127,8 @@ const index = async (req, res) => {
       limit,
       total,
       search,
-      currentUser: currentUser,
+      branch,
+      status,
       branches: branches,
       divisions: divisions,
       positions: positions,
@@ -115,33 +140,57 @@ const index = async (req, res) => {
   }
 };
 
-// Show Profile Page
-const detail = (request, response, next) => {
-  response.render("../views/pages/settings/users/profiles/profile_setting.ejs", {
-    title: "Profile",
-    name: "profile",
-  });
+// Detail - Show user details
+const detail = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId)
+      .populate("branch_id", "name")
+      .populate("division_id", "name")
+      .populate("position_id", "name")
+      .populate("role_id", "name");
+
+    if (!user) {
+      req.session.errorMessage = "User not found";
+      return res.redirect(
+        res.locals.base + "settings/users/index/" + res.getLocale()
+      );
+    }
+
+    res.render("../views/pages/settings/users/detail", {
+      title: "User Details",
+      name: "users",
+      user,
+      layout: "../views/layout/app.ejs",
+    });
+  } catch (error) {
+    console.error("User detail error:", error);
+    req.session.errorMessage = "Failed to load user details";
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+  }
 };
 
 // Show create form
 const create = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ email: req.session.user.email });
-
+    const currentUser = await User.findOne({ _id: req.session.user._id });
+    
     // Get data for dropdowns
-    let branchQuery = { isActive: true };
-    if (!req.session.user.email.includes("admin@")) {
+    let branchQuery = { isActive: "active" };
+    if (currentUser.status === false && req.userBranchType !== "pusat") {
       branchQuery._id = currentUser.branch_id;
     }
 
-    const branches = await Branch.find(branchQuery).sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({
+    const branches = await Branch.find(branchQuery, "name").sort({ name: 1 });
+    const divisions = await Division.find({ isActive: true }, "name").sort({ name: 1 });
+    const positions = await Position.find({ isActive: true }, "name").sort({
       level: 1,
     });
 
-    res.render("../views/pages/settings/users/create.ejs", {
+    res.render("../views/pages/settings/users/index.ejs", {
       title: "Create User",
+      name: "users",
       branches: branches,
       divisions: divisions,
       positions: positions,
@@ -164,26 +213,51 @@ const create = async (req, res) => {
 const store = async (req, res) => {
   try {
     const {
-      username, firstname, lastname, email, password, phoneNumber,
-      division_id, position_id, status
+      username,
+      firstname,
+      lastname,
+      email,
+      password,
+      phoneNumber,
+      branch_id,
+      division_id,
+      position_id,
+      status,
+      isActive,
     } = req.body;
 
-    let userBranchId = req.body.branch_id;
-    const isPusat = status === 'on';
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email: email },
+        { username: username },
+      ]
+    })
+
+    if (existingUser) {
+      req.session.errorMessage = "User with this email or username already exists!";
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
+    }
+
+    // Determine branch_id based on status
+    let userBranchId = branch_id;
+    const isPusat = status === "on" || status === true;
 
     if (isPusat) {
-      const branchPusat = await Branch.findOne({ type: 'pusat' });
+      const branchPusat = await Branch.findOne({ type: "pusat" });
       if (branchPusat) {
         userBranchId = branchPusat._id;
       } else {
         // Handle case where 'pusat' branch is not found
         req.session.errorMessage = "Kantor Pusat branch not found!";
-        return res.redirect(req.get('referer'));
+        return res.redirect(req.get("referer"));
       }
     } else {
       if (!userBranchId) {
         req.session.errorMessage = "Branch is required for non-pusat user!";
-        return res.redirect(req.get('referer'));
+        return res.redirect(req.get("referer"));
       }
     }
 
@@ -220,19 +294,24 @@ const store = async (req, res) => {
       email,
       password: hashedPassword,
       phoneNumber,
-      photoProfile: req.file ? 'uploads/profiles/' + req.file.filename : null,
+      photoProfile: req.file ? "uploads/profiles/" + req.file.filename : null,
       status: isPusat,
       branch_id: isPusat ? null : userBranchId,
       division_id,
       position_id,
       role_id: role._id,
-      isActive: req.body.isActive === 'on',
+      isActive: isActive === "on" || isActive === true,
     });
+
+    if (req.file) {
+      console.log('Image uploaded successfully:', req.file.filename);
+    } else {
+      console.log('No image was uploaded.');
+    }
 
     await user.save();
     req.session.successMessage = "User created successfully!";
     res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
-
   } catch (error) {
     console.error(error);
     // If validation fails, delete uploaded file
@@ -240,14 +319,14 @@ const store = async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
     req.session.errorMessage = error.message || "Failed to create user!";
-    res.redirect(req.get('referer'));
+    res.redirect(req.get("referer"));
   }
 };
 
 // Show edit form
 const edit = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ email: req.session.user.email });
+    const currentUser = await User.findOne({ _id: req.session.user._id });
 
     // Check if user can update this user
     let userQuery = { _id: req.params.id };
@@ -309,13 +388,40 @@ const update = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
       req.session.errorMessage = "User not found!";
-      return res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+      return res.redirect(
+        res.locals.base + "settings/users/index/" + res.getLocale()
+      );
     }
 
     const {
-      username, firstname, lastname, email, password, phoneNumber,
-      division_id, position_id, status
+      username,
+      firstname,
+      lastname,
+      email,
+      password,
+      phoneNumber,
+      division_id,
+      position_id,
+      branch_id,
+      status,
+      isActive,
     } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email: email },
+        { username: username },
+      ],
+      _id: { $ne: user._id }
+    })
+
+    if (existingUser) {
+      req.session.errorMessage = "User with this email or username already exists!";
+      return res.redirect(
+        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+      );
+    }
 
     user.username = username;
     user.firstname = firstname;
@@ -324,30 +430,30 @@ const update = async (req, res) => {
     user.phoneNumber = phoneNumber;
     user.division_id = division_id;
     user.position_id = position_id;
-    user.isActive = req.body.isActive === 'on';
+    user.isActive = isActive === "on";
 
-    const isPusat = status === 'on';
+    const isPusat = status === "on";
     user.status = isPusat;
 
     if (isPusat) {
       user.branch_id = null;
     } else {
-      if (!req.body.branch_id) {
+      if (!branch_id) {
         req.session.errorMessage = "Branch is required for non-pusat user!";
-        return res.redirect(req.get('referer'));
+        return res.redirect(req.get("referer"));
       }
-      user.branch_id = req.body.branch_id;
+      user.branch_id = branch_id;
     }
 
     if (req.file) {
       // Delete old photo if it exists
       if (user.photoProfile) {
-        const oldPath = path.join(__dirname, '..', 'public', user.photoProfile);
+        const oldPath = path.join(__dirname, "..", "public", user.photoProfile);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
       }
-      user.photoProfile = 'uploads/profiles/' + req.file.filename;
+      user.photoProfile = "uploads/profiles/" + req.file.filename;
     }
 
     if (password) {
@@ -358,7 +464,7 @@ const update = async (req, res) => {
     // Find or create role
     let roleBranchId = user.branch_id;
     if (isPusat) {
-      const branchPusat = await Branch.findOne({ type: 'pusat' });
+      const branchPusat = await Branch.findOne({ type: "pusat" });
       roleBranchId = branchPusat ? branchPusat._id : null;
     }
 
@@ -391,21 +497,20 @@ const update = async (req, res) => {
     await user.save();
     req.session.successMessage = "User updated successfully!";
     res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
-
   } catch (error) {
     console.error(error);
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
     req.session.errorMessage = error.message || "Failed to update user!";
-    res.redirect(req.get('referer'));
+    res.redirect(req.get("referer"));
   }
 };
 
 // Delete user
 const destroy = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ email: req.session.user.email });
+    const currentUser = await User.findOne({ _id: req.session.user._id });
 
     // Prevent self-deletion
     if (req.params.id === currentUser._id.toString()) {
@@ -417,7 +522,7 @@ const destroy = async (req, res) => {
 
     // Check if user can delete this user
     let deleteQuery = { _id: req.params.id };
-    if (!req.session.user.email.includes("admin@")) {
+    if (currentUser.status === false && req.userBranchType !== "pusat") {
       deleteQuery.branch_id = currentUser.branch_id;
     }
 
@@ -443,10 +548,218 @@ const destroy = async (req, res) => {
   }
 };
 
+// Export to Excel
+const exportExcel = async (req, res) => {
+  try {
+    // Build query based on user permissions
+    const currentUser = await User.findById(req.session.user._id).lean();
+    let query = {};
+
+    const branch = req.query.branch || "all";
+    const status = req.query.status || "all";
+
+    if (!currentUser.status) {
+      query.branch_id = currentUser.branch_id;
+    } else {
+      // Kalau pusat:
+      if (branch !== "all") {
+        if (branch === "pusat") {
+          query.branch_id = null; // khusus user pusat
+        } else {
+          query.branch_id = new mongoose.Types.ObjectId(branch); // user cabang tertentu
+        }
+      }
+    }
+
+    // Filter Status jika ada
+    if (status && status !== "all") {
+      query.isActive = status === "active";
+    }
+
+    const users = await User.find(query)
+      .populate("branch_id", "name")
+      .populate("division_id", "name")
+      .populate("position_id", "name")
+      .populate("role_id", "name")
+      .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users");
+
+    // Define columns
+    worksheet.columns = [
+      { header: "Username", key: "username", width: 20 },
+      { header: "Full Name", key: "fullName", width: 30 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Phone", key: "phoneNumber", width: 20 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Branch", key: "branch", width: 25 },
+      { header: "Division", key: "division", width: 25 },
+      { header: "Position", key: "position", width: 25 },
+      { header: "Role", key: "role", width: 30 },
+      { header: "Active", key: "isActive", width: 10 },
+      { header: "Last Login", key: "lastLogin", width: 20 },
+      { header: "Created At", key: "createdAt", width: 20 },
+    ];
+
+    // Add rows
+    users.forEach((user) => {
+      worksheet.addRow({
+        username: user.username,
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber || "-",
+        status: user.status ? "Pusat" : "Cabang",
+        branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
+        division: user.division_id ? user.division_id.name : "-",
+        position: user.position_id ? user.position_id.name : "-",
+        role: user.role_id ? user.role_id.name : "-",
+        isActive: user.isActive ? "Yes" : "No",
+        lastLogin: user.lastLogin ? user.lastLogin.toLocaleString() : "Never",
+        createdAt: user.createdAt.toLocaleString(),
+      });
+    });
+
+    // Style the header
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF4472C4" },
+      };
+      cell.font.color = { argb: "FFFFFFFF" };
+    });
+
+    // Set response headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=users-${Date.now()}.xlsx`
+    );
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Export Excel error:", error);
+    req.session.errorMessage = "Failed to export users";
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+  }
+};
+
+// Export to CSV
+const exportCSV = async (req, res) => {
+  try {
+    // Build query based on user permissions
+    const currentUser = await User.findById(req.session.user._id).lean();
+    let query = {};
+
+    const branch = req.query.branch || "all";
+    const status = req.query.status || "all";
+
+    if (!currentUser.status) {
+      query.branch_id = currentUser.branch_id;
+    } else {
+      // Kalau pusat:
+      if (branch !== "all") {
+        if (branch === "pusat") {
+          query.branch_id = null; // khusus user pusat
+        } else {
+          query.branch_id = new mongoose.Types.ObjectId(branch); // user cabang tertentu
+        }
+      }
+    }
+
+    // Filter Status jika ada
+    if (status && status !== "all") {
+      query.isActive = status === "active";
+    }
+
+    const users = await User.find(query)
+      .populate("branch_id", "name")
+      .populate("division_id", "name")
+      .populate("position_id", "name")
+      .populate("role_id", "name")
+      .sort({ createdAt: -1 });
+
+    // Prepare data for CSV
+    const records = users.map((user) => ({
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      phoneNumber: user.phoneNumber || "-",
+      status: user.status ? "Pusat" : "Cabang",
+      branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
+      division: user.division_id ? user.division_id.name : "-",
+      position: user.position_id ? user.position_id.name : "-",
+      role: user.role_id ? user.role_id.name : "-",
+      isActive: user.isActive ? "Yes" : "No",
+      lastLogin: user.lastLogin ? user.lastLogin.toISOString() : "Never",
+      createdAt: user.createdAt.toISOString(),
+    }));
+
+    // Set response headers
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=users-${Date.now()}.csv`
+    );
+
+    // Create CSV string
+    const csvHeader = [
+      "Username",
+      "Full Name",
+      "Email",
+      "Phone",
+      "Status",
+      "Branch",
+      "Division",
+      "Position",
+      "Role",
+      "Active",
+      "Last Login",
+      "Created At",
+    ].join(",");
+
+    const csvContent = records
+      .map((record) =>
+        [
+          record.username,
+          record.fullName,
+          record.email,
+          record.phoneNumber,
+          record.status,
+          record.branch,
+          record.division,
+          record.position,
+          record.role,
+          record.isActive,
+          record.lastLogin,
+          record.createdAt,
+        ].join(",")
+      )
+      .join("\n");
+
+    res.send(csvHeader + "\n" + csvContent);
+  } catch (error) {
+    console.error("Export CSV error:", error);
+    req.session.errorMessage = "Failed to export users";
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
+  }
+};
+
 // Get roles by branch, division, and position (AJAX endpoint)
 const getRolesByFilters = async (req, res) => {
   try {
     const { branch_id, division_id, position_id } = req.query;
+
+    if (!branch_id && !division_id && !position_id) {
+      return res.json({ success: false, message: "No filters provided" });
+    }
 
     const query = { isActive: true };
     if (branch_id) query.branch_id = branch_id;
@@ -458,7 +771,11 @@ const getRolesByFilters = async (req, res) => {
       .populate("division_id")
       .populate("position_id");
 
-    res.json(roles);
+    if (!roles) {
+      return res.json({ success: false, message: "No roles found" });
+    }
+
+    return res.json({ success: true, data: roles });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to load roles" });
@@ -475,4 +792,6 @@ module.exports = {
   destroy,
   getRolesByFilters,
   detail,
+  exportExcel,
+  exportCSV,
 };
