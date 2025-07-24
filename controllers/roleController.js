@@ -18,44 +18,62 @@ const RolePermission = mongoose.model(
   require("../schemas/rolePermissionSchema")
 );
 const Module = mongoose.model("Module", require("../schemas/moduleSchema"));
+const User = mongoose.model("User", require("../schemas/userSchema"));
 
-// List all roles
+// List all roles with filtering
 const index = async (req, res) => {
   try {
     console.log("Query params:", req.query);
+
     const divisions = await Division.find().sort({ name: 1 });
     const positions = await Position.find().sort({ name: 1 });
     const branches = await Branch.find().sort({ name: 1 });
+
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 3;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
+    const levelFilter = req.query.level || "";
+    const branchFilter = req.query.branch || "";
 
-    // Build query search
+    // Build query
     let query = {};
+
+    // Search filter
     if (search) {
-      query = {
-        $or: [
-          { name: { $regex: search, $options: "i" } },
-          { branches: { $regex: search, $options: "i" } },
-          { divisions: { $regex: search, $options: "i" } },
-          { positions: { $regex: search, $options: "i" } },
-        ],
-      };
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
     }
+
+    // Level filter
+    if (levelFilter) {
+      query.level = levelFilter;
+    }
+
+    // Branch filter (only for cabang level)
+    if (branchFilter && levelFilter === "cabang") {
+      query.branch_id = branchFilter;
+    }
+
     console.log("Role query:", query);
 
-    // Ambil data roles sesuai halaman
+    // Get roles with pagination
     const [roles, total] = await Promise.all([
       Role.find(query)
         .populate("branch_id")
         .populate("division_id")
         .populate("position_id")
-        .sort({ name: 1 })
+        .populate("parent_role_id")
+        .sort({ level: 1, name: 1 })
         .skip(skip)
         .limit(limit),
       Role.countDocuments(query),
     ]);
+
+    // Get role hierarchy for visualization
+    const roleHierarchy = await Role.getRoleHierarchy();
 
     console.log("Roles found:", roles.length, "Total roles:", total);
 
@@ -64,6 +82,7 @@ const index = async (req, res) => {
     res.render("../views/pages/settings/roles/index.ejs", {
       title: "Roles",
       roles,
+      roleHierarchy,
       layout: "../views/layout/app.ejs",
       name: "roles",
       currentPage: page,
@@ -71,6 +90,8 @@ const index = async (req, res) => {
       limit,
       total,
       search,
+      levelFilter,
+      branchFilter,
       branches,
       divisions,
       positions,
@@ -88,12 +109,16 @@ const create = async (req, res) => {
     const branches = await Branch.find({ isActive: true }).sort({ name: 1 });
     const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
     const positions = await Position.find({ isActive: true }).sort({ name: 1 });
+    const parentRoles = await Role.find({ status: "active" })
+      .populate("branch_id")
+      .sort({ level: 1, name: 1 });
 
     res.render("../views/pages/settings/roles/create", {
       title: "Create Role",
       branches: branches,
       divisions: divisions,
       positions: positions,
+      parentRoles: parentRoles,
       layout: "../views/layout/app.ejs",
       name: "roles",
       successMessage: req.session.successMessage || null,
@@ -108,21 +133,53 @@ const create = async (req, res) => {
   }
 };
 
-// Store new role
+// Store new role with validation
 const store = async (req, res) => {
   try {
     console.log("Request body:", req.body);
+
+    // Validate level and branch_id
+    if (req.body.level === "cabang" && !req.body.branch_id) {
+      throw new Error("Branch is required for cabang level roles!");
+    }
+
+    if (req.body.level === "pusat" && req.body.branch_id) {
+      req.body.branch_id = null; // Clear branch_id for pusat roles
+    }
+
     const role = new Role({
       name: req.body.name,
       description: req.body.description,
-      branch_id: req.body.branch_id,
+      level: req.body.level || "cabang",
+      branch_id: req.body.branch_id || null,
       division_id: req.body.division_id,
       position_id: req.body.position_id,
+      parent_role_id: req.body.parent_role_id || null,
+      status: req.body.status || "active",
       isActive: req.body.isActive === "on",
     });
 
     await role.save();
     console.log("Role created:", role);
+
+    // Copy permissions from parent role if specified
+    if (req.body.parent_role_id && req.body.copy_permissions === "on") {
+      const parentPermissions = await RolePermission.find({
+        role_id: req.body.parent_role_id,
+        allowed: true,
+      });
+
+      const newPermissions = parentPermissions.map((p) => ({
+        role_id: role._id,
+        permission_id: p.permission_id,
+        allowed: true,
+      }));
+
+      if (newPermissions.length > 0) {
+        await RolePermission.insertMany(newPermissions);
+      }
+    }
+
     req.session.successMessage = "Role created successfully!";
     res.redirect(
       process.env.BASE_URL + "settings/roles/index/" + res.getLocale()
@@ -132,18 +189,23 @@ const store = async (req, res) => {
     const branches = await Branch.find({ isActive: true }).sort({ name: 1 });
     const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
     const positions = await Position.find({ isActive: true }).sort({ name: 1 });
+    const parentRoles = await Role.find({ status: "active" }).sort({
+      level: 1,
+      name: 1,
+    });
 
     res.render("../views/pages/settings/roles/create", {
       title: "Create Role",
       branches: branches,
       divisions: divisions,
       positions: positions,
+      parentRoles: parentRoles,
       layout: "../views/layout/app.ejs",
       name: "roles",
-      errors: error.errors,
+      errors: { general: { message: error.message } },
       input: req.body,
       successMessage: req.session.successMessage || null,
-      errorMessage: req.session.errorMessage || null,
+      errorMessage: error.message,
     });
   }
 };
@@ -156,7 +218,8 @@ const permissions = async (req, res) => {
     const role = await Role.findById(req.params.id)
       .populate("branch_id")
       .populate("division_id")
-      .populate("position_id");
+      .populate("position_id")
+      .populate("parent_role_id");
 
     if (!role) {
       req.session.errorMessage = "Role not found!";
@@ -183,6 +246,17 @@ const permissions = async (req, res) => {
       currentPermissions[rp.permission_id.toString()] = rp.allowed;
     });
 
+    // Get parent role permissions if exists
+    let parentPermissions = {};
+    if (role.parent_role_id) {
+      const parentRolePermissions = await RolePermission.find({
+        role_id: role.parent_role_id._id,
+      });
+      parentRolePermissions.forEach((rp) => {
+        parentPermissions[rp.permission_id.toString()] = rp.allowed;
+      });
+    }
+
     // Organize permissions by module
     const modulePermissions = {};
     for (const module of modules) {
@@ -200,6 +274,7 @@ const permissions = async (req, res) => {
       role: role,
       modulePermissions: modulePermissions,
       currentPermissions: currentPermissions,
+      parentPermissions: parentPermissions,
       layout: "../views/layout/app.ejs",
       name: "roles",
     });
@@ -237,7 +312,11 @@ const updatePermissions = async (req, res) => {
 
     req.session.successMessage = "Permissions updated successfully!";
     res.redirect(
-      process.env.BASE_URL + "settings/roles/edit/" + roleId + "/permissions/" + res.getLocale()
+      process.env.BASE_URL +
+        "settings/roles/edit/" +
+        roleId +
+        "/permissions/" +
+        res.getLocale()
     );
   } catch (error) {
     console.error(error);
@@ -263,6 +342,10 @@ const edit = async (req, res) => {
     const branches = await Branch.find({ isActive: true }).sort({ name: 1 });
     const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
     const positions = await Position.find({ isActive: true }).sort({ name: 1 });
+    const parentRoles = await Role.find({
+      status: "active",
+      _id: { $ne: role._id }, // Exclude current role
+    }).sort({ level: 1, name: 1 });
 
     console.log("Branches found:", branches.length);
     console.log("Divisions found:", divisions.length);
@@ -274,6 +357,7 @@ const edit = async (req, res) => {
       branches: branches,
       divisions: divisions,
       positions: positions,
+      parentRoles: parentRoles,
       layout: "../views/layout/app.ejs",
       name: "roles",
       successMessage: req.session.successMessage || null,
@@ -299,11 +383,23 @@ const update = async (req, res) => {
       );
     }
 
+    // Validate level and branch_id
+    if (req.body.level === "cabang" && !req.body.branch_id) {
+      throw new Error("Branch is required for cabang level roles!");
+    }
+
+    if (req.body.level === "pusat") {
+      req.body.branch_id = null; // Clear branch_id for pusat roles
+    }
+
     role.name = req.body.name;
     role.description = req.body.description;
-    role.branch_id = req.body.branch_id;
+    role.level = req.body.level || role.level;
+    role.branch_id = req.body.branch_id || null;
     role.division_id = req.body.division_id;
     role.position_id = req.body.position_id;
+    role.parent_role_id = req.body.parent_role_id || null;
+    role.status = req.body.status || role.status;
     role.isActive = req.body.isActive === "on";
 
     await role.save();
@@ -316,33 +412,68 @@ const update = async (req, res) => {
     const branches = await Branch.find({ isActive: true }).sort({ name: 1 });
     const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
     const positions = await Position.find({ isActive: true }).sort({ name: 1 });
+    const parentRoles = await Role.find({ status: "active" }).sort({
+      level: 1,
+      name: 1,
+    });
 
     res.render("../views/pages/settings/roles/edit", {
       title: "Edit Role",
-      role: Role,
+      role: role,
       branches: branches,
       divisions: divisions,
       positions: positions,
+      parentRoles: parentRoles,
       layout: "../views/layout/app.ejs",
       name: "roles",
-      errors: error.errors,
+      errors: { general: { message: error.message } },
       input: req.body,
       successMessage: req.session.successMessage || null,
-      errorMessage: req.session.errorMessage || null,
+      errorMessage: error.message,
     });
   }
 };
 
-// Delete role
+// Delete role (soft delete)
 const destroy = async (req, res) => {
   try {
-    // Delete related role permissions first
-    await RolePermission.deleteMany({ role_id: req.params.id });
+    const role = await Role.findById(req.params.id);
 
-    // Delete the role
-    await Role.findByIdAndDelete(req.params.id);
+    if (!role) {
+      req.session.errorMessage = "Role not found!";
+      return res.redirect(
+        process.env.BASE_URL + "settings/roles/index/" + res.getLocale()
+      );
+    }
 
-    req.session.successMessage = "Role deleted successfully!";
+    // Check if role has children
+    const hasChildren = await role.hasChildren();
+    if (hasChildren) {
+      req.session.errorMessage = "Cannot delete role with child roles!";
+      return res.redirect(
+        process.env.BASE_URL + "settings/roles/index/" + res.getLocale()
+      );
+    }
+
+    // Check if role is used by users
+    const isUsed = await role.isUsedByUsers();
+    if (isUsed) {
+      req.session.errorMessage =
+        "Cannot delete role that is assigned to users!";
+      return res.redirect(
+        process.env.BASE_URL + "settings/roles/index/" + res.getLocale()
+      );
+    }
+
+    // Soft delete - change status to inactive
+    role.status = "inactive";
+    role.isActive = false;
+    await role.save();
+
+    // Optional: Also delete role permissions
+    // await RolePermission.deleteMany({ role_id: req.params.id });
+
+    req.session.successMessage = "Role deactivated successfully!";
     res.redirect(
       process.env.BASE_URL + "settings/roles/index/" + res.getLocale()
     );
@@ -355,6 +486,82 @@ const destroy = async (req, res) => {
   }
 };
 
+// Get role templates
+const getTemplates = async (req, res) => {
+  try {
+    const templates = [
+      {
+        name: "Admin Pusat Template",
+        level: "pusat",
+        description: "Full system access for central administrators",
+        suggested_permissions: ["all"],
+      },
+      {
+        name: "Admin Cabang Template",
+        level: "cabang",
+        description: "Branch administrator with limited access",
+        suggested_permissions: ["dashboard", "sales", "inventory", "reports"],
+      },
+      {
+        name: "Staff Operasional Template",
+        level: "cabang",
+        description: "Operational staff with basic access",
+        suggested_permissions: ["dashboard", "sales", "inventory"],
+      },
+      {
+        name: "Manager Keuangan Template",
+        level: "pusat",
+        description: "Finance manager with financial module access",
+        suggested_permissions: ["dashboard", "finance", "reports"],
+      },
+    ];
+
+    res.json({ success: true, templates });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: "Failed to load templates" });
+  }
+};
+
+// Bulk assign users to role
+const bulkAssignUsers = async (req, res) => {
+  try {
+    const { role_id, user_ids } = req.body;
+
+    if (!role_id || !user_ids || !Array.isArray(user_ids)) {
+      return res.json({
+        success: false,
+        message: "Invalid request data",
+      });
+    }
+
+    const role = await Role.findById(role_id);
+    if (!role) {
+      return res.json({
+        success: false,
+        message: "Role not found",
+      });
+    }
+
+    // Update users
+    const result = await User.updateMany(
+      { _id: { $in: user_ids } },
+      { $set: { role_id: role_id } }
+    );
+
+    res.json({
+      success: true,
+      message: `${result.modifiedCount} users assigned to role successfully`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({
+      success: false,
+      message: "Failed to assign users to role",
+    });
+  }
+};
+
 module.exports = {
   index,
   create,
@@ -364,4 +571,6 @@ module.exports = {
   edit,
   update,
   destroy,
+  getTemplates,
+  bulkAssignUsers,
 };
