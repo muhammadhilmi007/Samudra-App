@@ -103,8 +103,10 @@ const store = async (req, res) => {
     );
   } catch (error) {
     console.error(error);
-    res.render("../views/pages/administrasi/branches/create", {
+    res.render("../views/pages/administrasi/branches/index.ejs", {
       title: "Create Branch",
+      name: "branches",
+      branches,
       layout: "../views/layout/app.ejs",
       errors: error.errors,
       input: req.body,

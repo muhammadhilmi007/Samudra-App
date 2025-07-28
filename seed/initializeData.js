@@ -277,7 +277,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000001',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'DIR')._id,
       position_id: positions.find(p => p.code === 'CEO')._id,
       role_id: direktorRole._id
@@ -292,7 +292,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000002',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'OPS')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
       role_id: mgrOperasionalRole._id
@@ -307,7 +307,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000003',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'MKT')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
       role_id: mgrPemasaranRole._id
@@ -322,7 +322,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000004',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'FIN')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
       role_id: mgrKeuanganRole._id
@@ -337,7 +337,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000005',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'ADM')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
       role_id: mgrAdministrasiRole._id
@@ -352,7 +352,7 @@ async function seedDatabase() {
       password: hashedPassword,
       phoneNumber: '081200000006',
       status: true, // Pusat
-      branch_id: pusatBranch._id,
+      branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'HRD')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
       role_id: mgrHRDRole._id

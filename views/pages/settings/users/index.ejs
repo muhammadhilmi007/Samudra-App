@@ -76,7 +76,6 @@
                 <div class="dm-select">
                   <select name="branch" class="form-control" id="branch">
                     <option value="">All</option>
-                    <option value="pusat">Pusat</option>
                     <% branches.forEach(b=> { %>
                       <option value="<%= b._id %>" <%=branch==b._id ? 'selected' : '' %>><%= b.name %>
                       </option>
@@ -551,7 +550,7 @@
         <div class="modal-footer">
           <!-- Buttons -->
           <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
+            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create User</button>
             <a href="<%= locals.base %>settings/users/create/<%- locale %>" class="btn btn-secondary"
               data-bs-dismiss="modal">
               Cancel

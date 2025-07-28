@@ -1,73 +1,50 @@
-<div class="container-fluid">
+<div class="container-fluid mt-30">
   <div class="row">
     <div class="col-lg-12">
       <!-- Success/Error Messages -->
       <% if (successMessage) { %>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <%= successMessage %>
-        <button
-          type="button"
-          class="btn-close text-capitalize"
-          data-bs-dismiss="alert"
-          aria-label="Close"
-        >
-          <img
-            src="<%- locals.base %>img/svg/x.svg"
-            alt="x"
-            class="svg rony"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-      <% } %> <% if (errorMessage) { %>
-      <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <%= errorMessage %>
-        <button
-          type="button"
-          class="btn-close text-capitalize"
-          data-bs-dismiss="alert"
-          aria-label="Close"
-        >
-          <img
-            src="<%- locals.base %>img/svg/x.svg"
-            alt="x"
-            class="svg rony"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-      <% } %>
-      <div class="breadcrumb-main">
-        <h4 class="text-capitalize breadcrumb-title">
-          Manage <%- __('Permission') %>: <%= role.name %>
-        </h4>
-        <div class="breadcrumb-action justify-content-center flex-wrap">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item">
-                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"
-                  ><i class="las la-home"></i><%- __('dashboard-menu-title')
-                  %></a
-                >
-              </li>
-              <li class="breadcrumb-item"><a href="#">Settings</a></li>
-              <li class="breadcrumb-item">
-                <a href="<%= locals.base %>settings/roles/index/<%- locale %>"
-                  >Roles</a
-                >
-              </li>
-              <li class="breadcrumb-item active" aria-current="page">
-                <%- __('Permissions') %>
-              </li>
-            </ol>
-          </nav>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= successMessage %>
+            <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+              <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true" />
+            </button>
         </div>
-      </div>
+        <% } %>
+          <% if (errorMessage) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= errorMessage %>
+                <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+                  <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true" />
+                </button>
+            </div>
+            <% } %>
+              <div class="breadcrumb-main">
+                <h4 class="text-capitalize breadcrumb-title">
+                  Manage <%- __('Permission') %>: <%= role.name %>
+                </h4>
+                <div class="breadcrumb-action justify-content-center flex-wrap">
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                        <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%-
+                            __('dashboard-menu-title') %></a>
+                      </li>
+                      <li class="breadcrumb-item"><a href="#">Settings</a></li>
+                      <li class="breadcrumb-item">
+                        <a href="<%= locals.base %>settings/roles/index/<%- locale %>">Roles</a>
+                      </li>
+                      <li class="breadcrumb-item active" aria-current="page">
+                        <%- __('Permissions') %>
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+              </div>
     </div>
   </div>
 </div>
 
-<!-- Role Info Card -->
+<!-- Role Info -->
 <div class="card mb-4">
   <div class="card-body">
     <div class="row">
@@ -75,273 +52,143 @@
         <strong>Role Name:</strong><br />
         <%= role.name %>
       </div>
-      <div class="col-md-2">
-        <strong>Level:</strong><br />
-        <span
-          class="userDatatable-content d-inline-block rounded bg-opacity-<%= role.level === 'pusat' ? 'success' : 'info' %> color-<%= role.level === 'pusat' ? 'success' : 'info' %> userDatatable-content-status active"
-        >
-          <%= role.level === 'pusat' ? 'Pusat' : 'Cabang' %>
-        </span>
-      </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <strong>Branch:</strong><br />
         <%= role.branch_id ? role.branch_id.name : '-' %>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <strong>Division:</strong><br />
         <%= role.division_id ? role.division_id.name : '-' %>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <strong>Position:</strong><br />
         <%= role.position_id ? role.position_id.name : '-' %>
       </div>
-      <div class="col-md-1">
-        <strong>Status:</strong><br />
-        <% if (role.status === 'active' && role.isActive) { %>
-        <span
-          class="userDatatable-content d-inline-block rounded bg-opacity-success color-success userDatatable-content-status active"
-          >Active</span
-        >
-        <% } else { %>
-        <span
-          class="userDatatable-content d-inline-block rounded bg-opacity-danger color-danger userDatatable-content-status active"
-          >Inactive</span
-        >
-        <% } %>
-      </div>
     </div>
-    <% if (role.parent_role_id) { %>
-    <div class="row mt-3">
-      <div class="col-12">
-        <strong>Parent Role:</strong> <%= role.parent_role_id.name %>
-        <span class="text-muted"
-          >(Inherited permissions are shown in blue)</span
-        >
-      </div>
-    </div>
-    <% } %>
   </div>
 </div>
 
 <!-- Permissions Form -->
-<form
-  method="POST"
-  action="<%= locals.base %>settings/roles/update/<%= role._id %>/permissions/<%- locale %>"
->
+<form method="POST" action="<%= locals.base %>settings/roles/update/<%= role._id %>/permissions/<%- locale %>">
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header">
       <h5 class="card-title mb-0">Module Permissions</h5>
-      <div class="d-flex gap-2">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary"
-          onclick="selectAllPermissions()"
-        >
-          Select All
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          onclick="deselectAllPermissions()"
-        >
-          Deselect All
-        </button>
-        <% if (role.parent_role_id) { %>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-info"
-          onclick="inheritFromParent()"
-        >
-          Inherit from Parent
-        </button>
-        <% } %>
-      </div>
     </div>
     <div class="card-body">
       <div class="alert alert-info mb-4">
         <i class="bx bx-info-circle"></i>
-        <% if (role.level === 'pusat') { %>
-        <strong>Pusat Role:</strong> This role has system-wide access.
-        Permissions apply across all branches. <% } else { %>
-        <strong>Cabang Role:</strong> This role is limited to <%= role.branch_id
-        ? role.branch_id.name : 'its assigned branch' %>. Permissions only apply
-        within this branch. <% } %>
+        Check the permissions you want to grant to this role. Users with this
+        role will only be able to perform the selected actions.
       </div>
 
-      <% Object.keys(modulePermissions).forEach(moduleCode => { %> <% const
-      moduleData = modulePermissions[moduleCode]; %>
-      <div class="card mb-3">
-        <div class="card-header">
-          <h6 class="mb-0">
-            <i class="<%= moduleData.module.icon %>"></i>
-            <%= moduleData.module.name %>
-          </h6>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th width="50">Select</th>
-                  <th>Action</th>
-                  <th width="100">Icon</th>
-                  <th width="150">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% moduleData.permissions.forEach((permission, index) => { %> <%
-                const isInherited = parentPermissions &&
-                parentPermissions[permission._id.toString()]; const
-                isCurrentlyAllowed =
-                currentPermissions[permission._id.toString()]; %>
-                <tr class="<%= isInherited ? 'table-info' : '' %>">
-                  <td>
-                    <input class="form-check-input permission-checkbox"
-                    type="checkbox" name="permissions[]" value="<%=
-                    permission._id %>" id="perm_<%= permission._id %>"
-                    data-module="<%= moduleCode %>" data-action="<%=
-                    permission.action %>" <%= isCurrentlyAllowed ? 'checked' :
-                    '' %> <%= isInherited ? 'data-inherited="true"' : '' %>>
-                  </td>
-                  <td>
-                    <label
-                      class="form-check-label"
-                      for="perm_<%= permission._id %>"
-                    >
-                      <%= permission.action.charAt(0).toUpperCase() +
-                      permission.action.slice(1) %> <% if
-                      (permission.description) { %>
-                      <br /><small class="text-muted"
-                        ><%= permission.description %></small
-                      >
-                      <% } %>
-                    </label>
-                  </td>
-                  <td class="text-center">
-                    <% const actionIcons = { 'create': 'uil-plus-circle',
-                    'read': 'uil-eye', 'update': 'uil-edit', 'delete':
-                    'uil-trash', 'export': 'uil-file-export', 'import':
-                    'uil-file-import', 'approve': 'uil-check-circle', 'reject':
-                    'uil-times-circle' }; const actionColors = { 'create':
-                    'text-success', 'read': 'text-info', 'update':
-                    'text-warning', 'delete': 'text-danger', 'export':
-                    'text-primary', 'import': 'text-primary', 'approve':
-                    'text-success', 'reject': 'text-danger' }; %>
-                    <i
-                      class="bx <%= actionIcons[permission.action] || 'bx-dots-horizontal-rounded' %> <%= actionColors[permission.action] || '' %> fs-5"
-                    ></i>
-                  </td>
-                  <td>
-                    <% if (isInherited) { %>
-                    <span class="userDatatable-content d-inline-block rounded bg-opacity-info color-info userDatatable-content-status active">Inherited</span>
-                    <% } %> <% if (isCurrentlyAllowed) { %>
-                    <span class="userDatatable-content d-inline-block rounded bg-opacity-success color-success userDatatable-content-status active">Allowed</span>
-                    <% } %>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
+      <% Object.keys(modulePermissions).forEach(moduleCode=> { %> <% const moduleData=modulePermissions[moduleCode]; %>
+          <div class="card mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="<%= moduleData.module.icon %>"></i>
+                <%= moduleData.module.name %>
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Permission</th>
+                      <th>Action</th>
+                      <th>Icon</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% moduleData.permissions.forEach((permission, index)=> { %>
+                      <tr>
+                        <td>
+                          <input class="form-check-input permission-checkbox" type="checkbox" name="permissions[]"
+                            value="<%=
+                    permission._id %>" id="perm_<%= permission._id %>" data-module="<%= moduleCode %>" data-action="<%=
+                    permission.action %>" <%=currentPermissions[permission._id.toString()] ? 'checked' : '' %>>
+                        </td>
+                        <td>
+                          <label class="form-check-label" for="perm_<%= permission._id %>">
+                            <%= permission.action.charAt(0).toUpperCase() + permission.action.slice(1) %>
+                          </label>
+                        </td>
+                        <td>
+                          <% const actionIcons={ 'create' : 'uil-plus-circle' , 'read' : 'uil-eye' , 'update'
+                            : 'uil-edit' , 'delete' : 'uil-trash' , 'export' : 'uil-file-export' , 'import'
+                            : 'uil-file-import' , 'approve' : 'uil-check-circle' , 'reject' : 'uil-times-circle' };
+                            const actionColors={ 'create' : 'text-success' , 'read' : 'text-info' , 'update'
+                            : 'text-warning' , 'delete' : 'text-danger' , 'export' : 'text-primary' , 'import'
+                            : 'text-primary' , 'approve' : 'text-success' , 'reject' : 'text-danger' }; %>
+                            <i
+                              class="bx <%= actionIcons[permission.action] || 'bx-dots-horizontal-rounded' %> <%= actionColors[permission.action] || '' %>"></i>
+                        </td>
+                      </tr>
+                      <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-3 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary select-all" data-module="<%= moduleCode %>">
+                  Select All
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary deselect-all"
+                  data-module="<%= moduleCode %>">
+                  Deselect All
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="mt-3 d-flex gap-2">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-primary select-all"
-              data-module="<%= moduleCode %>"
-            >
-              Select All in <%= moduleData.module.name %>
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary deselect-all"
-              data-module="<%= moduleCode %>"
-            >
-              Deselect All in <%= moduleData.module.name %>
-            </button>
-          </div>
-        </div>
-      </div>
-      <% }) %>
+          <% }) %>
 
-      <div class="mt-4 gap-2 d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary">
-          <i class="uil-save"></i> Save Permissions
-        </button>
-        <a
-          href="<%= locals.base %>settings/roles/index/<%- locale %>"
-          class="btn btn-secondary"
-        >
-          Cancel
-        </a>
-      </div>
+            <div class="mt-4 gap-2 d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary">
+                <i class="uil-save"></i> Save Permissions
+              </button>
+              <a href="<%= locals.base %>settings/roles/index/<%- locale %>" class="btn btn-secondary">
+                Cancel
+              </a>
+            </div>
     </div>
   </div>
 </form>
 
 <script>
-  // Parent permissions data for JavaScript
-  const parentPermissions = <%= JSON.stringify(parentPermissions || {}) %>;
-
   // Select/Deselect all permissions for a module
-  document.querySelectorAll('.select-all').forEach(button => {
-    button.addEventListener('click', function() {
+  document.querySelectorAll(".select-all").forEach((button) => {
+    button.addEventListener("click", function () {
       const module = this.dataset.module;
-      document.querySelectorAll(`input[data-module="${module}"]`).forEach(checkbox => {
-        checkbox.checked = true;
-      });
+      document
+        .querySelectorAll(`input[data-module="${module}"]`)
+        .forEach((checkbox) => {
+          checkbox.checked = true;
+        });
     });
   });
 
-  document.querySelectorAll('.deselect-all').forEach(button => {
-    button.addEventListener('click', function() {
+  document.querySelectorAll(".deselect-all").forEach((button) => {
+    button.addEventListener("click", function () {
       const module = this.dataset.module;
-      document.querySelectorAll(`input[data-module="${module}"]`).forEach(checkbox => {
-        checkbox.checked = false;
-      });
+      document
+        .querySelectorAll(`input[data-module="${module}"]`)
+        .forEach((checkbox) => {
+          checkbox.checked = false;
+        });
     });
   });
-
-  // Select all permissions
-  function selectAllPermissions() {
-    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-      checkbox.checked = true;
-    });
-  }
-
-  // Deselect all permissions
-  function deselectAllPermissions() {
-    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-      checkbox.checked = false;
-    });
-  }
-
-  // Inherit permissions from parent
-  function inheritFromParent() {
-    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-      const permissionId = checkbox.value;
-      if (parentPermissions[permissionId]) {
-        checkbox.checked = true;
-      }
-    });
-  }
 
   // Auto-check 'read' permission when other permissions are selected
-  document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      if (this.checked && this.dataset.action !== 'read') {
+  document.querySelectorAll(".permission-checkbox").forEach((checkbox) => {
+    checkbox.addEventListener("change", function () {
+      if (this.checked && this.dataset.action !== "read") {
         const module = this.dataset.module;
-        const readCheckbox = document.querySelector(`input[data-module="${module}"][data-action="read"]`);
+        const readCheckbox = document.querySelector(
+          `input[data-module="${module}"][data-action="read"]`
+        );
         if (readCheckbox) {
           readCheckbox.checked = true;
         }
       }
-    });
-  });
-
-  // Highlight inherited permissions
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-inherited="true"]').forEach(checkbox => {
-      checkbox.closest('tr').classList.add('table-info');
     });
   });
 </script>

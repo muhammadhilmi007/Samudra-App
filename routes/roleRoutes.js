@@ -62,27 +62,11 @@ router.post(
   RoleController.destroy
 );
 
-// New API Endpoints
+// AJAX Endpoints
 router.get(
   "/api/roles",
   authMiddleware.isAuthenticated,
   UserController.getRolesByFilters
-);
-
-// Get role templates
-router.get(
-  "/templates",
-  authMiddleware.isAuthenticated,
-  permissionMiddleware.checkPermission("roles", "read"),
-  RoleController.getTemplates
-);
-
-// Bulk assign users to role
-router.post(
-  "/bulk-assign",
-  authMiddleware.isAuthenticated,
-  permissionMiddleware.checkPermission("roles", "update"),
-  RoleController.bulkAssignUsers
 );
 
 module.exports = router;

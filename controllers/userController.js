@@ -360,7 +360,7 @@ const edit = async (req, res) => {
       .populate("division_id")
       .populate("position_id");
 
-    res.render("../views/pages/settings/users/edit.ejs", {
+    res.render("../views/pages/settings/users/index.ejs", {
       title: "Edit User",
       user: user,
       branches: branches,
