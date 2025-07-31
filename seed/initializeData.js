@@ -36,10 +36,70 @@ async function seedDatabase() {
     // Create Branches (including Pusat)
     console.log('Creating branches...');
     const branches = await Branch.insertMany([
-      { name: 'Kantor Pusat', code: 'PUSAT', type: 'pusat', address: 'Jl. Sudirman No. 1', phone: '021-1234567' },
-      { name: 'Jakarta', code: 'JKT-01', type: 'cabang', address: 'Jl. Asia Afrika No. 1', phone: '021-7654321' },
-      { name: 'Bandung', code: 'BDG-01', type: 'cabang', address: 'Jl. Asia Afrika No. 10', phone: '022-1234567' },
-      { name: 'Surabaya', code: 'SBY-01', type: 'cabang', address: 'Jl. Tunjungan No. 5', phone: '031-1234567' }
+      { 
+        name: 'Kantor Pusat', 
+        code: 'PUSAT', 
+        type: 'pusat', 
+        address: { 
+          street: 'Jl. Sudirman No. 1', 
+          city: 'Jakarta', 
+          district: 'Jakarta Pusat', 
+          province: 'DKI Jakarta', 
+          postalCode: '10210', 
+          country: 'Indonesia' 
+        }, 
+        contact: { 
+          phone: '0211234567' 
+        } 
+      },
+      { 
+        name: 'Jakarta', 
+        code: 'JKT-01', 
+        type: 'cabang', 
+        address: { 
+          street: 'Jl. Asia Afrika No. 1', 
+          city: 'Jakarta', 
+          district: 'Jakarta Pusat', 
+          province: 'DKI Jakarta', 
+          postalCode: '10210', 
+          country: 'Indonesia' 
+        }, 
+        contact: { 
+          phone: '0217654321' 
+        } 
+      },
+      { 
+        name: 'Bandung', 
+        code: 'BDG-01', 
+        type: 'cabang', 
+        address: { 
+          street: 'Jl. Asia Afrika No. 10', 
+          city: 'Bandung', 
+          district: 'Bandung Wetan', 
+          province: 'Jawa Barat', 
+          postalCode: '40111', 
+          country: 'Indonesia' 
+        }, 
+        contact: { 
+          phone: '0221234567' 
+        } 
+      },
+      { 
+        name: 'Surabaya', 
+        code: 'SBY-01', 
+        type: 'cabang', 
+        address: { 
+          street: 'Jl. Tunjungan No. 5', 
+          city: 'Surabaya', 
+          district: 'Genteng', 
+          province: 'Jawa Timur', 
+          postalCode: '60275', 
+          country: 'Indonesia' 
+        }, 
+        contact: { 
+          phone: '0311234567' 
+        } 
+      }
     ]);
 
     const pusatBranch = branches.find(b => b.type === 'pusat');
@@ -59,19 +119,19 @@ async function seedDatabase() {
     // Create Positions
     console.log('Creating positions...');
     const positions = await Position.insertMany([
-      { name: 'Direktur Utama', code: 'CEO', level: 1 },
-      { name: 'Manager', code: 'MGR', level: 2 },
-      { name: 'Kepala Cabang', code: 'KCB', level: 3 },
-      { name: 'Kepala Gudang', code: 'KGD', level: 4 },
-      { name: 'Kepala Administrasi', code: 'KAD', level: 4 },
-      { name: 'Checker', code: 'CHK', level: 5 },
-      { name: 'Penjualan', code: 'PJL', level: 5 },
-      { name: 'Kasir', code: 'KSR', level: 5 },
-      { name: 'Debt Collector', code: 'DCL', level: 5 },
-      { name: 'Kuli', code: 'KLI', level: 6 },
-      { name: 'Kenek', code: 'KNK', level: 6 },
-      { name: 'Supir', code: 'SPR', level: 6 },
-      { name: 'Staff', code: 'STF', level: 5 }
+      { name: 'Direktur Utama', code: 'CEO', level: 1, description: 'Chief Executive Officer', isActive: true },
+      { name: 'Manager', code: 'MGR', level: 2, description: 'Manager', isActive: true },
+      { name: 'Kepala Cabang', code: 'KCB', level: 3, description: 'Branch Head', isActive: true },
+      { name: 'Kepala Gudang', code: 'KGD', level: 4, description: 'Warehouse Head', isActive: true },
+      { name: 'Kepala Administrasi', code: 'KAD', level: 4, description: 'Administration Head', isActive: true },
+      { name: 'Checker', code: 'CHK', level: 5, description: 'Checker', isActive: true },
+      { name: 'Penjualan', code: 'PJL', level: 5, description: 'Sales', isActive: true },
+      { name: 'Kasir', code: 'KSR', level: 5, description: 'Cashier', isActive: true },
+      { name: 'Debt Collector', code: 'DCL', level: 5, description: 'Debt Collector', isActive: true },
+      { name: 'Kuli', code: 'KLI', level: 6, description: 'Laborer', isActive: true },
+      { name: 'Kenek', code: 'KNK', level: 6, description: 'Assistant', isActive: true },
+      { name: 'Supir', code: 'SPR', level: 6, description: 'Driver', isActive: true },
+      { name: 'Staff', code: 'STF', level: 5, description: 'Staff', isActive: true }
     ]);
 
     // Create Modules
@@ -125,7 +185,8 @@ async function seedDatabase() {
     // Create Roles
     console.log('Creating roles...');
     const roles = [];
-    const hashedPassword = await bcrypt.hash('password123', 12);
+    // Using a stronger password that meets the requirements: at least 6 characters with uppercase, lowercase, number, and special character
+    const hashedPassword = await bcrypt.hash('P@ssw0rd!', 12);
 
     // 1. Direktur Utama Role (Pusat)
     const direktorRole = await Role.create({
@@ -276,11 +337,12 @@ async function seedDatabase() {
       email: 'direktur@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000001',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'DIR')._id,
       position_id: positions.find(p => p.code === 'CEO')._id,
-      role_id: direktorRole._id
+      role_id: direktorRole._id,
+      isActive: true
     });
 
     // Manager Operasional
@@ -291,11 +353,12 @@ async function seedDatabase() {
       email: 'mgr.operasional@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000002',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'OPS')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrOperasionalRole._id
+      role_id: mgrOperasionalRole._id,
+      isActive: true
     });
 
     // Manager Pemasaran
@@ -306,11 +369,12 @@ async function seedDatabase() {
       email: 'mgr.pemasaran@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000003',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'MKT')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrPemasaranRole._id
+      role_id: mgrPemasaranRole._id,
+      isActive: true
     });
 
     // Manager Keuangan
@@ -321,11 +385,12 @@ async function seedDatabase() {
       email: 'mgr.keuangan@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000004',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'FIN')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrKeuanganRole._id
+      role_id: mgrKeuanganRole._id,
+      isActive: true
     });
 
     // Manager Administrasi
@@ -336,11 +401,12 @@ async function seedDatabase() {
       email: 'mgr.administrasi@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000005',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'ADM')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrAdministrasiRole._id
+      role_id: mgrAdministrasiRole._id,
+      isActive: true
     });
 
     // Manager HRD
@@ -351,11 +417,12 @@ async function seedDatabase() {
       email: 'mgr.hrd@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000006',
-      status: true, // Pusat
+      level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'HRD')._id,
       position_id: positions.find(p => p.code === 'MGR')._id,
-      role_id: mgrHRDRole._id
+      role_id: mgrHRDRole._id,
+      isActive: true
     });
 
     // Kepala Cabang Jakarta
@@ -366,25 +433,26 @@ async function seedDatabase() {
       email: 'kcb.jakarta@samudra.com',
       password: hashedPassword,
       phoneNumber: '081200000007',
-      status: false, // Cabang
+      level: 'Cabang', // Using new level field
       branch_id: jakartaBranch._id,
       division_id: divisions.find(d => d.code === 'OPS')._id,
       position_id: positions.find(p => p.code === 'KCB')._id,
-      role_id: kepalaCabangRole._id
+      role_id: kepalaCabangRole._id,
+      isActive: true
     });
 
     console.log('Database seeded successfully!');
     console.log('\n=== LOGIN CREDENTIALS ===');
     console.log('\nDirektur Level:');
-    console.log('1. Direktur Utama - email: direktur@samudra.com, password: password123');
+    console.log('1. Direktur Utama - email: direktur@samudra.com, password: P@ssw0rd!');
     console.log('\nManager Level (Pusat):');
-    console.log('2. Manager Operasional - email: mgr.operasional@samudra.com, password: password123');
-    console.log('3. Manager Pemasaran - email: mgr.pemasaran@samudra.com, password: password123');
-    console.log('4. Manager Keuangan - email: mgr.keuangan@samudra.com, password: password123');
-    console.log('5. Manager Administrasi - email: mgr.administrasi@samudra.com, password: password123');
-    console.log('6. Manager HRD - email: mgr.hrd@samudra.com, password: password123');
+    console.log('2. Manager Operasional - email: mgr.operasional@samudra.com, password: P@ssw0rd!');
+    console.log('3. Manager Pemasaran - email: mgr.pemasaran@samudra.com, password: P@ssw0rd!');
+    console.log('4. Manager Keuangan - email: mgr.keuangan@samudra.com, password: P@ssw0rd!');
+    console.log('5. Manager Administrasi - email: mgr.administrasi@samudra.com, password: P@ssw0rd!');
+    console.log('6. Manager HRD - email: mgr.hrd@samudra.com, password: P@ssw0rd!');
     console.log('\nCabang Level:');
-    console.log('7. Kepala Cabang Jakarta - email: kcb.jakarta@samudra.com, password: password123');
+    console.log('7. Kepala Cabang Jakarta - email: kcb.jakarta@samudra.com, password: P@ssw0rd!');
 
     process.exit(0);
   } catch (error) {

@@ -40,9 +40,11 @@ const userSchema = mongoose.Schema(
         required: false,
         default: null,
     },
-    status: { // true = Pusat, false = Cabang
-        type: Boolean,
-        default: false,
+    level: {
+      type: String,
+      enum: ['Pusat', 'Cabang'],
+      default: 'Cabang',
+      required: true,
     },
     password: {
       type: String,
@@ -56,23 +58,21 @@ const userSchema = mongoose.Schema(
       default: null,
       validate: {
         validator: function(v) {
-          // If status is false (Cabang), branch_id is required
-          if (!this.status && !v) {
+          // If level is 'Cabang', branch_id is required
+          if (this.level === 'Cabang' && !v) {
             return false;
           }
-          // If status is true (Pusat), branch_id should be null
-          if (this.status && v) {
+          // If level is 'Pusat', branch_id should be null
+          if (this.level === 'Pusat' && v) {
             return false;
           }
           return true;
         },
         message: function(props) {
-          if (!this.status && !props.value) {
-            return "Branch is required for non-headquarters users";
+          if (this.level === 'Cabang') {
+            return 'Branch is required for Cabang level users';
           }
-          if (this.status && props.value) {
-            return "Headquarters users should not have a branch";
-          }
+          return 'Branch should not be set for Pusat level users';
         }
       }
     },
@@ -108,13 +108,19 @@ const userSchema = mongoose.Schema(
 // Indexes for performance
 userSchema.index({ email: 1 });
 userSchema.index({ username: 1 });
-userSchema.index({ branch_id: 1, division_id: 1, position_id: 1 });
+userSchema.index({ branch_id: 1, division_id: 1, position_id: 1, level: 1 });
 
-// Pre-save hook to handle branch_id based on status
+// Pre-save middleware to handle level-branch relationship
 userSchema.pre('save', function(next) {
-  if (this.status === true) {
+  if (this.level === 'Pusat') {
     this.branch_id = null;
   }
+  
+  // Migrate old status field to new level field
+  if (this.status !== undefined && this.level === undefined) {
+    this.level = this.status ? 'Pusat' : 'Cabang';
+  }
+  
   next();
 });
 

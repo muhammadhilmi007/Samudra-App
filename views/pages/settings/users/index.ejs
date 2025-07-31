@@ -1,4 +1,4 @@
-<div class="container-fluid mt-30">
+<div class="container-fluid">
   <div class="row">
     <div class="col-lg-12">
       <!-- Success/Error Messages -->
@@ -48,65 +48,60 @@
               <h5 class="card-title mb-0">All Users</h4>
             </div>
           </div>
-          <div class="action-btn">
-            <ul class="d-flex flex-wrap justify-content-center gap-10">
-              <li>
-                <a href="#" class="btn px-20 btn-success" data-bs-toggle="modal" data-bs-target="#modal-export">
-                  <i class="las la-file-export fs-16"></i>Export
-                </a>
-              </li>
-              <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
-                <li>
-                  <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
-                    <i class="las la-plus fs-16"></i>Add New User
-                  </a>
-                </li>
-                <% } %>
-            </ul>
+          <div class="action-btn mt-sm-0 mt-15 gap-2 d-flex">
+            <a href="#" class="btn px-20 btn-success" data-bs-toggle="modal" data-bs-target="#modal-export">
+              <i class="las la-file-export fs-16"></i>Export
+            </a>
+            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('create')) { %>
+              <a href="#" class="btn px-20 btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-users">
+                <i class="las la-plus fs-16"></i>Add New User
+              </a>
+              <% } %>
           </div>
         </div>
 
+        <!-- Search & Filter Division -->
         <div
           class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
-          <div class="support-form__input">
-            <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET"
-              class="d-flex flex-wrap gap-10">
-              <div class="support-form__input-status">
-                <label>Level:</label>
-                <div class="dm-select">
-                  <select name="branch" class="form-control" id="branch">
-                    <option value="">All</option>
-                    <% branches.forEach(b=> { %>
-                      <option value="<%= b._id %>" <%=branch==b._id ? 'selected' : '' %>><%= b.name %>
-                      </option>
-                      <% }) %>
-                  </select>
-                </div>
-              </div>
-              <div class="support-form__input-status">
-                <label>Status:</label>
-                <div class="dm-select">
-                  <select name="status" class="form-control" id="status">
-                    <option value="">All</option>
-                    <option value="active" <%=status=='active' ? 'selected' : '' %>>Active</option>
-                    <option value="inactive" <%=status=='inactive' ? 'selected' : '' %>>Inactive</option>
-                  </select>
-                </div>
-              </div>
-              <input type="hidden" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>">
-              <button type="submit" class="support-form__input-button btn btn-primary">Search</button>
-            </form>
-          </div>
-          <!-- Search Users -->
           <div class="support-form__search">
             <div class="support-order-search">
               <form action="<%= locals.base %>settings/users/index/<%- locale %>" method="GET"
                 class="support-order-search__form">
                 <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
                 <input class="form-control border-0 box-shadow-none" type="search" name="search"
-                  value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
+                  value="<%= typeof search !== 'undefined' ? search : '' %>"
+                  placeholder="Search by name, username, or email" aria-label="Search" />
               </form>
+            </div>
+          </div>
 
+          <!-- Filters -->
+          <div class="support-form__filter">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <select class="form-select form-select-sm" id="filterLevel" style="width: auto;">
+                <option value="">All Levels</option>
+                <option value="Pusat" <%=filters && filters.level==='Pusat' ? 'selected' : '' %>>Pusat</option>
+                <option value="Cabang" <%=filters && filters.level==='Cabang' ? 'selected' : '' %>>Cabang</option>
+              </select>
+
+              <select class="form-select form-select-sm" id="filterBranch" style="width: auto;">
+                <option value="">All Branches</option>
+                <% branches.forEach(branch=> { %>
+                  <option value="<%= branch._id %>" <%=filters && filters.branch===branch._id.toString() ? 'selected'
+                    : '' %>><%= branch.name %>
+                  </option>
+                  <% }) %>
+              </select>
+
+              <select class="form-select form-select-sm" id="filterStatus" style="width: auto;">
+                <option value="">All Status</option>
+                <option value="true" <%=filters && filters.isActive==='true' ? 'selected' : '' %>>Active</option>
+                <option value="false" <%=filters && filters.isActive==='false' ? 'selected' : '' %>>Inactive</option>
+              </select>
+
+              <button class="btn btn-sm btn-primary" style="width: auto;" id="resetFilters">
+                <i class="las la-undo"></i> Reset
+              </button>
             </div>
           </div>
         </div>
@@ -120,6 +115,7 @@
                   <th>Username</th>
                   <th>Email</th>
                   <th>Level</th>
+                  <th>Branch</th>
                   <th>Division</th>
                   <th>Position</th>
                   <th>Role</th>
@@ -129,7 +125,8 @@
                 </tr>
               </thead>
               <tbody>
-                <% if (users && users.length> 0) { %> <% users.forEach(user=> { %>
+                <% if (users && users.length> 0) { %>
+                  <% users.forEach(user=> { %>
                     <tr>
                       <td>
                         <div class="contact-personal-info d-flex gap-10">
@@ -161,7 +158,13 @@
                         <%= user.email %>
                       </td>
                       <td>
-                        <%= user.branch_id ? user.branch_id.name : 'Pusat' %>
+                        <span
+                          class="bg-opacity-<%= user.level === 'Pusat' ? 'success' : 'info' %> color-<%= user.level === 'Pusat' ? 'success' : 'info' %> userDatatable-content-status active">
+                          <%= user.level %>
+                        </span>
+                      </td>
+                      <td>
+                        <%= user.branch_id ? user.branch_id.name : '-' %>
                       </td>
                       <td>
                         <%= user.division_id ? user.division_id.name : '-' %>
@@ -177,10 +180,6 @@
                             </span>
                           </div>
                           <% } else { %>
-                            <div class="userDatatable-content d-inline-block">
-                              <span class="bg-info color-white userDatatable-content-status activetext-muted">No
-                                role</span>
-                            </div>
                             <span class="text-muted">No role</span>
                             <% } %>
                       </td>
@@ -207,104 +206,106 @@
                             <% } else { %>
                               <div class="userDatatable-content d-inline-block">
                                 <span
-                                  class="bg-opacity-danger color-danger userDatatable-content-status active">Never</span>
+                                  class="bg-opacity-warning color-warning userDatatable-content-status active">Never</span>
                               </div>
                               <% } %>
                       </td>
                       <td>
                         <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
-                          <li>
-                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('read')) {
-                              %>
+                          <% if (userPermissions && userPermissions.users && userPermissions.users.includes('read')) {
+                            %>
+                            <li>
                               <a href="<%= locals.base %>settings/users/detail/<%= user._id %>/<%- locale %>"
                                 class="view" data-bs-toggle="tooltip" title="View Details">
                                 <i class="uil-eye"></i>
                               </a>
-                              <% } %>
-                          </li>
-                          <li>
-                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('update'))
-                              { %>
-                              <a href="#" class="edit" title="Edit User" data-bs-toggle="modal"
-                                data-bs-target="#modal-edit-users" data-id="<%= user._id %>"
-                                data-username="<%= user.username || '' %>" data-firstname="<%= user.firstname || '' %>"
-                                data-lastname="<%= user.lastname || '' %>" data-email="<%= user.email || '' %>"
-                                data-phonenumber="<%= user.phoneNumber || '' %>"
-                                data-photo="<%= user.photoProfile || '' %>" data-status="<%= user.status %>"
-                                data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
-                                data-division="<%= user.division_id ? user.division_id._id : '' %>"
-                                data-position="<%= user.position_id ? user.position_id._id : '' %>"
-                                data-active="<%= user.isActive %>">
-                                <i class="uil uil-edit"></i>
-                              </a>
-                              <% } %>
-                          </li>
-                          <li>
-                            <% if (userPermissions && userPermissions.users && userPermissions.users.includes('delete')
-                              && (!session || !session.user || user.email !==session.user.email)) { %>
-                              <a href="#" class="remove" data-id="<%= user._id %>" data-bs-toggle="modal"
-                                data-bs-target="#modal-delete" title="Delete User">
-                                <i class="uil uil-trash-alt"></i>
-                              </a>
-                              <% } %>
-                          </li>
+                            </li>
+                            <% } %>
+                              <% if (userPermissions && userPermissions.users &&
+                                userPermissions.users.includes('update')) { %>
+                                <li>
+                                  <a href="#" class="edit" title="Edit User" data-bs-toggle="modal"
+                                    data-bs-target="#modal-edit-users" data-id="<%= user._id %>"
+                                    data-username="<%= user.username || '' %>"
+                                    data-firstname="<%= user.firstname || '' %>"
+                                    data-lastname="<%= user.lastname || '' %>" data-email="<%= user.email || '' %>"
+                                    data-phonenumber="<%= user.phoneNumber || '' %>"
+                                    data-photo="<%= user.photoProfile || '' %>"
+                                    data-level="<%= user.level || 'Cabang' %>"
+                                    data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
+                                    data-division="<%= user.division_id ? user.division_id._id : '' %>"
+                                    data-position="<%= user.position_id ? user.position_id._id : '' %>"
+                                    data-active="<%= user.isActive %>">
+                                    <i class="uil uil-edit"></i>
+                                  </a>
+                                </li>
+                                <% } %>
+                                  <% if (userPermissions && userPermissions.users &&
+                                    userPermissions.users.includes('delete') && (!session || !session.user || user.email
+                                    !==session.user.email)) { %>
+                                    <li>
+                                      <a href="#" class="remove" title="Delete User" data-id="<%= user._id %>"
+                                        data-bs-toggle="modal" data-bs-target="#modal-delete">
+                                        <i class="uil uil-trash-alt"></i>
+                                      </a>
+                                    </li>
+                                    <% } %>
                         </ul>
                       </td>
                     </tr>
                     <% }) %>
                       <% } else { %>
                         <tr>
-                          <td colspan="9" class="text-center">No users found</td>
+                          <td colspan="11" class="text-center">No users found</td>
                         </tr>
                         <% } %>
               </tbody>
             </table>
           </div>
-          <div class="d-flex justify-content-between align-items-center flex-wrap pt-30">
-            <div class="dm-pagination__item">
-              <span class="text-muted">
-                Showing <%= (currentPage - 1) * limit + 1 %> to <%= Math.min(currentPage * limit, total || 0) %> of
-                    <%= total || 0 %> entries
-              </span>
+          <div class="d-flex justify-content-between align-items-center pt-30">
+            <div class="pagination-info">
+              Showing <%= ((currentPage - 1) * limit) + 1 %> to <%= Math.min(currentPage * limit, total || 0) %> of <%=
+                    total || 0 %> entries
             </div>
-            <div class="d-flex justify-content-end pt-30">
-              <nav class="dm-page">
-                <ul class="dm-pagination d-flex">
-                  <li class="dm-pagination__item">
-                    <% if (totalPages> 1) { %>
-                      <a
-                        href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>">
+            <nav class="dm-page">
+              <ul class="dm-pagination d-flex">
+                <li class="dm-pagination__item">
+                  <% if (totalPages> 1) { %>
+                    <% if (currentPage> 1) { %>
+                      <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                        class="dm-pagination__link">
                         <span class="la la-angle-left"></span>
                       </a>
+                      <% } %>
 
-                      <% for (let i=1; i <=totalPages; i++) { %>
-                        <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>"
-                          class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
-                          <span class="page-number">
-                            <%= i %>
-                          </span>
-                        </a>
-                        <% } %>
-
-                          <a
-                            href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %> <%= branch ? '&branch=' + encodeURIComponent(branch) : '' %> <%= status ? '&status=' + encodeURIComponent(status) : '' %>">
-                            <span class="la la-angle-right"></span>
+                        <% for (let i=1; i <=totalPages; i++) { %>
+                          <a href="?page=<%= i %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                            class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                            <span class="page-number">
+                              <%= i %>
+                            </span>
                           </a>
                           <% } %>
 
-                  </li>
-                  <li class="dm-pagination__item">
-                    <div class="paging-option">
-                      <select name="page-number" class="page-selection">
-                        <option value="2" <%=limit==2 ? 'selected' : '' %>>2/page</option>
-                        <option value="10" <%=limit==10 ? 'selected' : '' %>>10/page</option>
-                        <option value="20" <%=limit==20 ? 'selected' : '' %>>20/page</option>
-                      </select>
-                    </div>
-                  </li>
-                </ul>
-              </nav>
-            </div>
+                            <% if (currentPage < totalPages) { %>
+                              <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+                                class="dm-pagination__link">
+                                <span class="la la-angle-right"></span>
+                              </a>
+                              <% } %>
+                                <% } %>
+                </li>
+                <li class="dm-pagination__item">
+                  <div class="paging-option">
+                    <select name="page-number" class="page-selection">
+                      <option value="5" <%=limit==5 ? 'selected' : '' %>>5/page</option>
+                      <option value="10" <%=limit==10 ? 'selected' : '' %>>10/page</option>
+                      <option value="20" <%=limit==20 ? 'selected' : '' %>>20/page</option>
+                    </select>
+                  </div>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
@@ -329,7 +330,6 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
-        <!-- Delete Form (Hidden) -->
         <form id="modalDeleteForm" method="POST" class="d-inline">
           <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
         </form>
@@ -354,23 +354,22 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a href="#" class="btn btn-success btn-sm" id="excel"><i
-            class="uil uil-file-download"></i>Excel</a>
-        <a href="#" class="btn btn-primary btn-sm" id="csv"><i
-            class="uil uil-file-download"></i>CSV</a>
+        <a href="#" class="btn btn-success btn-sm" id="excel"><i class="uil uil-file-download"></i>Excel</a>
+        <a href="#" class="btn btn-primary btn-sm" id="csv"><i class="uil uil-file-download"></i>CSV</a>
         <button type="button" class="btn btn-light btn-outlined btn-sm" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
 </div>
 
+
 <!-- Modal for Adding Users -->
 <div class="modal-tambah-users modal fade show" id="modal-tambah-users" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content modal-bg-white ">
+    <div class="modal-content modal-bg-white">
       <form method="POST" action="<%= locals.base %>settings/users/create/<%- locale %>" enctype="multipart/form-data">
         <div class="modal-header">
-          <h6 class="modal-title">Tambah Users</h6>
+          <h6 class="modal-title">Add New User</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
           </button>
@@ -381,7 +380,7 @@
             <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
             <input type="text" class="form-control <%= locals.errors && errors.username ? 'is-invalid' : '' %>"
               id="username" name="username" value="<%= locals.input ? input.username : '' %>"
-              placeholder="Enter username" required>
+              placeholder="Enter username" required minlength="3">
             <% if (locals.errors && errors.username) { %>
               <div class="invalid-feedback">
                 <%= errors.username.message %>
@@ -423,10 +422,13 @@
 
           <!-- Phone Number -->
           <div class="mb-3">
-            <label for="phoneNumber" class="form-label">Phone Number</label>
-            <input type="text" class="form-control <%= locals.errors && errors.phoneNumber ? 'is-invalid' : '' %>"
-              id="phoneNumber" name="phoneNumber" value="<%= locals.input ? input.phoneNumber : '' %>"
-              placeholder="Enter phone number">
+            <label for="phoneNumber" class="form-label">Phone Number (WhatsApp)</label>
+            <div class="input-group">
+              <span class="input-group-text">+62</span>
+              <input type="text" class="form-control <%= locals.errors && errors.phoneNumber ? 'is-invalid' : '' %>"
+                id="phoneNumber" name="phoneNumber" value="<%= locals.input ? input.phoneNumber : '' %>"
+                placeholder="812XXXXXXXX">
+            </div>
             <% if (locals.errors && errors.phoneNumber) { %>
               <div class="invalid-feedback">
                 <%= errors.phoneNumber.message %>
@@ -437,14 +439,25 @@
           <!-- Password -->
           <div class="mb-3">
             <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-            <input type="password" class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>"
-              id="password" name="password" placeholder="Enter password" required>
+            <div class="input-group">
+              <input type="password" class="form-control <%= locals.errors && errors.password ? 'is-invalid' : '' %>"
+                id="password" name="password" placeholder="Enter password" required>
+              <a class="input-group-text" id="togglePassword">
+                <i class="las la-eye"></i>
+              </a>
+            </div>
             <% if (locals.errors && errors.password) { %>
               <div class="invalid-feedback">
                 <%= errors.password.message %>
               </div>
               <% } %>
                 <div class="form-text">Minimum 8 characters, with uppercase, lowercase, numbers, and symbols.</div>
+                <div class="password-strength mt-2" id="passwordStrength" style="display: none;">
+                  <div class="progress" style="height: 5px;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <small class="text-muted">Password strength: <span id="strengthText">Weak</span></small>
+                </div>
           </div>
 
           <!-- Photo Profile -->
@@ -457,14 +470,20 @@
               style="display: none; max-width: 100px; border-radius: 5px;" />
           </div>
 
-          <!-- Status (Pusat/Cabang) -->
+          <!-- Level (Pusat/Cabang) -->
           <div class="mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="status" name="status">
-              <label class="form-check-label" for="status">User Kantor Pusat</label>
-            </div>
-            <div class="form-text">Jika aktif, pengguna akan terdaftar sebagai user kantor pusat dan tidak perlu memilih
-              cabang.</div>
+            <label for="level" class="form-label">User Level <span class="text-danger">*</span></label>
+            <select class="form-control <%= locals.errors && errors.level ? 'is-invalid' : '' %>" id="level"
+              name="level" required>
+              <option value="Cabang" <%=(locals.input && input.level==='Cabang' ) ? 'selected' : '' %>>Cabang</option>
+              <option value="Pusat" <%=(locals.input && input.level==='Pusat' ) ? 'selected' : '' %>>Pusat</option>
+            </select>
+            <% if (locals.errors && errors.level) { %>
+              <div class="invalid-feedback">
+                <%= errors.level.message %>
+              </div>
+              <% } %>
+                <div class="form-text">Pusat users don't need to select branch.</div>
           </div>
 
           <!-- Branch -->
@@ -476,7 +495,8 @@
               <% branches.forEach(branch=> { %>
                 <% if(branch.type !=='pusat' ) { %>
                   <option value="<%= branch._id %>" <%=(locals.input && input.branch_id==branch._id) ? 'selected' : ''
-                    %>><%= branch.name %>
+                    %>>
+                    <%= branch.name %>
                   </option>
                   <% } %>
                     <% }) %>
@@ -533,29 +553,23 @@
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%=(!locals.input ||
                 (locals.input && input.isActive==='on' )) ? 'checked' : '' %>>
-              <label class="form-check-label" for="isActive">
-                Active Status
-              </label>
+              <label class="form-check-label" for="isActive">Active Status</label>
             </div>
             <div class="form-text">Active users can login to the system</div>
           </div>
 
           <!-- Role Info -->
           <div class="alert alert-info">
-            <i class="bx bx-info-circle"></i>
-            The system will automatically assign or create a role based on the selected Branch, Division, and Position
-            combination.
+            <i class="las la-info-circle"></i>
+            The system will automatically assign or create a role based on the selected Level, Branch, Division, and
+            Position combination.
           </div>
         </div>
         <div class="modal-footer">
-          <!-- Buttons -->
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create User</button>
-            <a href="<%= locals.base %>settings/users/create/<%- locale %>" class="btn btn-secondary"
-              data-bs-dismiss="modal">
-              Cancel
-            </a>
-          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="las la-save"></i> Create User
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
@@ -565,7 +579,7 @@
 <!-- Modal for Editing Users -->
 <div class="modal-edit-users modal fade" id="modal-edit-users" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content modal-bg-white ">
+    <div class="modal-content modal-bg-white">
       <form method="POST" action="" id="editUserForm" enctype="multipart/form-data">
         <input type="hidden" name="_method" value="PUT" />
         <div class="modal-header">
@@ -578,7 +592,7 @@
           <!-- Username -->
           <div class="mb-3">
             <label for="edit-username" class="form-label">Username <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit-username" name="username" required>
+            <input type="text" class="form-control" id="edit-username" name="username" required minlength="3">
           </div>
 
           <!-- First Name & Last Name -->
@@ -601,15 +615,24 @@
 
           <!-- Phone Number -->
           <div class="mb-3">
-            <label for="edit-phoneNumber" class="form-label">Phone Number</label>
-            <input type="text" class="form-control" id="edit-phoneNumber" name="phoneNumber">
+            <label for="edit-phoneNumber" class="form-label">Phone Number (WhatsApp)</label>
+            <div class="input-group">
+              <span class="input-group-text">+62</span>
+              <input type="text" class="form-control" id="edit-phoneNumber" name="phoneNumber"
+                placeholder="812XXXXXXXX">
+            </div>
           </div>
 
           <!-- Password -->
           <div class="mb-3">
             <label for="edit-password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="edit-password" name="password"
-              placeholder="Leave blank to keep current password">
+            <div class="input-group">
+              <input type="password" class="form-control" id="edit-password" name="password"
+                placeholder="Leave blank to keep current password">
+              <a class="input-group-text" id="edit-togglePassword">
+                <i class="las la-eye"></i>
+              </a>
+            </div>
             <div class="form-text">Leave blank if you don't want to change the password.</div>
           </div>
 
@@ -623,12 +646,13 @@
               style="max-width: 100px; border-radius: 5px;" />
           </div>
 
-          <!-- Status (Pusat/Cabang) -->
+          <!-- Level (Pusat/Cabang) -->
           <div class="mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="edit-status" name="status">
-              <label class="form-check-label" for="edit-status">User Kantor Pusat</label>
-            </div>
+            <label for="edit-level" class="form-label">User Level <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-level" name="level" required>
+              <option value="Cabang">Cabang</option>
+              <option value="Pusat">Pusat</option>
+            </select>
           </div>
 
           <!-- Branch -->
@@ -681,10 +705,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i>Update User</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="las la-save"></i> Update User
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
@@ -697,13 +721,12 @@
     btn.addEventListener('click', function () {
       const userId = this.getAttribute('data-id');
       const form = document.getElementById('modalDeleteForm');
-      // Backend uses POST method for delete
       form.action = "<%= locals.base %>settings/users/delete/" + userId + "/<%- locale %>";
       form.method = "POST";
     });
   });
 
-  // Handle Page Selection
+  // Handle pagination limit change
   document.querySelector('.page-selection').addEventListener('change', function () {
     const selectedLimit = this.value;
     const params = new URLSearchParams(window.location.search);
@@ -712,58 +735,203 @@
     window.location.href = `${window.location.pathname}?${params.toString()}`;
   });
 
-  const statusToggle = document.getElementById('status');
+  // Handle filters
+  const filterLevel = document.getElementById('filterLevel');
+  const filterBranch = document.getElementById('filterBranch');
+  const filterStatus = document.getElementById('filterStatus');
+  const resetFilters = document.getElementById('resetFilters');
+
+  function applyFilters() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (filterLevel.value) params.set('level', filterLevel.value);
+    else params.delete('level');
+
+    if (filterBranch.value) params.set('branch', filterBranch.value);
+    else params.delete('branch');
+
+    if (filterStatus.value) params.set('isActive', filterStatus.value);
+    else params.delete('isActive');
+
+    params.set('page', 1);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  }
+
+  filterLevel.addEventListener('change', applyFilters);
+  filterBranch.addEventListener('change', applyFilters);
+  filterStatus.addEventListener('change', applyFilters);
+
+  resetFilters.addEventListener('click', function () {
+    window.location.href = window.location.pathname;
+  });
+
+  // Handle level-branch relationship for create modal
+  const levelSelect = document.getElementById('level');
   const branchSelection = document.getElementById('branch-selection');
   const branchSelect = document.getElementById('branch_id');
-  const photoInput = document.getElementById('photoProfile');
-  const photoPreview = document.getElementById('photoPreview');
 
-  statusToggle.addEventListener('change', function () {
-    if (this.checked) {
+  levelSelect.addEventListener('change', function () {
+    if (this.value === 'Pusat') {
       branchSelection.style.display = 'none';
       branchSelect.required = false;
+      branchSelect.value = '';
     } else {
       branchSelection.style.display = 'block';
       branchSelect.required = true;
     }
   });
 
+  // Photo preview
+  const photoInput = document.getElementById('photoProfile');
+  const photoPreview = document.getElementById('photoPreview');
+
   photoInput.addEventListener('change', function () {
     const [file] = this.files;
     if (file) {
+      // Validate file size (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be less than 2MB');
+        this.value = '';
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only JPG, JPEG, and PNG files are allowed');
+        this.value = '';
+        return;
+      }
+
       photoPreview.style.display = 'block';
       photoPreview.src = URL.createObjectURL(file);
     }
   });
 
-  const editStatusToggle = document.getElementById('edit-status');
+  // Password strength meter
+  const passwordInput = document.getElementById('password');
+  const passwordStrength = document.getElementById('passwordStrength');
+  const strengthBar = passwordStrength.querySelector('.progress-bar');
+  const strengthText = document.getElementById('strengthText');
+  const togglePassword = document.getElementById('togglePassword');
+
+  // Toggle password visibility
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.querySelector('i').classList.toggle('la-eye');
+    this.querySelector('i').classList.toggle('la-eye-slash');
+  });
+
+  // Password strength calculation
+  passwordInput.addEventListener('input', function () {
+    const password = this.value;
+    if (password.length > 0) {
+      passwordStrength.style.display = 'block';
+      const strength = calculatePasswordStrength(password);
+
+      strengthBar.style.width = strength.score + '%';
+      strengthBar.className = 'progress-bar ' + strength.color;
+      strengthText.textContent = strength.text;
+    } else {
+      passwordStrength.style.display = 'none';
+    }
+  });
+
+  function calculatePasswordStrength(password) {
+    let score = 0;
+    let text = 'Weak';
+    let color = 'bg-danger';
+
+    // Length
+    if (password.length >= 8) score += 20;
+    if (password.length >= 12) score += 10;
+
+    // Contains lowercase
+    if (/[a-z]/.test(password)) score += 20;
+
+    // Contains uppercase
+    if (/[A-Z]/.test(password)) score += 20;
+
+    // Contains numbers
+    if (/\d/.test(password)) score += 20;
+
+    // Contains special characters
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 10;
+
+    // Determine strength text and color
+    if (score < 40) {
+      text = 'Weak';
+      color = 'bg-danger';
+    } else if (score < 60) {
+      text = 'Fair';
+      color = 'bg-warning';
+    } else if (score < 80) {
+      text = 'Good';
+      color = 'bg-info';
+    } else {
+      text = 'Strong';
+      color = 'bg-success';
+    }
+
+    return { score, text, color };
+  }
+
+  // Edit modal handling
+  const editLevelSelect = document.getElementById('edit-level');
   const editBranchSelection = document.getElementById('edit-branch-selection');
   const editBranchSelect = document.getElementById('edit-branch_id');
   const editPhotoInput = document.getElementById('edit-photoProfile');
   const editPhotoPreview = document.getElementById('edit-photoPreview');
+  const editPasswordInput = document.getElementById('edit-password');
+  const editTogglePassword = document.getElementById('edit-togglePassword');
 
-  function toggleEditBranch(isPusat) {
-    if (isPusat) {
+  // Toggle password visibility for edit modal
+  editTogglePassword.addEventListener('click', function () {
+    const type = editPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    editPasswordInput.setAttribute('type', type);
+    this.querySelector('i').classList.toggle('la-eye');
+    this.querySelector('i').classList.toggle('la-eye-slash');
+  });
+
+  function toggleEditBranch(level) {
+    if (level === 'Pusat') {
       editBranchSelection.style.display = 'none';
       editBranchSelect.required = false;
+      editBranchSelect.value = '';
     } else {
       editBranchSelection.style.display = 'block';
       editBranchSelect.required = true;
     }
   }
 
-  editStatusToggle.addEventListener('change', function () {
-    toggleEditBranch(this.checked);
+  editLevelSelect.addEventListener('change', function () {
+    toggleEditBranch(this.value);
   });
 
   editPhotoInput.addEventListener('change', function () {
     const [file] = this.files;
     if (file) {
+      // Validate file size and type
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be less than 2MB');
+        this.value = '';
+        return;
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only JPG, JPEG, and PNG files are allowed');
+        this.value = '';
+        return;
+      }
+
       editPhotoPreview.style.display = 'block';
       editPhotoPreview.src = URL.createObjectURL(file);
     }
   });
 
+  // Populate edit modal
   document.querySelectorAll('.edit').forEach(btn => {
     btn.addEventListener('click', function () {
       const id = this.dataset.id;
@@ -773,25 +941,25 @@
       const email = this.dataset.email;
       const phoneNumber = this.dataset.phonenumber;
       const photo = this.dataset.photo;
-      const status = this.dataset.status === 'true';
+      const level = this.dataset.level || (this.dataset.status === 'true' ? 'Pusat' : 'Cabang');
       const branch = this.dataset.branch;
       const division = this.dataset.division;
       const position = this.dataset.position;
       const isActive = this.dataset.active === 'true';
 
       const form = document.getElementById('editUserForm');
-      form.action = `<%= locals.base %>settings/users/update/${id}/<%- locale %>`;
+      form.action = `<%= locals.base %>settings/users/update/${id}/<%- locale %>?_method=POST`;
 
       document.getElementById('edit-username').value = username;
       document.getElementById('edit-firstname').value = firstname;
       document.getElementById('edit-lastname').value = lastname;
       document.getElementById('edit-email').value = email;
-      document.getElementById('edit-phoneNumber').value = phoneNumber;
+      document.getElementById('edit-phoneNumber').value = phoneNumber ? phoneNumber.replace('+62', '') : '';
       document.getElementById('edit-password').value = '';
+      document.getElementById('edit-level').value = level;
       document.getElementById('edit-division_id').value = division;
       document.getElementById('edit-position_id').value = position;
       document.getElementById('edit-isActive').checked = isActive;
-      document.getElementById('edit-status').checked = status;
 
       if (photo) {
         editPhotoPreview.style.display = 'block';
@@ -800,36 +968,89 @@
         editPhotoPreview.style.display = 'none';
       }
 
-      toggleEditBranch(status);
-      if (!status) {
+      toggleEditBranch(level);
+      if (level === 'Cabang') {
         document.getElementById('edit-branch_id').value = branch;
       }
     });
   });
 
-  // Auto-hide alerts after 5 seconds
-  setTimeout(() => {
-    document.querySelectorAll('.alert').forEach(alert => {
-      const bsAlert = new bootstrap.Alert(alert);
-      bsAlert.close();
+  // Handle status toggle
+  document.querySelectorAll('.status-toggle').forEach(btn => {
+    btn.addEventListener('click', async function (e) {
+      e.preventDefault();
+
+      const userId = this.dataset.id;
+      const currentStatus = this.dataset.status === 'true';
+
+      if (!confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this user?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`<%= locals.base %>settings/users/api/toggle-status/${userId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Reload page to show updated status
+          location.reload();
+        } else {
+          alert(result.message || 'Failed to update user status');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating user status');
+      }
     });
-  }, 5000);
+  });
+
+  // Form validation
+  document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      const phoneInputs = this.querySelectorAll('input[name="phoneNumber"]');
+      phoneInputs.forEach(input => {
+        if (input.value) {
+          // Clean phone number format
+          let phone = input.value.replace(/[^0-9+]/g, '');
+          if (!phone.startsWith('+62') && phone.length > 0) {
+            phone = '+62' + phone;
+          }
+          input.value = phone;
+        }
+      });
+    });
+  });
 
   document.addEventListener('DOMContentLoaded', function () {
-  const excelBtn = document.getElementById('excel');
-  const csvBtn = document.getElementById('csv');
+    const excelBtn = document.getElementById('excel');
+    const csvBtn = document.getElementById('csv');
 
-  function updateExportLinks() {
-    const branch = document.getElementById('branch').value;
-    const status = document.getElementById('status').value;
-    const queryString = `?branch=${branch}&status=${status}`;
+    function updateExportLinks() {
+      const filterLevel = document.getElementById('filterLevel').value;
+      const filterBranch = document.getElementById('filterBranch').value;
+      const filterStatus = document.getElementById('filterStatus').value;
+      const queryString = `?filterLevel=${filterLevel}&filterBranch=${filterBranch}&filterStatus=${filterStatus}`;
 
-    excelBtn.href = `<%= locals.base %>settings/users/export/excel/<%- locale %>${queryString}`;
-    csvBtn.href = `<%= locals.base %>settings/users/export/csv/<%- locale %>${queryString}`;
-  }
+      excelBtn.href = `<%= locals.base %>settings/users/export/excel/<%- locale %>${queryString}`;
+      csvBtn.href = `<%= locals.base %>settings/users/export/csv/<%- locale %>${queryString}`;
+    }
 
-  document.getElementById('branch').addEventListener('change', updateExportLinks);
-  document.getElementById('status').addEventListener('change', updateExportLinks);
-  updateExportLinks();
-});
+    document.getElementById('filterLevel').addEventListener('change', updateExportLinks);
+    document.getElementById('filterBranch').addEventListener('change', updateExportLinks);
+    document.getElementById('filterStatus').addEventListener('change', updateExportLinks);
+    updateExportLinks();
+  });
+
+  // Initialize tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
 </script>

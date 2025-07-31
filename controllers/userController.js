@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const ExcelJS = require("exceljs");
+
+// Models
 const User = mongoose.model("User", require("../schemas/userSchema"));
 const Branch = mongoose.model("Branch", require("../schemas/branchSchema"));
 const Division = mongoose.model(
@@ -11,11 +17,6 @@ const Position = mongoose.model(
   require("../schemas/positionSchema")
 );
 const Role = mongoose.model("Role", require("../schemas/roleSchema"));
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const ExcelJS = require("exceljs");
-const csv = require("csv-writer");
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -58,11 +59,13 @@ const index = async (req, res) => {
     console.log("query user", req.session.user);
     const currentUser = await User.findOne({ _id: req.session.user._id });
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 2;
+    const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
-    const branch = req.query.branch || "";   // <-- Ambil branch dari query
-    const status = req.query.status || "";   // <-- Ambil status dari query
+    const branch = req.query.branch || "";
+    const division = req.query.division || "";
+    const isActive = req.query.isActive || "";
+    const level = req.query.level || "";
 
     // Query for users - if not super admin, filter by branch
     console.log("query", req.query);
@@ -79,22 +82,19 @@ const index = async (req, res) => {
           { position: { $regex: search, $options: "i" } },
           { role: { $regex: search, $options: "i" } },
           { isActive: search === "active" ? true : false },
+          { level: search === "Pusat" ? true : false },
         ],
       };
     }
 
-    // Filter branch dari query
-    if (branch) {
-      query.branch_id = branch;
-    }
-
-    // Filter status dari query
-    if (status) {
-      query.isActive = status === "active";
-    }
+    // Filters
+    if (level) query.level = level;
+    if (branch) query.branch_id = branch;
+    if (division) query.division_id = division;
+    if (isActive !== "") query.isActive = isActive === "true";
 
     // Filter by branch for non-pusat users
-    if (currentUser.status === false && req.userBranchType !== "pusat") {
+    if (currentUser.level === "Cabang" && req.userBranchType !== "Pusat") {
       query.branch_id = currentUser.branch_id;
     }
     console.log("query", query);
@@ -113,9 +113,20 @@ const index = async (req, res) => {
 
     const totalPages = Math.ceil(total / limit);
 
-    const branches = await Branch.find({ isActive: "active" }).sort({ name: 1 });
+    const branches = await Branch.find({ isActive: "active" }).sort({
+      name: 1,
+    });
     const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({ name: 1 });
+    const positions = await Position.find({ isActive: true }).sort({
+      name: 1,
+      level: 1,
+    });
+
+    // Get success/error messages from session
+    const successMessage = req.session.successMessage;
+    const errorMessage = req.session.errorMessage;
+    delete req.session.successMessage;
+    delete req.session.errorMessage;
 
     res.render("../views/pages/settings/users/index.ejs", {
       title: "View Users",
@@ -128,10 +139,16 @@ const index = async (req, res) => {
       total,
       search,
       branch,
-      status,
+      division,
+      isActive,
+      level,
+      filters: { level, branch, division, isActive },
       branches: branches,
       divisions: divisions,
       positions: positions,
+      userPermissions: req.userPermissions,
+      successMessage,
+      errorMessage,
     });
   } catch (error) {
     console.error(error);
@@ -158,7 +175,7 @@ const detail = async (req, res) => {
       );
     }
 
-    res.render("../views/pages/settings/users/detail", {
+    res.render("../views/pages/settings/users/detail.ejs", {
       title: "User Details",
       name: "users",
       user,
@@ -175,18 +192,19 @@ const detail = async (req, res) => {
 const create = async (req, res) => {
   try {
     const currentUser = await User.findOne({ _id: req.session.user._id });
-    
-    // Get data for dropdowns
-    let branchQuery = { isActive: "active" };
-    if (currentUser.status === false && req.userBranchType !== "pusat") {
-      branchQuery._id = currentUser.branch_id;
-    }
-
     const branches = await Branch.find(branchQuery, "name").sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }, "name").sort({ name: 1 });
+    const divisions = await Division.find({ isActive: true }, "name").sort({
+      name: 1,
+    });
     const positions = await Position.find({ isActive: true }, "name").sort({
       level: 1,
     });
+
+    // Get data for dropdowns
+    let branchQuery = { isActive: "active" };
+    if (currentUser.level === "Cabang" && req.userBranchType !== "Pusat") {
+      branchQuery._id = currentUser.branch_id;
+    }
 
     res.render("../views/pages/settings/users/index.ejs", {
       title: "Create User",
@@ -197,6 +215,7 @@ const create = async (req, res) => {
       layout: "../views/layout/app.ejs",
       errors: null,
       input: {},
+      userPermissions: req.userPermissions,
       successMessage: req.session.successMessage || null,
       errorMessage: req.session.errorMessage || null,
     });
@@ -222,48 +241,36 @@ const store = async (req, res) => {
       branch_id,
       division_id,
       position_id,
-      status,
+      level,
       isActive,
     } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [
-        { email: email },
-        { username: username },
-      ]
-    })
+    // Cek duplikasi user
+    const existingUser = await User.findOne({
+      $or: [{ email: email }, { username: username }],
+    });
 
     if (existingUser) {
-      req.session.errorMessage = "User with this email or username already exists!";
+      req.session.errorMessage =
+        "User with this email or username already exists!";
       return res.redirect(
         process.env.BASE_URL + "settings/users/index/" + res.getLocale()
       );
     }
 
-    // Determine branch_id based on status
-    let userBranchId = branch_id;
-    const isPusat = status === "on" || status === true;
+    // Tentukan branch_id sesuai level
+    let userBranchId = level === "Pusat" ? null : branch_id;
 
-    if (isPusat) {
-      const branchPusat = await Branch.findOne({ type: "pusat" });
-      if (branchPusat) {
-        userBranchId = branchPusat._id;
-      } else {
-        // Handle case where 'pusat' branch is not found
-        req.session.errorMessage = "Kantor Pusat branch not found!";
-        return res.redirect(req.get("referer"));
-      }
-    } else {
-      if (!userBranchId) {
-        req.session.errorMessage = "Branch is required for non-pusat user!";
-        return res.redirect(req.get("referer"));
-      }
+    if (level !== "Pusat" && !userBranchId) {
+      req.session.errorMessage = "Branch is required for non-pusat user!";
+      return res.redirect(req.get("referer"));
     }
 
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Cari atau buat role
     let role = await Role.findOne({
       branch_id: userBranchId,
       division_id: division_id,
@@ -272,13 +279,19 @@ const store = async (req, res) => {
     });
 
     if (!role) {
-      const branch = await Branch.findById(userBranchId);
+      const branch = userBranchId
+        ? await Branch.findById(userBranchId)
+        : await Branch.findOne({ type: "pusat" });
       const division = await Division.findById(division_id);
       const position = await Position.findById(position_id);
 
       role = new Role({
-        name: `${position.name} - ${division.name} - ${branch.name}`,
-        description: `Default role for ${position.name} in ${division.name} at ${branch.name}`,
+        name: `${position.name} - ${division.name} - ${
+          branch ? branch.name : "Pusat"
+        }`,
+        description: `Default role for ${position.name} in ${
+          division.name
+        } at ${branch ? branch.name : "Pusat"}`,
         branch_id: userBranchId,
         division_id: division_id,
         position_id: position_id,
@@ -287,6 +300,7 @@ const store = async (req, res) => {
       await role.save();
     }
 
+    // Buat user baru
     const user = new User({
       username,
       firstname,
@@ -295,8 +309,8 @@ const store = async (req, res) => {
       password: hashedPassword,
       phoneNumber,
       photoProfile: req.file ? "uploads/profiles/" + req.file.filename : null,
-      status: isPusat,
-      branch_id: isPusat ? null : userBranchId,
+      level, // <-- disimpan string, bukan boolean
+      branch_id: userBranchId, // <-- null jika pusat
       division_id,
       position_id,
       role_id: role._id,
@@ -304,9 +318,7 @@ const store = async (req, res) => {
     });
 
     if (req.file) {
-      console.log('Image uploaded successfully:', req.file.filename);
-    } else {
-      console.log('No image was uploaded.');
+      console.log("Image uploaded successfully:", req.file.filename);
     }
 
     await user.save();
@@ -314,7 +326,6 @@ const store = async (req, res) => {
     res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
   } catch (error) {
     console.error(error);
-    // If validation fails, delete uploaded file
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
@@ -326,59 +337,55 @@ const store = async (req, res) => {
 // Show edit form
 const edit = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ _id: req.session.user._id });
+    const currentUser = await User.findById(req.session.user._id);
 
-    // Check if user can update this user
+    // Query user yang akan diedit
     let userQuery = { _id: req.params.id };
-    if (!req.session.user.email.includes("admin@")) {
-      userQuery.branch_id = currentUser.branch_id;
+    if (currentUser.level !== "Pusat") {
+      userQuery.branch_id = currentUser.branch_id; // Cabang hanya bisa akses user di cabangnya
     }
 
-    const user = await User.findOne(userQuery);
-    if (!user) {
-      req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(
-        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-      );
-    }
-
-    // Get data for dropdowns
-    let branchQuery = { isActive: true };
-    if (!req.session.user.email.includes("admin@")) {
-      branchQuery._id = currentUser.branch_id;
-    }
-
-    const branches = await Branch.find(branchQuery).sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({
-      level: 1,
-    });
-    const roles = await Role.find({
-      branch_id: user.branch_id,
-      isActive: true,
-    })
+    const user = await User.findOne(userQuery)
+      .populate("branch_id")
       .populate("division_id")
       .populate("position_id");
 
+    if (!user) {
+      req.session.errorMessage = "User not found or access denied!";
+      return res.redirect(
+        res.locals.base + "settings/users/index/" + res.getLocale()
+      );
+    }
+
+    // Query branch list
+    let branchQuery = { isActive: "active" };
+    if (currentUser.level !== "Pusat") {
+      branchQuery._id = currentUser.branch_id;
+    }
+
+    const branches = await Branch.find(branchQuery).select("name type");
+    const divisions = await Division.find({ isActive: true }).select("name");
+    const positions = await Position.find({ isActive: true })
+      .select("name level")
+      .sort("level");
+
     res.render("../views/pages/settings/users/index.ejs", {
       title: "Edit User",
-      user: user,
-      branches: branches,
-      divisions: divisions,
-      positions: positions,
-      roles: roles,
       layout: "../views/layout/app.ejs",
-      errors: null,
-      input: {},
+      name: "users",
+      user,
+      branches,
+      divisions,
+      positions,
+      errors: {},
+      userPermissions: req.userPermissions,
       successMessage: req.session.successMessage || null,
       errorMessage: req.session.errorMessage || null,
     });
   } catch (error) {
-    console.error(error);
-    req.session.errorMessage = "Failed to load user!";
-    res.redirect(
-      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-    );
+    console.error("User edit form error:", error);
+    req.session.errorMessage = "Failed to load edit form";
+    res.redirect(res.locals.base + "settings/users/index/" + res.getLocale());
   }
 };
 
@@ -403,26 +410,29 @@ const update = async (req, res) => {
       division_id,
       position_id,
       branch_id,
-      status,
+      level,
       isActive,
     } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [
-        { email: email },
-        { username: username },
-      ],
-      _id: { $ne: user._id }
-    })
+    // Check if user already exists (exclude current)
+    const existingUser = await User.findOne({
+      $or: [{ email: email }, { username: username }],
+      _id: { $ne: user._id },
+    });
 
     if (existingUser) {
-      req.session.errorMessage = "User with this email or username already exists!";
+      req.session.errorMessage =
+        "User with this email or username already exists!";
       return res.redirect(
-        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
+        process.env.BASE_URL +
+          "settings/users/edit/" +
+          user._id +
+          "/" +
+          res.getLocale()
       );
     }
 
+    // Update basic fields
     user.username = username;
     user.firstname = firstname;
     user.lastname = lastname;
@@ -430,12 +440,11 @@ const update = async (req, res) => {
     user.phoneNumber = phoneNumber;
     user.division_id = division_id;
     user.position_id = position_id;
-    user.isActive = isActive === "on";
+    user.isActive = isActive === "on" || isActive === true;
 
-    const isPusat = status === "on";
-    user.status = isPusat;
-
-    if (isPusat) {
+    // Level & Branch (string-based like version 1)
+    user.level = level;
+    if (level === "Pusat") {
       user.branch_id = null;
     } else {
       if (!branch_id) {
@@ -445,8 +454,9 @@ const update = async (req, res) => {
       user.branch_id = branch_id;
     }
 
+    // Handle photo
     if (req.file) {
-      // Delete old photo if it exists
+      // Delete old photo if exists
       if (user.photoProfile) {
         const oldPath = path.join(__dirname, "..", "public", user.photoProfile);
         if (fs.existsSync(oldPath)) {
@@ -456,14 +466,15 @@ const update = async (req, res) => {
       user.photoProfile = "uploads/profiles/" + req.file.filename;
     }
 
+    // Update password if provided
     if (password) {
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(12); // pakai 12 seperti versi pertama
       user.password = await bcrypt.hash(password, salt);
     }
 
-    // Find or create role
-    let roleBranchId = user.branch_id;
-    if (isPusat) {
+    // Find or create role (active only)
+    let roleBranchId = level === "Pusat" ? null : branch_id;
+    if (level === "Pusat") {
       const branchPusat = await Branch.findOne({ type: "pusat" });
       roleBranchId = branchPusat ? branchPusat._id : null;
     }
@@ -475,14 +486,20 @@ const update = async (req, res) => {
       isActive: true,
     });
 
-    if (!role && roleBranchId) {
-      const branch = await Branch.findById(roleBranchId);
+    if (!role) {
+      const branch = roleBranchId
+        ? await Branch.findById(roleBranchId)
+        : await Branch.findOne({ type: "pusat" });
       const division = await Division.findById(division_id);
       const position = await Position.findById(position_id);
 
       role = new Role({
-        name: `${position.name} - ${division.name} - ${branch.name}`,
-        description: `Default role for ${position.name} in ${division.name} at ${branch.name}`,
+        name: `${position.name} - ${division.name} - ${
+          branch ? branch.name : "Pusat"
+        }`,
+        description: `Default role for ${position.name} in ${
+          division.name
+        } at ${branch ? branch.name : "Pusat"}`,
         branch_id: roleBranchId,
         division_id: division_id,
         position_id: position_id,
@@ -490,6 +507,7 @@ const update = async (req, res) => {
       });
       await role.save();
     }
+
     if (role) {
       user.role_id = role._id;
     }
@@ -510,41 +528,38 @@ const update = async (req, res) => {
 // Delete user
 const destroy = async (req, res) => {
   try {
-    const currentUser = await User.findOne({ _id: req.session.user._id });
-
+    const userId = req.params.id;
+    
     // Prevent self-deletion
-    if (req.params.id === currentUser._id.toString()) {
-      req.session.errorMessage = "You cannot delete your own account!";
-      return res.redirect(
-        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-      );
+    if (req.session.user && req.session.user._id === userId) {
+      req.session.errorMessage = 'You cannot delete your own account';
+      return res.redirect(res.locals.base + 'settings/users/index/' + res.getLocale());
     }
 
-    // Check if user can delete this user
-    let deleteQuery = { _id: req.params.id };
-    if (currentUser.status === false && req.userBranchType !== "pusat") {
-      deleteQuery.branch_id = currentUser.branch_id;
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      req.session.errorMessage = 'User not found';
+      return res.redirect(res.locals.base + 'settings/users/index/' + res.getLocale());
     }
 
-    const result = await User.findOneAndDelete(deleteQuery);
-
-    if (!result) {
-      req.session.errorMessage = "User not found or access denied!";
-      return res.redirect(
-        process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-      );
+    // Delete photo if exists
+    if (user.photoProfile) {
+      const photoPath = path.join(__dirname, '..', 'public', user.photoProfile);
+      if (fs.existsSync(photoPath)) {
+        fs.unlinkSync(photoPath);
+      }
     }
 
-    req.session.successMessage = "User deleted successfully!";
-    res.redirect(
-      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-    );
+    // Delete user
+    await User.findByIdAndDelete(userId);
+
+    req.session.successMessage = 'User deleted successfully';
+    res.redirect(res.locals.base + 'settings/users/index/' + res.getLocale());
   } catch (error) {
-    console.error(error);
-    req.session.errorMessage = "Failed to delete user!";
-    res.redirect(
-      process.env.BASE_URL + "settings/users/index/" + res.getLocale()
-    );
+    console.error('User delete error:', error);
+    req.session.errorMessage = 'Failed to delete user';
+    res.redirect(res.locals.base + 'settings/users/index/' + res.getLocale());
   }
 };
 
@@ -555,25 +570,35 @@ const exportExcel = async (req, res) => {
     const currentUser = await User.findById(req.session.user._id).lean();
     let query = {};
 
-    const branch = req.query.branch || "all";
-    const status = req.query.status || "all";
+    // Get filter parameters from query (sent by frontend)
+    const filterBranch = req.query.filterBranch || "all";
+    const filterLevel = req.query.filterLevel || "all";
+    const filterStatus = req.query.filterStatus || "all";
 
-    if (!currentUser.status) {
-      query.branch_id = currentUser.branch_id;
-    } else {
-      // Kalau pusat:
-      if (branch !== "all") {
-        if (branch === "pusat") {
+    // Branch filtering
+    if (currentUser.level === "Pusat") {
+      // Pusat users can see all branches or filter by specific branch
+      if (filterBranch !== "all") {
+        if (filterBranch === "pusat") {
           query.branch_id = null; // khusus user pusat
         } else {
-          query.branch_id = new mongoose.Types.ObjectId(branch); // user cabang tertentu
+          query.branch_id = new mongoose.Types.ObjectId(filterBranch); // user cabang tertentu
         }
       }
+    } else {
+      // Cabang users can only see their own branch
+      query.branch_id = currentUser.branch_id;
     }
 
-    // Filter Status jika ada
-    if (status && status !== "all") {
-      query.isActive = status === "active";
+    // Level filtering
+    if (filterLevel && filterLevel !== "all") {
+      // Fix level filter logic to match frontend select options
+      query.level = filterLevel;
+    }
+
+    // Status filtering
+    if (filterStatus && filterStatus !== "all") {
+      query.isActive = filterStatus === "true";
     }
 
     const users = await User.find(query)
@@ -592,8 +617,8 @@ const exportExcel = async (req, res) => {
       { header: "Full Name", key: "fullName", width: 30 },
       { header: "Email", key: "email", width: 30 },
       { header: "Phone", key: "phoneNumber", width: 20 },
-      { header: "Status", key: "status", width: 15 },
-      { header: "Level", key: "level", width: 25 },
+      { header: "Level", key: "level", width: 15 },
+      { header: "Branch", key: "branch", width: 25 },
       { header: "Division", key: "division", width: 25 },
       { header: "Position", key: "position", width: 25 },
       { header: "Role", key: "role", width: 30 },
@@ -609,8 +634,8 @@ const exportExcel = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         phoneNumber: user.phoneNumber || "-",
-        status: user.status ? "Pusat" : "Cabang",
-        level: user.branch_id ? user.branch_id.name : "Kantor Pusat",
+        level: user.level || "-",
+        branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
         division: user.division_id ? user.division_id.name : "-",
         position: user.position_id ? user.position_id.name : "-",
         role: user.role_id ? user.role_id.name : "-",
@@ -658,25 +683,35 @@ const exportCSV = async (req, res) => {
     const currentUser = await User.findById(req.session.user._id).lean();
     let query = {};
 
-    const branch = req.query.branch || "all";
-    const status = req.query.status || "all";
+    // Get filter parameters from query (sent by frontend)
+    const filterBranch = req.query.filterBranch || "all";
+    const filterLevel = req.query.filterLevel || "all";
+    const filterStatus = req.query.filterStatus || "all";
 
-    if (!currentUser.status) {
-      query.branch_id = currentUser.branch_id;
-    } else {
-      // Kalau pusat:
-      if (branch !== "all") {
-        if (branch === "pusat") {
+    // Branch filtering
+    if (currentUser.level === "Pusat") {
+      // Pusat users can see all branches or filter by specific branch
+      if (filterBranch !== "all") {
+        if (filterBranch === "pusat") {
           query.branch_id = null; // khusus user pusat
         } else {
-          query.branch_id = new mongoose.Types.ObjectId(branch); // user cabang tertentu
+          query.branch_id = new mongoose.Types.ObjectId(filterBranch); // user cabang tertentu
         }
       }
+    } else {
+      // Cabang users can only see their own branch
+      query.branch_id = currentUser.branch_id;
     }
 
-    // Filter Status jika ada
-    if (status && status !== "all") {
-      query.isActive = status === "active";
+    // Level filtering
+    if (filterLevel && filterLevel !== "all") {
+      // Fix level filter logic to match frontend select options
+      query.level = filterLevel;
+    }
+
+    // Status filtering
+    if (filterStatus && filterStatus !== "all") {
+      query.isActive = filterStatus === "true";
     }
 
     const users = await User.find(query)
@@ -692,8 +727,8 @@ const exportCSV = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       phoneNumber: user.phoneNumber || "-",
-      status: user.status ? "Pusat" : "Cabang",
-      level: user.branch_id ? user.branch_id.name : "Kantor Pusat",
+      level: user.level || "-",
+      branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
       division: user.division_id ? user.division_id.name : "-",
       position: user.position_id ? user.position_id.name : "-",
       role: user.role_id ? user.role_id.name : "-",
@@ -715,8 +750,8 @@ const exportCSV = async (req, res) => {
       "Full Name",
       "Email",
       "Phone",
-      "Status",
       "Level",
+      "Branch",
       "Division",
       "Position",
       "Role",
@@ -732,8 +767,8 @@ const exportCSV = async (req, res) => {
           record.fullName,
           record.email,
           record.phoneNumber,
-          record.status,
           record.level,
+          record.branch,
           record.division,
           record.position,
           record.role,
@@ -755,30 +790,51 @@ const exportCSV = async (req, res) => {
 // Get roles by branch, division, and position (AJAX endpoint)
 const getRolesByFilters = async (req, res) => {
   try {
-    const { branch_id, division_id, position_id } = req.query;
+    const { branch_id, division_id, position_id, level } = req.query;
 
-    if (!branch_id && !division_id && !position_id) {
+    // Cek filter kosong
+    if (!branch_id && !division_id && !position_id && !level) {
       return res.json({ success: false, message: "No filters provided" });
     }
 
+    // Build query
     const query = { isActive: true };
-    if (branch_id) query.branch_id = branch_id;
+
+    if (level === "Pusat") {
+      // Jika level pusat, cari branch pusat
+      const pusatBranch = await Branch.findOne({ type: "pusat" });
+      if (pusatBranch) {
+        query.branch_id = pusatBranch._id;
+      }
+    } else if (branch_id) {
+      query.branch_id = branch_id;
+    }
+
     if (division_id) query.division_id = division_id;
     if (position_id) query.position_id = position_id;
 
+    // Cari role sesuai filter
     const roles = await Role.find(query)
-      .populate("branch_id")
-      .populate("division_id")
-      .populate("position_id");
+      .populate("branch_id", "name")
+      .populate("division_id", "name")
+      .populate("position_id", "name");
 
-    if (!roles) {
+    if (!roles || roles.length === 0) {
       return res.json({ success: false, message: "No roles found" });
     }
 
-    return res.json({ success: true, data: roles });
+    // Response lebih ringan (hanya data penting)
+    return res.json({
+      success: true,
+      roles: roles.map((role) => ({
+        _id: role._id,
+        name: role.name,
+        description: role.description,
+      })),
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to load roles" });
+    console.error("Get roles error:", error);
+    res.status(500).json({ success: false, message: "Failed to load roles" });
   }
 };
 
