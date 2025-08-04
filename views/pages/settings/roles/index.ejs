@@ -1,73 +1,142 @@
-<div class="container-fluid mt-30">
+<div class="container-fluid">
   <div class="row">
     <div class="col-lg-12">
       <!-- Success/Error Messages -->
       <% if (successMessage) { %>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <%= successMessage %>
-            <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
-              <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
-            </button>
+          <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+          </button>
         </div>
-        <% } %>
-          <% if (errorMessage) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <%= errorMessage %>
-                <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
-                  <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
-                </button>
-            </div>
-            <% } %>
-              <!-- Breadcrumb -->
-              <div class="breadcrumb-main">
-                <h4 class="text-capitalize breadcrumb-title">
-                  <%- __('Role Management') %>
-                </h4>
-                <div class="breadcrumb-action justify-content-center flex-wrap">
-                  <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                      <li class="breadcrumb-item">
-                        <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i><%-
-                            __('dashboard-menu-title') %></a>
-                      </li>
-                      <li class="breadcrumb-item"><a href="#">Settings</a></li>
-                      <li class="breadcrumb-item active" aria-current="page">Roles</li>
-                    </ol>
-                  </nav>
-                </div>
-              </div>
+      <% } %>
+      <% if (errorMessage) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= errorMessage %>
+          <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+          </button>
+        </div>
+      <% } %>
+      
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title"><%- __('Role Management') %></h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>">
+                  <i class="las la-home"></i><%- __('dashboard-menu-title') %>
+                </a>
+              </li>
+              <li class="breadcrumb-item"><a href="#">Settings</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Roles</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Role Hierarchy Visualization -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Role Hierarchy</h5>
+          <div class="card-options">
+            <button type="button" class="btn btn-sm btn-primary" onclick="toggleHierarchyView()">
+              <i class="uil-sitemap"></i> Toggle View
+            </button>
+          </div>
+        </div>
+        <div class="card-body" id="hierarchyContainer" style="display: none;">
+          <div id="roleHierarchyDiagram" style="width: 100%; height: 400px; border: 1px solid #ddd;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Actions -->
   <div class="row">
     <div class="col-12 mb-30">
       <div class="support-ticket-system support-ticket-system--search">
-        <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between">
+        <div class="breadcrumb-main m-0 breadcrumb-main--table justify-content-sm-between mb-4">
           <div class="d-flex flex-wrap justify-content-center breadcrumb-main__wrapper">
             <div class="d-flex align-items-center ticket__title justify-content-center me-md-25 mb-md-0 mb-20">
-              <h5 class="card-title mb-0">All Roles</h4>
+              <h5 class="card-title mb-0">All Roles</h5>
             </div>
           </div>
           <div class="action-btn">
             <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('create')) { %>
-              <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-roles">
-                <i class="uil-plus"></i> Create New Role
-              </a>
-              <% } %>
+              <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                  <i class="uil-plus"></i> Create Role
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modal-tambah-roles">
+                      <i class="uil-file-plus"></i> Create New Role
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modal-template-roles">
+                      <i class="uil-copy"></i> Create from Template
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modal-bulk-assign">
+                      <i class="uil-users-alt"></i> Bulk Assign
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            <% } %>
           </div>
         </div>
 
-        <!-- Search Roles -->
-        <div
-          class="support-form datatable-support-form d-flex justify-content-xxl-between justify-content-center align-items-center flex-wrap">
-          <div class="support-form__search">
-            <div class="support-order-search">
-              <form action="<%= locals.base %>settings/roles/index/<%- locale %>" method="GET"
-                class="support-order-search__form">
-                <img src="<%- locals.base %>img/svg/search.svg" alt="search" class="svg" />
-                <input class="form-control border-0 box-shadow-none" type="search" name="search"
-                  value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search" aria-label="Search" />
-              </form>
-            </div>
+        <!-- Advanced Filters -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <form action="<%= locals.base %>settings/roles/index/<%- locale %>" method="GET" id="filterForm">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <input type="text" class="form-control" name="search" 
+                         value="<%= search %>" placeholder="Search roles...">
+                </div>
+                <div class="col-md-2">
+                  <select class="form-control" name="level">
+                    <option value="all">All Levels</option>
+                    <option value="pusat" <%= filters.level === 'pusat' ? 'selected' : '' %>>Pusat</option>
+                    <option value="cabang" <%= filters.level === 'cabang' ? 'selected' : '' %>>Cabang</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-control" name="template">
+                    <option value="all">All Types</option>
+                    <option value="true" <%= filters.template === 'true' ? 'selected' : '' %>>Templates</option>
+                    <option value="false" <%= filters.template === 'false' ? 'selected' : '' %>>Regular</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select class="form-control" name="branch">
+                    <option value="all">All Branches</option>
+                    <% branches.forEach(branch => { %>
+                      <option value="<%= branch._id %>" <%= filters.branch === branch._id.toString() ? 'selected' : '' %>>
+                        <%= branch.name %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">
+                    <i class="uil-filter"></i> Filter
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -78,127 +147,152 @@
               <thead>
                 <tr class="userDatatable-header">
                   <th>Name</th>
+                  <th>Type</th>
+                  <th>Level</th>
                   <th>Branch</th>
                   <th>Division</th>
                   <th>Position</th>
+                  <th>Parent Role</th>
+                  <th>Assigned To</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <% if (roles && roles.length> 0) { %> <% roles.forEach(function(role) { %>
-                    <tr>
+                <% if (roles && roles.length > 0) { %>
+                  <% roles.forEach(function(role) { %>
+                    <tr class="<%= role.isTemplate ? 'table-info' : '' %>">
                       <td>
-                        <strong>
-                          <%= role.name %>
-                        </strong>
+                        <strong><%= role.name %></strong>
                         <% if (role.description) { %>
-                          <br /><small class="text-muted">
-                            <%= role.description %>
+                          <br/><small class="text-muted"><%= role.description %></small>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (role.isTemplate) { %>
+                          <span class="bg-info text-white userDatatable-content-status active">Template</span>
+                        <% } else { %>
+                          <span class="bg-secondary text-white userDatatable-content-status active">Regular</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (role.users_id && role.users_id.level) { %>
+                          <span class="bg-opacity-<%= role.users_id.level === 'Pusat' ? 'success' : 'warning' %> color-<%= role.users_id.level === 'Pusat' ? 'success' : 'warning' %> userDatatable-content-status active">
+                            <%= role.users_id.level %>
+                          </span>
+                        <% } else if (!role.branch_id || (role.branch_id && role.branch_id.type === 'pusat')) { %>
+                          <span class="bg-opacity-success color-primary userDatatable-content-status active">Pusat</span>
+                        <% } else { %>
+                          <span class="bg-opacity-warning color-warning userDatatable-content-status active">Cabang</span>
+                        <% } %>
+                      </td>
+                      <td><%= role.branch_id ? role.branch_id.name : 'All Branches' %></td>
+                      <td><%= role.division_id ? role.division_id.name : '-' %></td>
+                      <td><%= role.position_id ? role.position_id.name : '-' %></td>
+                      <td>
+                        <% if (role.parent_role_id) { %>
+                          <span class="bg-opacity-info color-info userDatatable-content-status active ">
+                            <i class="uil-sitemap"></i> <strong><%= role.parent_role_id.name %></strong>
+                          </span>
+                        <% } else { %>
+                          <span class="text-muted">-</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (role.users_id) { %>
+                          <small>
+                            <%= role.users_id.firstname %> <%= role.users_id.lastname %><br/>
+                            <span class="text-muted"><%= role.users_id.email %></span>
                           </small>
-                          <% } %>
-                      </td>
-                      <td>
-                        <%= role.branch_id ? role.branch_id.name : '-' %>
-                      </td>
-                      <td>
-                        <%= role.division_id ? role.division_id.name : '-' %>
-                      </td>
-                      <td>
-                        <%= role.position_id ? role.position_id.name : '-' %>
+                        <% } else { %>
+                          <span class="text-muted">Not assigned</span>
+                        <% } %>
                       </td>
                       <td>
                         <% if (role.isActive) { %>
-                          <div class="userDatatable-content d-inline-block">
-                            <span
-                              class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
-                          </div>
-                          <% } else { %>
-                            <div class="userDatatable-content d-inline-block">
-                              <span
-                                class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
-                            </div>
-                            <% } %>
+                          <span class="bg-opacity-success color-success userDatatable-content-status active">Active</span>
+                        <% } else { %>
+                          <span class="bg-opacity-danger color-danger userDatatable-content-status active">Inactive</span>
+                        <% } %>
                       </td>
                       <td>
                         <ul class="orderDatatable_actions mb-0 d-flex flex-wrap justify-content-center">
-                          <li>
-                            <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('update'))
-                              { %>
-                              <a href="<%= locals.base %>settings/roles/edit/<%= role._id %>/permissions/<%- locale %>"
-                                class="view">
+                          <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('update')) { %>
+                            <li>
+                              <a href="<%= locals.base %>settings/roles/edit/<%= role._id %>/permissions/<%- locale %>" 
+                                 class="view" title="Manage Permissions">
                                 <i class="uil-shield"></i>
                               </a>
-                              <% } %>
-                          </li>
-                          <li>
-                            <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('update'))
-                              { %>
-                              <a href="#" class="edit" data-id="<%= role._id %>" data-name="<%= role.name %>"
-                                data-description="<%= role.description || '' %>"
-                                data-branch="<%= role.branch_id ? role.branch_id._id : '' %>"
-                                data-division="<%= role.division_id ? role.division_id._id : '' %>"
-                                data-position="<%= role.position_id ? role.position_id._id : '' %>"
-                                data-active="<%= role.isActive ? 'on' : '' %>" data-bs-toggle="modal"
-                                data-bs-target="#modal-edit-roles">
+                            </li>
+                            <li>
+                              <a href="#" class="edit" 
+                                 data-id="<%= role._id %>" 
+                                 data-role='<%= JSON.stringify(role) %>'
+                                 data-bs-toggle="modal" 
+                                 data-bs-target="#modal-edit-roles"
+                                 title="Edit Role">
                                 <i class="uil-pen"></i>
                               </a>
-
-                              <% } %>
-                          </li>
-                          <li>
-                            <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('delete'))
-                              { %>
-                              <a class="remove" href="#" data-id="<%= role._id %>" data-bs-toggle="modal"
-                                data-bs-target="#modal-delete">
+                            </li>
+                          <% } %>
+                          <% if (userPermissions && userPermissions.roles && userPermissions.roles.includes('delete')) { %>
+                            <li>
+                              <a class="remove" href="#" 
+                                 data-id="<%= role._id %>" 
+                                 data-bs-toggle="modal" 
+                                 data-bs-target="#modal-delete"
+                                 title="Delete Role">
                                 <i class="uil-trash"></i>
                               </a>
-                              <% } %>
-                          </li>
+                            </li>
+                          <% } %>
                         </ul>
                       </td>
                     </tr>
-                    <% }) %>
-                      <% } else { %>
-                        <tr>
-                          <td colspan="6" class="text-center">No roles found</td>
-                        </tr>
-                        <% } %>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="10" class="text-center">No roles found</td>
+                  </tr>
+                <% } %>
               </tbody>
             </table>
           </div>
-          <div class="d-flex justify-content-end pt-30">
+          
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center pt-30">
+            <div class="pagination-info">
+              Showing <%= ((currentPage - 1) * limit) + 1 %> to <%= Math.min(currentPage * limit, total || 0) %> of <%=
+                    total || 0 %> Roles
+            </div>
             <nav class="dm-page">
               <ul class="dm-pagination d-flex">
                 <li class="dm-pagination__item">
-                  <% if (totalPages> 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %>"
-                      class="dm-pagination__link pagination-control <%= currentPage === 1 ? 'disabled' : '' %>">
+                  <% if (totalPages > 1) { %>
+                    <a href="?page=<%= currentPage - 1 %>&limit=<%= limit %>&level=<%= filters.level %>&template=<%= filters.template %>&branch=<%= filters.branch %>&search=<%= search %>"
+                       class="dm-pagination__link pagination-control <%= currentPage === 1 ? 'disabled' : '' %>">
                       <span class="la la-angle-left"></span>
                     </a>
-
-                    <% for (let i=1; i <=totalPages; i++) { %>
-                      <a href="?page=<%= i %>&limit=<%= limit %>"
-                        class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
-                        <span class="page-number">
-                          <%= i %>
-                        </span>
+                    
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                      <a href="?page=<%= i %>&limit=<%= limit %>&level=<%= filters.level %>&template=<%= filters.template %>&branch=<%= filters.branch %>&search=<%= search %>"
+                         class="dm-pagination__link <%= currentPage === i ? 'active' : '' %>">
+                        <span class="page-number"><%= i %></span>
                       </a>
-                      <% } %>
-
-                        <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %>"
-                          class="dm-pagination__link pagination-control <%= currentPage === totalPages ? 'disabled' : '' %>">
-                          <span class="la la-angle-right"></span>
-                        </a>
-                        <% } %>
-
+                    <% } %>
+                    
+                    <a href="?page=<%= currentPage + 1 %>&limit=<%= limit %>&level=<%= filters.level %>&template=<%= filters.template %>&branch=<%= filters.branch %>&search=<%= search %>"
+                       class="dm-pagination__link pagination-control <%= currentPage === totalPages ? 'disabled' : '' %>">
+                      <span class="la la-angle-right"></span>
+                    </a>
+                  <% } %>
                 </li>
                 <li class="dm-pagination__item">
                   <div class="paging-option">
                     <select name="page-number" class="page-selection">
-                      <option value="3" <%=limit==3 ? 'selected' : '' %>>3/page</option>
-                      <option value="10" <%=limit==10 ? 'selected' : '' %>>10/page</option>
-                      <option value="20" <%=limit==20 ? 'selected' : '' %>>20/page</option>
+                      <option value="5" <%= limit == 5 ? 'selected' : '' %>>5/page</option>
+                      <option value="10" <%= limit == 10 ? 'selected' : '' %>>10/page</option>
+                      <option value="20" <%= limit == 20 ? 'selected' : '' %>>20/page</option>
                     </select>
                   </div>
                 </li>
@@ -221,17 +315,14 @@
             <img src="<%- locals.base %>img/svg/alert-circle.svg" alt="alert-circle" class="svg">
           </div>
           <div class="modal-info-text">
-            <h6>Do you want to delete this roles?</h6>
-            <p>This action cannot be undone.</p>
+            <h6>Do you want to delete this role?</h6>
+            <p>This action cannot be undone. Make sure no users are assigned to this role.</p>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger btn-outlined btn-sm" data-bs-dismiss="modal">No</button>
-
-        <!-- ✅ Form Submit Here -->
         <form id="modalDeleteForm" method="POST" class="d-inline">
-          <!-- No need for _method override, backend uses POST for delete -->
           <button type="submit" class="btn btn-success btn-outlined btn-sm">Yes</button>
         </form>
       </div>
@@ -241,133 +332,301 @@
 
 <!-- Modal for Adding Roles -->
 <div class="modal-tambah-roles modal fade show" id="modal-tambah-roles" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content modal-bg-white ">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content modal-bg-white">
       <form method="POST" action="<%= locals.base %>settings/roles/create/<%- locale %>">
         <div class="modal-header">
-          <h6 class="modal-title">Tambah Roles</h6>
+          <h6 class="modal-title">Create New Role</h6>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
           </button>
         </div>
         <div class="modal-body">
-          <!-- Role Name -->
-          <div class="mb-3">
-            <label for="name" class="form-label">Role Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" id="name"
-              name="name" value="<%= locals.input ? input.name : '' %>" placeholder="Enter role name" required>
-            <% if (locals.errors && errors.name) { %>
-              <div class="invalid-feedback">
-                <%= errors.name.message %>
+          <div class="row">
+            <div class="col-md-6">
+              <!-- Role Name -->
+              <div class="mb-3">
+                <label for="name" class="form-label">Role Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" 
+                       placeholder="e.g., Sales Manager - Jakarta" required>
+                <div class="form-text">Use descriptive names like "Finance Staff - Bandung"</div>
               </div>
-              <% } %>
-                <div class="form-text">E.g., "Sales Manager - Jakarta", "Finance Staff - Bandung"</div>
+            </div>
+            
+            <div class="col-md-6">
+              <!-- Level Selection -->
+              <div class="mb-3">
+                <label for="role_level" class="form-label">Role Level <span class="text-danger">*</span></label>
+                <select class="form-control" id="role_level" name="role_level" required>
+                  <option value="">Select Level</option>
+                  <option value="pusat">Pusat (Head Office)</option>
+                  <option value="cabang">Cabang (Branch)</option>
+                </select>
+                <div class="form-text">Choose whether this role is for Pusat or Cabang</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Branch Selection (Hidden by default) -->
+          <div class="row" id="branch_selection" style="display: none;">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
+                <select class="form-control" id="branch_id" name="branch_id">
+                  <option value="">Select Branch</option>
+                  <% branches.filter(b => b.type !== 'pusat').forEach(branch => { %>
+                    <option value="<%= branch._id %>">
+                      <%= branch.name %>
+                    </option>
+                  <% }) %>
+                </select>
+                <div class="form-text">Select the branch for this role</div>
+              </div>
+            </div>
           </div>
 
           <!-- Description -->
           <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3"
-              placeholder="Enter role description"><%= locals.input ? input.description : '' %></textarea>
+            <textarea class="form-control" id="description" name="description" rows="2"
+                      placeholder="Brief description of role responsibilities"></textarea>
           </div>
 
-          <!-- Branch -->
-          <div class="mb-3">
-            <label for="branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.branch_id ? 'is-invalid' : '' %>" id="branch_id"
-              name="branch_id" required>
-              <option value="">Select Branch</option>
-              <% branches.forEach(branch=> { %>
-                <option value="<%= branch._id %>" <%=(locals.input && input.branch_id==branch._id) ? 'selected' : '' %>>
-                  <%= branch.name %>
-                </option>
-                <% }) %>
-            </select>
-            <% if (locals.errors && errors.branch_id) { %>
-              <div class="invalid-feedback">
-                <%= errors.branch_id.message %>
+          <div class="row">
+            <div class="col-md-6">
+              <!-- Division -->
+              <div class="mb-3">
+                <label for="division_id" class="form-label">Division <span class="text-danger">*</span></label>
+                <select class="form-control" id="division_id" name="division_id" required>
+                  <option value="">Select Division</option>
+                  <% divisions.forEach(division => { %>
+                    <option value="<%= division._id %>"><%= division.name %></option>
+                  <% }) %>
+                </select>
               </div>
-              <% } %>
-          </div>
-
-          <!-- Division -->
-          <div class="mb-3">
-            <label for="division_id" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.division_id ? 'is-invalid' : '' %>" id="division_id"
-              name="division_id" required>
-              <option value="">Select Division</option>
-              <% divisions.forEach(division=> { %>
-                <option value="<%= division._id %>" <%=(locals.input && input.division_id==division._id) ? 'selected'
-                  : '' %>>
-                  <%= division.name %>
-                </option>
-                <% }) %>
-            </select>
-            <% if (locals.errors && errors.division_id) { %>
-              <div class="invalid-feedback">
-                <%= errors.division_id.message %>
-              </div>
-              <% } %>
-          </div>
-
-          <!-- Position -->
-          <div class="mb-3">
-            <label for="position_id" class="form-label">Position <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.position_id ? 'is-invalid' : '' %>" id="position_id"
-              name="position_id" required>
-              <option value="">Select Position</option>
-              <% positions.forEach(position=> { %>
-                <option value="<%= position._id %>" <%=(locals.input && input.position_id==position._id) ? 'selected'
-                  : '' %>>
-                  <%= position.name %> (Level <%= position.level %>)
-                </option>
-                <% }) %>
-            </select>
-            <% if (locals.errors && errors.position_id) { %>
-              <div class="invalid-feedback">
-                <%= errors.position_id.message %>
-              </div>
-              <% } %>
-          </div>
-
-          <!-- Status -->
-          <div class="mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="isActive" name="isActive" <%=(!locals.input ||
-                (locals.input && input.isActive==='on' )) ? 'checked' : '' %>>
-              <label class="form-check-label" for="isActive">
-                Active Status
-              </label>
             </div>
-            <div class="form-text">Active roles can be assigned to users</div>
+            
+            <div class="col-md-6">
+              <!-- Position -->
+              <div class="mb-3">
+                <label for="position_id" class="form-label">Position <span class="text-danger">*</span></label>
+                <select class="form-control" id="position_id" name="position_id" required>
+                  <option value="">Select Position</option>
+                  <% positions.forEach(position => { %>
+                    <option value="<%= position._id %>">
+                      <%= position.name %> (Level <%= position.level %>)
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <!-- Parent Role -->
+              <div class="mb-3">
+                <label for="parent_role_id" class="form-label">Parent Role</label>
+                <select class="form-control" id="parent_role_id" name="parent_role_id">
+                  <option value="">No Parent (Top Level)</option>
+                  <% if (typeof parentRoles !== 'undefined' && parentRoles) { %>
+                    <% parentRoles.forEach(pr => { %>
+                      <option value="<%= pr._id %>"><%= pr.name %></option>
+                    <% }) %>
+                  <% } %>
+                </select>
+                <div class="form-text">Select parent for permission inheritance</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <!-- User Assignment -->
+              <div class="mb-3">
+                <label for="users_id" class="form-label">Assign to User</label>
+                <select class="form-control" id="users_id" name="users_id">
+                  <option value="">Not assigned to specific user</option>
+                  <% if (typeof users !== 'undefined' && users) { %>
+                    <optgroup label="Pusat Users" id="pusat_users_group">
+                      <% users.filter(u => u.level === 'Pusat').forEach(user => { %>
+                        <option value="<%= user._id %>" data-level="pusat">
+                          <%= user.firstname %> <%= user.lastname %> (<%= user.email %>)
+                        </option>
+                      <% }) %>
+                    </optgroup>
+                    <optgroup label="Cabang Users" id="cabang_users_group">
+                      <% users.filter(u => u.level === 'Cabang').forEach(user => { %>
+                        <option value="<%= user._id %>" data-level="cabang" data-branch="<%= user.branch_id %>">
+                          <%= user.firstname %> <%= user.lastname %> (<%= user.email %>)
+                        </option>
+                      <% }) %>
+                    </optgroup>
+                  <% } %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                <label class="form-check-label" for="isActive">Active Status</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="isTemplate" name="isTemplate">
+                <label class="form-check-label" for="isTemplate">Save as Template</label>
+              </div>
+            </div>
           </div>
 
           <!-- Info Alert -->
-          <div class="alert alert-info">
+          <div class="alert alert-info mt-3">
             <i class="bx bx-info-circle"></i>
-            <strong>Note:</strong> After creating this role, you can set its permissions by clicking the shield icon in
-            the roles list.
+            <strong>Note: </strong> 
+            <ul class="mb-0">
+              <li>Pusat roles have organization-wide permissions</li>
+              <li>Cabang roles are limited to their specific branch</li>
+              <li>After creating this role, set its permissions by clicking the shield icon</li>
+            </ul>
           </div>
         </div>
         <div class="modal-footer">
-          <!-- Buttons -->
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"> <i class="bx uil-save"></i> Create Division</button>
-            <a href="<%= locals.base %>administrasi/division/create/<%- locale %>" class="btn btn-secondary"
-              data-bs-dismiss="modal">
-              Cancel
-            </a>
-          </div>
+          <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Create Role</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal for Editing Roles -->
-<div class="modal-edit-roles modal fade" id="modal-edit-roles" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal for Creating from Template -->
+<div class="modal fade" id="modal-template-roles" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content modal-bg-white ">
+    <div class="modal-content modal-bg-white">
+      <form method="POST" action="<%= locals.base %>settings/roles/create-from-template/<%- locale %>">
+        <div class="modal-header">
+          <h6 class="modal-title">Create Role from Template</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="template_id" class="form-label">Select Template <span class="text-danger">*</span></label>
+            <select class="form-control" id="template_id" name="template_id" required>
+              <option value="">Choose a template...</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="template_name" class="form-label">Role Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="template_name" name="name" 
+                   placeholder="Enter role name" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="template_role_level" class="form-label">Role Level <span class="text-danger">*</span></label>
+            <select class="form-control" id="template_role_level" name="role_level" required>
+              <option value="">Select Level</option>
+              <option value="pusat">Pusat (Head Office)</option>
+              <option value="cabang">Cabang (Branch)</option>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="template_branch_selection" style="display: none;">
+            <label for="template_branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
+            <select class="form-control" id="template_branch_id" name="branch_id">
+              <option value="">Select Branch</option>
+              <% branches.filter(b => b.type !== 'pusat').forEach(branch => { %>
+                <option value="<%= branch._id %>"><%= branch.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="template_users_id" class="form-label">Assign to User</label>
+            <select class="form-control" id="template_users_id" name="users_id">
+              <option value="">Not assigned</option>
+              <% if (typeof users !== 'undefined' && users) { %>
+                <optgroup label="Pusat Users" id="template_pusat_users">
+                  <% users.filter(u => u.level === 'Pusat').forEach(user => { %>
+                    <option value="<%= user._id %>" data-level="pusat">
+                      <%= user.firstname %> <%= user.lastname %> (<%= user.email %>)
+                    </option>
+                  <% }) %>
+                </optgroup>
+                <optgroup label="Cabang Users" id="template_cabang_users">
+                  <% users.filter(u => u.level === 'Cabang').forEach(user => { %>
+                    <option value="<%= user._id %>" data-level="cabang" data-branch="<%= user.branch_id._id %>">
+                      <%= user.firstname %> <%= user.lastname %> (<%= user.email %>)
+                    </option>
+                  <% }) %>
+                </optgroup>
+              <% } %>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Create from Template</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Bulk Assignment -->
+<div class="modal fade" id="modal-bulk-assign" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content modal-bg-white">
+      <form method="POST" action="<%= locals.base %>settings/roles/bulk-assign/<%- locale %>">
+        <div class="modal-header">
+          <h6 class="modal-title">Bulk Role Assignment</h6>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg">
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="bulk_role_id" class="form-label">Select Role <span class="text-danger">*</span></label>
+            <select class="form-control" id="bulk_role_id" name="role_id" required>
+              <option value="">Choose a role...</option>
+              <% roles.filter(r => !r.isTemplate && r.isActive).forEach(role => { %>
+                <option value="<%= role._id %>">
+                  <%= role.name %> (<%= role.branch_id ? role.branch_id.name : 'All' %>)
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Select Users <span class="text-danger">*</span></label>
+            <div id="usersList" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+              <div class="text-center text-muted">Loading users...</div>
+            </div>
+          </div>
+          
+          <div class="alert alert-warning">
+            <i class="bx bx-info-circle"></i>
+            Selected users will be assigned to the chosen role. Their previous role assignments will be replaced.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Assign Role</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Role Modal -->
+<div class="modal-edit-roles modal fade" id="modal-edit-roles" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content modal-bg-white">
       <form method="POST" id="editRoleForm">
         <input type="hidden" name="_method" value="PUT" />
         <div class="modal-header">
@@ -377,112 +636,576 @@
           </button>
         </div>
         <div class="modal-body">
-          <!-- Role Name -->
-          <div class="mb-3">
-            <label for="edit-role-name" class="form-label">Role Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit-role-name" name="name" required />
-          </div>
-
-          <!-- Description -->
-          <div class="mb-3">
-            <label for="edit-role-description" class="form-label">Description</label>
-            <textarea class="form-control" id="edit-role-description" name="description" rows="3"></textarea>
-          </div>
-
-          <!-- Branch -->
-          <div class="mb-3">
-            <label for="edit-role-branch" class="form-label">Branch</label>
-            <select class="form-control" id="edit-role-branch" name="branch_id" required>
-              <% branches.forEach(branch=> { %>
-                <option value="<%= branch._id %>">
-                  <%= branch.name %>
-                </option>
-                <% }) %>
-            </select>
-          </div>
-
-          <!-- Division -->
-          <div class="mb-3">
-            <label for="edit-role-division" class="form-label">Division</label>
-            <select class="form-control" id="edit-role-division" name="division_id" required>
-              <% divisions.forEach(division=> { %>
-                <option value="<%= division._id %>">
-                  <%= division.name %>
-                </option>
-                <% }) %>
-            </select>
-          </div>
-
-          <!-- Position -->
-          <div class="mb-3">
-            <label for="edit-role-position" class="form-label">Position</label>
-            <select class="form-control" id="edit-role-position" name="position_id" required>
-              <% positions.forEach(position=> { %>
-                <option value="<%= position._id %>">
-                  <%= position.name %> (Level <%= position.level %>)
-                </option>
-                <% }) %>
-            </select>
-          </div>
-
-          <!-- Status -->
-          <div class="mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="edit-role-isActive" name="isActive">
-              <label class="form-check-label" for="edit-role-isActive">Active Status</label>
-            </div>
-          </div>
+          <!-- Content will be populated by JavaScript -->
         </div>
-
         <div class="modal-footer">
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Save Changes</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          </div>
+          <button type="submit" class="btn btn-primary"><i class="bx uil-save"></i> Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
+<!-- Load ApexTree for hierarchy visualization -->
+<script src="https://cdn.jsdelivr.net/npm/apextree"></script>
 
 <script>
-  // Handle Delete
-  document.querySelectorAll('.remove').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const roleId = this.getAttribute('data-id');
-      const form = document.getElementById('modalDeleteForm');
-      // Backend uses POST method for delete
-      form.action = "<%= locals.base %>settings/roles/delete/" + roleId + "/<%- locale %>";
-      form.method = "POST";
+// Initialize variables
+let hierarchyDiagram = null;
+let hierarchyVisible = false;
+
+// Toggle hierarchy view
+function toggleHierarchyView() {
+  const container = document.getElementById('hierarchyContainer');
+  if (hierarchyVisible) {
+    container.style.display = 'none';
+    hierarchyVisible = false;
+  } else {
+    container.style.display = 'block';
+    hierarchyVisible = true;
+    if (!hierarchyDiagram) {
+      loadHierarchyDiagram();
+    }
+  }
+}
+
+// Load hierarchy diagram
+function loadHierarchyDiagram() {
+  fetch('<%= locals.base %>settings/roles/api/hierarchy')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.treeData) {
+        initializeApexTree(data.treeData);
+      } else {
+        console.warn('No hierarchy data available');
+        document.getElementById('roleHierarchyDiagram').innerHTML = 
+          '<div class="text-center text-muted p-4">No role hierarchy data available</div>';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading hierarchy:', error);
+      document.getElementById('roleHierarchyDiagram').innerHTML = 
+        '<div class="text-center text-danger p-4">Error loading hierarchy data</div>';
     });
+}
+
+// Initialize ApexTree diagram
+function initializeApexTree(treeData) {
+  try {
+    // Clear the container first
+    const container = document.getElementById('roleHierarchyDiagram');
+    container.innerHTML = '';
+    
+    // ApexTree options
+    const options = {
+      contentKey: 'data',
+      width: 1500,
+      nodeWidth: 200,
+      nodeHeight: 150,
+      fontColor: '#fff',
+      borderColor: '#333',
+      childrenSpacing: 60,
+      siblingSpacing: 30,
+      direction: 'top',
+      nodeTemplate: (content) =>
+        `<div style='display: flex;flex-direction: column;gap: 8px;justify-content: center;align-items: center;height: 100%;padding: 10px;'>
+          <img style='width: 40px;height: 40px;border-radius: 50%;border: 2px solid #fff;' src='${content.imageURL}' alt='${content.name}' />
+          <div style="font-weight: bold; font-family: Arial; font-size: 13px; text-align: center; line-height: 1.2;">${content.name}</div>
+          <div style="font-size: 10px; opacity: 0.9; text-align: center;">${content.position}</div>
+          <div style="font-size: 9px; opacity: 0.8; text-align: center;">${content.branch}</div>
+          <div style="font-size: 8px; opacity: 0.7; text-align: center;">${content.assignedUser}</div>
+        </div>`,
+      canvasStyle: 'border: 1px solid #ddd;background: #f8f9fa;border-radius: 8px;',
+      enableToolbar: true,
+    };
+    
+    // Create and render the tree
+    hierarchyDiagram = new ApexTree(container, options);
+    hierarchyDiagram.render(treeData);
+    
+    console.log('ApexTree hierarchy rendered successfully');
+  } catch (error) {
+    console.error('Error initializing ApexTree:', error);
+    document.getElementById('roleHierarchyDiagram').innerHTML = 
+      '<div class="text-center text-danger p-4">Error rendering hierarchy visualization</div>';
+  }
+}
+
+// Handle delete
+document.querySelectorAll('.remove').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const roleId = this.getAttribute('data-id');
+    const form = document.getElementById('modalDeleteForm');
+    form.action = "<%= locals.base %>settings/roles/delete/" + roleId + "/<%- locale %>";
+    form.method = "POST";
   });
+});
 
-  // Isi form edit role ketika tombol edit diklik
-  document.querySelectorAll('.edit').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const id = this.dataset.id;
-      const name = this.dataset.name;
-      const description = this.dataset.description;
-      const branch = this.dataset.branch;
-      const division = this.dataset.division;
-      const position = this.dataset.position;
-      const isActive = this.dataset.active === 'on';
+// Handle level change for template modal
+document.getElementById('template_role_level').addEventListener('change', function() {
+  const branchSelection = document.getElementById('template_branch_selection');
+  const branchSelect = document.getElementById('template_branch_id');
+  const pusatUsers = document.getElementById('template_pusat_users');
+  const cabangUsers = document.getElementById('template_cabang_users');
+  
+  if (this.value === 'cabang') {
+    branchSelection.style.display = 'block';
+    branchSelect.setAttribute('required', 'required');
+    if (pusatUsers) pusatUsers.style.display = 'none';
+    if (cabangUsers) cabangUsers.style.display = 'block';
+  } else if (this.value === 'pusat') {
+    branchSelection.style.display = 'none';
+    branchSelect.removeAttribute('required');
+    branchSelect.value = '';
+    if (pusatUsers) pusatUsers.style.display = 'block';
+    if (cabangUsers) cabangUsers.style.display = 'none';
+  }
+  
+  // Reset user selection
+  document.getElementById('template_users_id').value = '';
+});
 
-      const form = document.getElementById('editRoleForm');
-      form.action = "<%= locals.base %>settings/roles/update/" + id + "/<%- locale %>";
+// Handle user selection in template modal
+document.getElementById('template_users_id').addEventListener('change', function() {
+  const selectedOption = this.options[this.selectedIndex];
+  if (selectedOption.value) {
+    const userLevel = selectedOption.getAttribute('data-level');
+    const userBranch = selectedOption.getAttribute('data-branch');
+    
+    // Auto-set role level
+    document.getElementById('template_role_level').value = userLevel;
+    
+    // Trigger level change event
+    document.getElementById('template_role_level').dispatchEvent(new Event('change'));
+    
+    // If cabang user, auto-set branch
+    if (userLevel === 'cabang' && userBranch) {
+      setTimeout(() => {
+        document.getElementById('template_branch_id').value = userBranch;
+      }, 100);
+    }
+  }
+});
 
-      document.getElementById('edit-role-name').value = name;
-      document.getElementById('edit-role-description').value = description;
-      document.getElementById('edit-role-branch').value = branch;
-      document.getElementById('edit-role-division').value = division;
-      document.getElementById('edit-role-position').value = position;
-      document.getElementById('edit-role-isActive').checked = isActive;
+// Validate template form before submit
+document.querySelector('#modal-template-roles form').addEventListener('submit', function(e) {
+  const roleLevel = document.getElementById('template_role_level').value;
+  const branchId = document.getElementById('template_branch_id').value;
+  
+  if (roleLevel === 'cabang' && !branchId) {
+    e.preventDefault();
+    alert('Please select a branch for Cabang level role!');
+    return false;
+  }
+});
+
+// Handle level change for create modal
+document.getElementById('role_level').addEventListener('change', function() {
+  const branchSelection = document.getElementById('branch_selection');
+  const branchSelect = document.getElementById('branch_id');
+  const usersSelect = document.getElementById('users_id');
+  const pusatUsersGroup = document.getElementById('pusat_users_group');
+  const cabangUsersGroup = document.getElementById('cabang_users_group');
+  
+  if (this.value === 'cabang') {
+    // Show branch selection
+    branchSelection.style.display = 'block';
+    branchSelect.setAttribute('required', 'required');
+    
+    // Hide pusat users, show cabang users
+    if (pusatUsersGroup) pusatUsersGroup.style.display = 'none';
+    if (cabangUsersGroup) cabangUsersGroup.style.display = 'block';
+    
+    // Reset user selection
+    usersSelect.value = '';
+  } else if (this.value === 'pusat') {
+    // Hide branch selection
+    branchSelection.style.display = 'none';
+    branchSelect.removeAttribute('required');
+    branchSelect.value = '';
+    
+    // Show pusat users, hide cabang users
+    if (pusatUsersGroup) pusatUsersGroup.style.display = 'block';
+    if (cabangUsersGroup) cabangUsersGroup.style.display = 'none';
+    
+    // Reset user selection
+    usersSelect.value = '';
+  }
+});
+
+// Handle edit with level rules
+document.querySelectorAll('.edit').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const roleData = JSON.parse(this.dataset.role);
+    const form = document.getElementById('editRoleForm');
+    form.action = "<%= locals.base %>settings/roles/update/" + roleData._id + "/<%- locale %>";
+    
+    // Determine role level
+    let roleLevel = 'cabang';
+    if (!roleData.branch_id || (roleData.branch_id && roleData.branch_id.type === 'pusat')) {
+      roleLevel = 'pusat';
+    }
+    
+    // Populate modal content with level handling
+    const modalBody = form.querySelector('.modal-body');
+    modalBody.innerHTML = `
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-name" class="form-label">Role Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit-name" name="name" value="${roleData.name}" required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-role_level" class="form-label">Role Level <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-role_level" name="role_level" required>
+              <option value="pusat" ${roleLevel === 'pusat' ? 'selected' : ''}>Pusat (Head Office)</option>
+              <option value="cabang" ${roleLevel === 'cabang' ? 'selected' : ''}>Cabang (Branch)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Branch Selection (conditionally shown) -->
+      <div class="row" id="edit-branch_selection" style="${roleLevel === 'cabang' ? 'display: block;' : 'display: none;'}">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label for="edit-branch_id" class="form-label">Branch <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-branch_id" name="branch_id" ${roleLevel === 'cabang' ? 'required' : ''}>
+              <option value="">Select Branch</option>
+              ${generateBranchOptionsEdit(roleData)}
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="edit-description" class="form-label">Description</label>
+        <textarea class="form-control" id="edit-description" name="description" rows="2">${roleData.description || ''}</textarea>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-division_id" class="form-label">Division <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-division_id" name="division_id" required>
+              ${generateDivisionOptions(roleData)}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-position_id" class="form-label">Position <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-position_id" name="position_id" required>
+              ${generatePositionOptions(roleData)}
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-parent_role_id" class="form-label">Parent Role</label>
+            <select class="form-control" id="edit-parent_role_id" name="parent_role_id">
+              <option value="">No Parent</option>
+              ${generateParentOptions(roleData)}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="edit-users_id" class="form-label">Assigned User</label>
+            <select class="form-control" id="edit-users_id" name="users_id">
+              <option value="">Not assigned</option>
+              ${generateUserOptionsEdit(roleData, roleLevel)}
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="edit-isActive" name="isActive" ${roleData.isActive ? 'checked' : ''}>
+            <label class="form-check-label" for="edit-isActive">Active Status</label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="edit-isTemplate" name="isTemplate" ${roleData.isTemplate ? 'checked' : ''}>
+            <label class="form-check-label" for="edit-isTemplate">Is Template</label>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add event listener for level change in edit modal
+    setTimeout(() => {
+      const editLevelSelect = document.getElementById('edit-role_level');
+      if (editLevelSelect) {
+        editLevelSelect.addEventListener('change', function() {
+          handleEditLevelChange(this.value);
+        });
+      }
+      
+      // Add event listener for user selection in edit modal
+      const editUserSelect = document.getElementById('edit-users_id');
+      if (editUserSelect) {
+        editUserSelect.addEventListener('change', function() {
+          handleEditUserChange(this);
+        });
+      }
+    }, 100);
+  });
+});
+
+// Handle level change in edit modal
+function handleEditLevelChange(level) {
+  const branchSelection = document.getElementById('edit-branch_selection');
+  const branchSelect = document.getElementById('edit-branch_id');
+  const usersSelect = document.getElementById('edit-users_id');
+  
+  if (level === 'cabang') {
+    // Show branch selection
+    branchSelection.style.display = 'block';
+    branchSelect.setAttribute('required', 'required');
+  } else if (level === 'pusat') {
+    // Hide branch selection
+    branchSelection.style.display = 'none';
+    branchSelect.removeAttribute('required');
+    branchSelect.value = '';
+  }
+  
+  // Filter users based on level
+  filterEditUsers(level);
+}
+
+// Handle user selection in edit modal
+function handleEditUserChange(selectElement) {
+  const selectedOption = selectElement.options[selectElement.selectedIndex];
+  if (selectedOption.value) {
+    const userLevel = selectedOption.getAttribute('data-level');
+    const userBranch = selectedOption.getAttribute('data-branch');
+    
+    // Auto-set role level
+    document.getElementById('edit-role_level').value = userLevel;
+    
+    // Trigger level change
+    handleEditLevelChange(userLevel);
+    
+    // If cabang user, auto-set branch
+    if (userLevel === 'cabang' && userBranch) {
+      setTimeout(() => {
+        document.getElementById('edit-branch_id').value = userBranch;
+      }, 100);
+    }
+  }
+}
+
+// Filter users in edit modal based on level
+function filterEditUsers(level) {
+  const usersSelect = document.getElementById('edit-users_id');
+  if (!usersSelect) return;
+  
+  const options = usersSelect.querySelectorAll('option');
+  options.forEach(option => {
+    if (option.value) {
+      const optionLevel = option.getAttribute('data-level');
+      if (level === 'pusat' && optionLevel === 'cabang') {
+        option.style.display = 'none';
+        if (option.selected) usersSelect.value = '';
+      } else if (level === 'cabang' && optionLevel === 'pusat') {
+        option.style.display = 'none';
+        if (option.selected) usersSelect.value = '';
+      } else {
+        option.style.display = 'block';
+      }
+    }
+  });
+}
+
+// Helper function to generate branch options for edit (excluding pusat)
+function generateBranchOptionsEdit(roleData) {
+  const branches = <%- JSON.stringify(branches.filter(b => b.type !== 'pusat') || []) %>;
+  return branches
+    .map(b => `<option value="${b._id}" ${roleData.branch_id && roleData.branch_id._id === b._id ? 'selected' : ''}>${b.name}</option>`)
+    .join('');
+}
+
+// Helper function to generate user options for edit with level data
+function generateUserOptionsEdit(roleData, roleLevel) {
+  // This would need to be loaded via AJAX or passed from backend
+  const users = <%- JSON.stringify(users || []) %>;
+  let html = '';
+  
+  // Pusat users
+  const pusatUsers = users.filter(u => u.level === 'Pusat');
+  if (pusatUsers.length > 0) {
+    html += `<optgroup label="Pusat Users" style="${roleLevel === 'cabang' ? 'display:none;' : ''}">`;
+    pusatUsers.forEach(user => {
+      const selected = roleData.users_id && roleData.users_id._id === user._id ? 'selected' : '';
+      html += `<option value="${user._id}" data-level="pusat" ${selected}>
+                ${user.firstname} ${user.lastname} (${user.email})
+              </option>`;
     });
-  });
+    html += '</optgroup>';
+  }
+  
+  // Cabang users
+  const cabangUsers = users.filter(u => u.level === 'Cabang');
+  if (cabangUsers.length > 0) {
+    html += `<optgroup label="Cabang Users" style="${roleLevel === 'pusat' ? 'display:none;' : ''}">`;
+    cabangUsers.forEach(user => {
+      const selected = roleData.users_id && roleData.users_id._id === user._id ? 'selected' : '';
+      html += `<option value="${user._id}" data-level="cabang" data-branch="${user.branch_id}" ${selected}>
+                ${user.firstname} ${user.lastname} (${user.email})
+              </option>`;
+    });
+    html += '</optgroup>';
+  }
+  
+  return html;
+}
 
-  document.querySelector('.page-selection').addEventListener('change', function () {
-    const selectedLimit = this.value;
-    window.location.href = `?page=1&limit=${selectedLimit}`;
-  });
+// Validate edit form before submit
+document.getElementById('editRoleForm').addEventListener('submit', function(e) {
+  const roleLevel = document.getElementById('edit-role_level').value;
+  const branchId = document.getElementById('edit-branch_id').value;
+  
+  if (roleLevel === 'cabang' && !branchId) {
+    e.preventDefault();
+    alert('Please select a branch for Cabang level role!');
+    return false;
+  }
+  
+  // If pusat, ensure branch_id is empty
+  if (roleLevel === 'pusat') {
+    document.getElementById('edit-branch_id').value = '';
+  }
+});
+
+// Helper functions for generating options
+function generateParentOptions(roleData) {
+  const parentRoles = <%-JSON.stringify(parentRoles || [])%>;
+  return parentRoles
+    .filter(r => r._id !== roleData._id)
+    .map(r => `<option value="${r._id}" ${roleData.parent_role_id && roleData.parent_role_id._id === r._id ? 'selected' : ''}>${r.name}</option>`)
+    .join('');
+}
+
+function generateBranchOptions(roleData) {
+  const branches = <%-JSON.stringify(branches || [])%>;
+  return branches
+    .map(b => `<option value="${b._id}" ${roleData.branch_id && roleData.branch_id._id === b._id ? 'selected' : ''}>${b.name}</option>`)
+    .join('');
+}
+
+function generateDivisionOptions(roleData) {
+  const divisions = <%-JSON.stringify(divisions || [])%>;
+  return divisions
+    .map(d => `<option value="${d._id}" ${roleData.division_id && roleData.division_id._id === d._id ? 'selected' : ''}>${d.name}</option>`)
+    .join('');
+}
+
+function generatePositionOptions(roleData) {
+  const positions = <%-JSON.stringify(positions || [])%>;
+  return positions
+    .map(p => `<option value="${p._id}" ${roleData.position_id && roleData.position_id._id === p._id ? 'selected' : ''}>${p.name} (Level ${p.level})</option>`)
+    .join('');
+}
+
+
+function generateUserOptions(roleData) {
+  // This would need to be loaded via AJAX
+  return roleData.users_id ? `<option value="${roleData.users_id._id}" selected>${roleData.users_id.firstname} ${roleData.users_id.lastname}</option>` : '';
+}
+
+// Handle page size change
+document.querySelector('.page-selection').addEventListener('change', function() {
+  const selectedLimit = this.value;
+  const urlParams = new URLSearchParams(window.location.search);
+  urlParams.set('limit', selectedLimit);
+  urlParams.set('page', '1');
+  window.location.href = `?${urlParams.toString()}`;
+});
+
+// Load templates when modal opens
+document.getElementById('modal-template-roles').addEventListener('show.bs.modal', function() {
+  fetch('<%= locals.base %>settings/roles/api/templates')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const select = document.getElementById('template_id');
+        select.innerHTML = '<option value="">Choose a template...</option>' +
+          data.templates.map(t => `<option value="${t._id}">${t.name} - ${t.description}</option>`).join('');
+      }
+    });
+});
+
+// Load users for bulk assignment
+document.getElementById('modal-bulk-assign').addEventListener('show.bs.modal', function() {
+  fetch('<%= locals.base %>settings/roles/api/users-without-role')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const container = document.getElementById('usersList');
+        if (data.users.length === 0) {
+          container.innerHTML = '<p class="text-center text-muted">No users without roles found</p>';
+        } else {
+          container.innerHTML = data.users.map(u => `
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="user_ids[]" value="${u._id}" id="user_${u._id}">
+              <label class="form-check-label" for="user_${u._id}">
+                ${u.firstname} ${u.lastname} - ${u.email} 
+                <span class="badge bg-${u.level === 'Pusat' ? 'primary' : 'warning'}">${u.level}</span>
+                ${u.branch_id ? `<span class="text-muted">(${u.branch_id.name})</span>` : ''}
+              </label>
+            </div>
+          `).join('');
+        }
+      }
+    });
+});
+
+// Validate form before submit
+document.querySelector('#modal-tambah-roles form').addEventListener('submit', function(e) {
+  const roleLevel = document.getElementById('role_level').value;
+  const branchId = document.getElementById('branch_id').value;
+  
+  if (roleLevel === 'cabang' && !branchId) {
+    e.preventDefault();
+    alert('Please select a branch for Cabang level role!');
+    return false;
+  }
+  
+  // If pusat, ensure branch_id is empty
+  if (roleLevel === 'pusat') {
+    document.getElementById('branch_id').value = '';
+  }
+});
+
+// Handle user selection to auto-set level and branch
+document.getElementById('users_id').addEventListener('change', function() {
+  const selectedOption = this.options[this.selectedIndex];
+  if (selectedOption.value) {
+    const userLevel = selectedOption.getAttribute('data-level');
+    const userBranch = selectedOption.getAttribute('data-branch');
+    
+    // Auto-set role level
+    document.getElementById('role_level').value = userLevel;
+    
+    // Trigger level change event
+    document.getElementById('role_level').dispatchEvent(new Event('change'));
+    
+    // If cabang user, auto-set branch
+    if (userLevel === 'cabang' && userBranch) {
+      setTimeout(() => {
+        document.getElementById('branch_id').value = userBranch;
+      }, 100);
+    }
+  }
+});
 </script>

@@ -50,7 +50,8 @@ async function seedDatabase() {
         }, 
         contact: { 
           phone: '0211234567' 
-        } 
+        },
+        isActive: 'active' // String enum as per branchSchema
       },
       { 
         name: 'Jakarta', 
@@ -66,7 +67,8 @@ async function seedDatabase() {
         }, 
         contact: { 
           phone: '0217654321' 
-        } 
+        },
+        isActive: 'active'
       },
       { 
         name: 'Bandung', 
@@ -82,7 +84,8 @@ async function seedDatabase() {
         }, 
         contact: { 
           phone: '0221234567' 
-        } 
+        },
+        isActive: 'active'
       },
       { 
         name: 'Surabaya', 
@@ -98,7 +101,8 @@ async function seedDatabase() {
         }, 
         contact: { 
           phone: '0311234567' 
-        } 
+        },
+        isActive: 'active'
       }
     ]);
 
@@ -107,13 +111,13 @@ async function seedDatabase() {
     // Create Divisions
     console.log('Creating divisions...');
     const divisions = await Division.insertMany([
-      { name: 'Direktur', code: 'DIR', description: 'Board of Directors' },
-      { name: 'Operasional', code: 'OPS', description: 'Operational Management' },
-      { name: 'Pemasaran', code: 'MKT', description: 'Marketing and Sales' },
-      { name: 'Keuangan', code: 'FIN', description: 'Financial Management' },
-      { name: 'Administrasi', code: 'ADM', description: 'Administrative Affairs' },
-      { name: 'HRD', code: 'HRD', description: 'Human Resources Development' },
-      { name: 'IT', code: 'IT', description: 'Information Technology' }
+      { name: 'Direktur', code: 'DIR', description: 'Board of Directors', isActive: true },
+      { name: 'Operasional', code: 'OPS', description: 'Operational Management', isActive: true },
+      { name: 'Pemasaran', code: 'MKT', description: 'Marketing and Sales', isActive: true },
+      { name: 'Keuangan', code: 'FIN', description: 'Financial Management', isActive: true },
+      { name: 'Administrasi', code: 'ADM', description: 'Administrative Affairs', isActive: true },
+      { name: 'HRD', code: 'HRD', description: 'Human Resources Development', isActive: true },
+      { name: 'IT', code: 'IT', description: 'Information Technology', isActive: true }
     ]);
 
     // Create Positions
@@ -137,23 +141,23 @@ async function seedDatabase() {
     // Create Modules
     console.log('Creating modules...');
     const modules = await Module.insertMany([
-      { name: 'Dashboard', code: 'dashboard', icon: 'bx bx-home', order: 1, route: '/dashboard' },
-      { name: 'Products', code: 'products', icon: 'bx bx-box', order: 2, route: '/products' },
-      { name: 'Sales', code: 'sales', icon: 'bx bx-cart', order: 3, route: '/sales' },
-      { name: 'Purchasing', code: 'purchasing', icon: 'bx bx-shopping-bag', order: 4, route: '/purchasing' },
-      { name: 'Inventory', code: 'inventory', icon: 'bx bx-package', order: 5, route: '/inventory' },
-      { name: 'Finance', code: 'finance', icon: 'bx bx-dollar', order: 6, route: '/finance' },
-      { name: 'Human Resources', code: 'hr', icon: 'bx bx-group', order: 7, route: '/hr' },
-      { name: 'Reports', code: 'reports', icon: 'bx bx-bar-chart', order: 8, route: '/reports' },
-      { name: 'Settings', code: 'settings', icon: 'bx bx-cog', order: 9, route: '/settings' },
+      { name: 'Dashboard', code: 'dashboard', icon: 'bx bx-home', order: 1, route: '/dashboard', isActive: true },
+      { name: 'Products', code: 'products', icon: 'bx bx-box', order: 2, route: '/products', isActive: true },
+      { name: 'Sales', code: 'sales', icon: 'bx bx-cart', order: 3, route: '/sales', isActive: true },
+      { name: 'Purchasing', code: 'purchasing', icon: 'bx bx-shopping-bag', order: 4, route: '/purchasing', isActive: true },
+      { name: 'Inventory', code: 'inventory', icon: 'bx bx-package', order: 5, route: '/inventory', isActive: true },
+      { name: 'Finance', code: 'finance', icon: 'bx bx-dollar', order: 6, route: '/finance', isActive: true },
+      { name: 'Human Resources', code: 'hr', icon: 'bx bx-group', order: 7, route: '/hr', isActive: true },
+      { name: 'Reports', code: 'reports', icon: 'bx bx-bar-chart', order: 8, route: '/reports', isActive: true },
+      { name: 'Settings', code: 'settings', icon: 'bx bx-cog', order: 9, route: '/settings', isActive: true },
       
       // Admin modules
-      { name: 'Branches', code: 'branches', icon: 'bx bx-building', order: 10, route: '/admin/branches' },
-      { name: 'Divisions', code: 'divisions', icon: 'bx bx-sitemap', order: 11, route: '/admin/divisions' },
-      { name: 'Positions', code: 'positions', icon: 'bx bx-user-pin', order: 12, route: '/admin/positions' },
-      { name: 'Users', code: 'users', icon: 'bx bx-user', order: 13, route: '/admin/users' },
-      { name: 'Roles', code: 'roles', icon: 'bx bx-shield', order: 14, route: '/admin/roles' },
-      { name: 'Modules', code: 'modules', icon: 'bx bx-grid-alt', order: 15, route: '/settings/modules' }
+      { name: 'Branches', code: 'branches', icon: 'bx bx-building', order: 10, route: '/admin/branches', isActive: true },
+      { name: 'Divisions', code: 'divisions', icon: 'bx bx-sitemap', order: 11, route: '/admin/divisions', isActive: true },
+      { name: 'Positions', code: 'positions', icon: 'bx bx-user-pin', order: 12, route: '/admin/positions', isActive: true },
+      { name: 'Users', code: 'users', icon: 'bx bx-user', order: 13, route: '/admin/users', isActive: true },
+      { name: 'Roles', code: 'roles', icon: 'bx bx-shield', order: 14, route: '/admin/roles', isActive: true },
+      { name: 'Modules', code: 'modules', icon: 'bx bx-grid-alt', order: 15, route: '/settings/modules', isActive: true }
     ]);
 
     // Create Permissions for each module
@@ -167,17 +171,18 @@ async function seedDatabase() {
           module_name: module.name,
           module_code: module.code,
           action: action,
-          description: `${action.charAt(0).toUpperCase() + action.slice(1)} ${module.name}`
+          description: `${action.charAt(0).toUpperCase() + action.slice(1)} ${module.name}`,
+          isActive: true
         });
       }
     }
 
     // Add special permissions
     permissions.push(
-      { module_name: 'Reports', module_code: 'reports', action: 'export', description: 'Export Reports' },
-      { module_name: 'Products', module_code: 'products', action: 'import', description: 'Import Products' },
-      { module_name: 'Sales', module_code: 'sales', action: 'approve', description: 'Approve Sales Orders' },
-      { module_name: 'Purchasing', module_code: 'purchasing', action: 'approve', description: 'Approve Purchase Orders' }
+      { module_name: 'Reports', module_code: 'reports', action: 'export', description: 'Export Reports', isActive: true },
+      { module_name: 'Products', module_code: 'products', action: 'import', description: 'Import Products', isActive: true },
+      { module_name: 'Sales', module_code: 'sales', action: 'approve', description: 'Approve Sales Orders', isActive: true },
+      { module_name: 'Purchasing', module_code: 'purchasing', action: 'approve', description: 'Approve Purchase Orders', isActive: true }
     );
 
     const createdPermissions = await Permission.insertMany(permissions);
@@ -187,6 +192,15 @@ async function seedDatabase() {
     const roles = [];
     // Using a stronger password that meets the requirements: at least 6 characters with uppercase, lowercase, number, and special character
     const hashedPassword = await bcrypt.hash('P@ssw0rd!', 12);
+    
+    // Validate password meets userSchema requirements
+    const testPassword = 'P@ssw0rd!';
+    if (testPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(testPassword)) {
+      throw new Error('Password must contain uppercase, lowercase, number, and special character');
+    }
 
     // 1. Direktur Utama Role (Pusat)
     const direktorRole = await Role.create({
@@ -336,7 +350,7 @@ async function seedDatabase() {
       lastname: 'Utama',
       email: 'direktur@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000001',
+      phoneNumber: '08120000001', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'DIR')._id,
@@ -352,7 +366,7 @@ async function seedDatabase() {
       lastname: 'Operasional',
       email: 'mgr.operasional@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000002',
+      phoneNumber: '08120000002', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'OPS')._id,
@@ -368,7 +382,7 @@ async function seedDatabase() {
       lastname: 'Pemasaran',
       email: 'mgr.pemasaran@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000003',
+      phoneNumber: '08120000003', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'MKT')._id,
@@ -384,7 +398,7 @@ async function seedDatabase() {
       lastname: 'Keuangan',
       email: 'mgr.keuangan@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000004',
+      phoneNumber: '08120000004', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'FIN')._id,
@@ -400,7 +414,7 @@ async function seedDatabase() {
       lastname: 'Administrasi',
       email: 'mgr.administrasi@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000005',
+      phoneNumber: '08120000005', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'ADM')._id,
@@ -416,7 +430,7 @@ async function seedDatabase() {
       lastname: 'HRD',
       email: 'mgr.hrd@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000006',
+      phoneNumber: '08120000006', // Indonesian format without +62 prefix
       level: 'Pusat', // Using new level field
       branch_id: null, // Pusat users should have null branch_id
       division_id: divisions.find(d => d.code === 'HRD')._id,
@@ -432,7 +446,7 @@ async function seedDatabase() {
       lastname: 'Cabang Jakarta',
       email: 'kcb.jakarta@samudra.com',
       password: hashedPassword,
-      phoneNumber: '081200000007',
+      phoneNumber: '08120000007', // Indonesian format without +62 prefix
       level: 'Cabang', // Using new level field
       branch_id: jakartaBranch._id,
       division_id: divisions.find(d => d.code === 'OPS')._id,
