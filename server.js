@@ -72,7 +72,7 @@ const piutang_routes = require("./routes/piutangRoutes");
 const absensi_routes = require("./routes/absensiRoutes");
 const cuti_routes = require("./routes/cutiRoutes");
 const gaji_routes = require("./routes/gajiRoutes");
-const karyawan_routes = require("./routes/employeeRoutes");
+const employee_routes = require("./routes/employeeRoutes");
 const laporan_routes = require("./routes/laporanRoutes");
 
 // register all the assets
@@ -182,7 +182,7 @@ app.use(BASE_URL + "keuangan/piutang", piutang_routes);
 app.use(BASE_URL + "hrd/absensi", absensi_routes);
 app.use(BASE_URL + "hrd/cuti", cuti_routes);
 app.use(BASE_URL + "hrd/gaji", gaji_routes);
-app.use(BASE_URL + "hrd/karyawan", karyawan_routes);
+app.use(BASE_URL + "hrd/employees", employee_routes);
 app.use(BASE_URL + "hrd/laporan", laporan_routes);
 
 app.use(localeMiddleware.activeLocale);

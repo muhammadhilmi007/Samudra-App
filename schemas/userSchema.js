@@ -131,4 +131,10 @@ userSchema.virtual('fullName').get(function() {
 
 userSchema.plugin(validator, { message: "Error, expected {PATH} to be unique. Value: {VALUE}" });
 
+// Method to generate hash for password
+userSchema.methods.generateHash = function(password) {
+  const bcrypt = require('bcrypt');
+  return bcrypt.hash(password, 10);
+};
+
 module.exports = userSchema;

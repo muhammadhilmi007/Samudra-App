@@ -13,7 +13,7 @@ const index = async (req, res) => {
   try {
     const currentUser = await User.findById(req.session.user._id);
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
     const filterLevel = req.query.level || "all";

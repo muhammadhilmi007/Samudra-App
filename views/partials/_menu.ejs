@@ -392,16 +392,16 @@
       <% } %>
 
       <!-- HRD Section -->
-      <% if (hasChildPermission(['hr', 'karyawan', 'absensi', 'gaji', 'cuti', 'laporan'])) { %>
+      <% if (hasChildPermission(['hr', 'employees', 'absensi', 'gaji', 'cuti', 'laporan'])) { %>
       <li class="menu-title mt-30">
         <span>HRD</span>
       </li>
 
-      <% if (hasPermission('karyawan')) { %>
+      <% if (hasPermission('employees')) { %>
       <li>
-        <a href="<%- locals.base %>hrd/karyawan/index/<%- locale %>" class="<%- name === 'karyawan' ?'active':'' %>">
+        <a href="<%- locals.base %>hrd/employees/index/<%- locale %>" class="<%- name === 'employees' ?'active':'' %>">
           <span class="nav-icon uil uil-user"></span>
-          <span class="menu-text"><%- __('karyawan') %></span>
+          <span class="menu-text"><%- __('employees') %></span>
         </a>
       </li>
       <% } %>

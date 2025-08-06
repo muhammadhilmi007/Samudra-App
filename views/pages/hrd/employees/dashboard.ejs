@@ -1,0 +1,311 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title">Employee Dashboard</h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i>Dashboard</a>
+              </li>
+              <li class="breadcrumb-item"><a href="<%= locals.base %>hrd/employees/index/<%- locale %>">Employees</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row">
+    <div class="col-xxl-3 col-md-6 mb-25">
+      <div class="card border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <span class="text-muted">Total Employees</span>
+              <h2 class="mb-0 mt-1"><%= statistics.total %></h2>
+              <span class="text-success small">
+                <i class="las la-arrow-up"></i> All registered
+              </span>
+            </div>
+            <div class="h-60">
+              <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="las la-users text-white fs-30"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xxl-3 col-md-6 mb-25">
+      <div class="card border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <span class="text-muted">Active Employees</span>
+              <h2 class="mb-0 mt-1"><%= statistics.active %></h2>
+              <span class="text-info small">
+                <%= Math.round((statistics.active / statistics.total) * 100) %>% of total
+              </span>
+            </div>
+            <div class="h-60">
+              <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="las la-user-check text-white fs-30"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xxl-3 col-md-6 mb-25">
+      <div class="card border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <span class="text-muted">New This Month</span>
+              <h2 class="mb-0 mt-1"><%= statistics.newThisMonth %></h2>
+              <span class="text-primary small">
+                <i class="las la-calendar"></i> <%= new Date().toLocaleDateString('en-US', { month: 'long' }) %>
+              </span>
+            </div>
+            <div class="h-60">
+              <div class="bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="las la-user-plus text-white fs-30"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xxl-3 col-md-6 mb-25">
+      <div class="card border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <span class="text-muted">Resigned This Month</span>
+              <h2 class="mb-0 mt-1"><%= statistics.resignedThisMonth %></h2>
+              <span class="text-danger small">
+                <i class="las la-arrow-down"></i> Turnover rate
+              </span>
+            </div>
+            <div class="h-60">
+              <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="las la-user-times text-white fs-30"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Cards -->
+  <div class="row">
+    <div class="col-md-6 mb-25">
+      <div class="card border-0 bg-warning bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="me-3">
+              <i class="las la-exclamation-triangle text-warning fs-40"></i>
+            </div>
+            <div>
+              <h5 class="mb-1 text-white">Expiring Documents</h5>
+              <p class="mb-0 text-white">
+                <strong><%= statistics.expiringDocuments %></strong> document(s) will expire within 30 days
+              </p>
+            </div>
+            <div class="ms-auto">
+              <a href="<%= locals.base %>hrd/employees/index/<%- locale %>" class="btn btn-sm btn-warning-hover">
+                View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-25">
+      <div class="card border-0 bg-danger bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="me-3">
+              <i class="las la-graduation-cap text-danger fs-40"></i>
+            </div>
+            <div>
+              <h5 class="mb-1 text-white">Pending Training</h5>
+              <p class="mb-0 text-white">
+                <strong><%= statistics.pendingTrainings %></strong> required training(s) pending completion
+              </p>
+            </div>
+            <div class="ms-auto">
+              <a href="<%= locals.base %>hrd/employees/index/<%- locale %>" class="btn btn-sm btn-danger-hover">
+                View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row">
+    <div class="col-md-6 mb-25">
+      <div class="card">
+        <div class="card-header">
+          <h6>Employees by Branch</h6>
+        </div>
+        <div class="card-body">
+          <canvas id="branchChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-25">
+      <div class="card">
+        <div class="card-header">
+          <h6>Employees by Position</h6>
+        </div>
+        <div class="card-body">
+          <canvas id="positionChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h6>Recent Employee Activities</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Employee</th>
+                  <th>Activity</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><%= new Date().toLocaleDateString() %></td>
+                  <td>John Doe</td>
+                  <td><span class="badge bg-success rounded-pill">New Hire</span></td>
+                  <td>Joined as Staff in Jakarta Branch</td>
+                </tr>
+                <tr>
+                  <td><%= new Date(Date.now() - 86400000).toLocaleDateString() %></td>
+                  <td>Jane Smith</td>
+                  <td><span class="badge bg-info rounded-pill">Training</span></td>
+                  <td>Completed Safety Training</td>
+                </tr>
+                <tr>
+                  <td><%= new Date(Date.now() - 172800000).toLocaleDateString() %></td>
+                  <td>Robert Johnson</td>
+                  <td><span class="badge bg-warning rounded-pill">Document</span></td>
+                  <td>SIM expires in 25 days</td>
+                </tr>
+                <tr>
+                  <td><%= new Date(Date.now() - 259200000).toLocaleDateString() %></td>
+                  <td>Maria Garcia</td>
+                  <td><span class="badge bg-primary rounded-pill">Mutation</span></td>
+                  <td>Transferred to Surabaya Branch</td>
+                </tr>
+                <tr>
+                  <td><%= new Date(Date.now() - 345600000).toLocaleDateString() %></td>
+                  <td>David Wilson</td>
+                  <td><span class="badge bg-danger rounded-pill">Resignation</span></td>
+                  <td>Last working day on <%= new Date(Date.now() + 2592000000).toLocaleDateString() %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Branch Chart
+  const branchCtx = document.getElementById('branchChart').getContext('2d');
+  const branchData = <%= JSON.stringify(charts.byBranch) %>;
+  
+  new Chart(branchCtx, {
+    type: 'doughnut',
+    data: {
+      labels: branchData.map(item => item.name),
+      datasets: [{
+        data: branchData.map(item => item.count),
+        backgroundColor: [
+          '#5F63F2',
+          '#20C997',
+          '#FA8B0C',
+          '#FF69A5',
+          '#00B69B',
+          '#7366FF'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        }
+      }
+    }
+  });
+
+  // Position Chart
+  const positionCtx = document.getElementById('positionChart').getContext('2d');
+  const positionData = <%= JSON.stringify(charts.byPosition) %>;
+  
+  new Chart(positionCtx, {
+    type: 'bar',
+    data: {
+      labels: positionData.map(item => item.name),
+      datasets: [{
+        label: 'Number of Employees',
+        data: positionData.map(item => item.count),
+        backgroundColor: '#5F63F2',
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    }
+  });
+</script>

@@ -1,0 +1,968 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title">Employee Detail</h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"
+                  ><i class="las la-home"></i>Dashboard</a
+                >
+              </li>
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>hrd/employees/index/<%- locale %>"
+                  >Employees</a
+                >
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">
+                <%= employee.employeeCode %>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Header -->
+  <div class="row mb-4">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-auto">
+              <% if (employee.displayPhotoPath) { %>
+              <img
+                src="<%= locals.base %><%= employee.displayPhotoPath %>"
+                alt="<%= employee.firstname %> <%= employee.lastname %>"
+                class="rounded-circle"
+                style="width: 120px; height: 120px; object-fit: cover"
+              />
+              <% } else { %>
+              <div
+                class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+                style="width: 120px; height: 120px"
+              >
+                <span class="text-white fs-1"
+                  ><%= employee.firstname.charAt(0) %></span
+                >
+              </div>
+              <% } %>
+            </div>
+            <div class="col-md">
+              <h4 class="mb-1"><%= employee.firstname %> <%= employee.lastname %></h4>
+              <span class="fw-bold text-dark text-center"><%= employee.employeeCode %></span>
+              <div class="row mt-10">
+                <div class="col-md-3">
+                  <small class="text-muted">Position</small>
+                  <p class="mb-0">
+                    <strong><%= employee.positionId?.name || '-' %></strong>
+                  </p>
+                </div>
+                <div class="col-md-3">
+                  <small class="text-muted">Division</small>
+                  <p class="mb-0">
+                    <strong><%= employee.divisionId?.name || '-' %></strong>
+                  </p>
+                </div>
+                <div class="col-md-3">
+                  <small class="text-muted">Branch</small>
+                  <p class="mb-0">
+                    <strong><%= employee.branchId?.name || 'Pusat' %></strong>
+                  </p>
+                </div>
+                <div class="col-md-3">
+                  <small class="text-muted">Status</small>
+                  <p class="text-muted">
+                    <% if (employee.status === 'Active') { %>
+                    <span class="badge bg-success text-white rounded-pill">Active</span>
+                    <% } else if (employee.status === 'Resigned') { %>
+                    <span class="badge bg-danger text-white rounded-pill">Resigned</span>
+                    <% } else if (employee.status === 'Mutated') { %>
+                    <span class="badge bg-info text-white rounded-pill">Mutated</span>
+                    <% } else { %>
+                    <span class="badge bg-warning text-white rounded-pill">Inactive</span>
+                    <% } %>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-auto">
+              <% if (locals.userPermissions && userPermissions.employees &&
+              userPermissions.employees.includes('update')) { %>
+              <a
+                href="<%= locals.base %>hrd/employees/edit/<%= employee._id %>/<%- locale %>"
+                class="btn btn-primary"
+              >
+                <i class="las la-edit"></i> Edit Employee
+              </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <ul class="nav nav-tabs" id="employeeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link <%= activeTab === 'profile' ? 'active' : '' %>"
+                id="profile-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#profile"
+                type="button"
+                role="tab"
+              >
+                <i class="las la-user"></i> Profile
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link <%= activeTab === 'documents' ? 'active' : '' %>"
+                id="documents-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#documents"
+                type="button"
+                role="tab"
+              >
+                <i class="las la-file-alt"></i> Documents <% if
+                (expiringDocuments.length > 0) { %>
+                <span class="badge bg-warning ms-1"
+                  ><%= expiringDocuments.length %></span>
+                <% } %>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link <%= activeTab === 'history' ? 'active' : '' %>"
+                id="history-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#history"
+                type="button"
+                role="tab"
+              >
+                <i class="las la-history"></i> Employment History
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link <%= activeTab === 'training' ? 'active' : '' %>"
+                id="training-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#training"
+                type="button"
+                role="tab"
+              >
+                <i class="las la-graduation-cap"></i> Training <% if
+                (pendingTraining.length > 0) { %>
+                <span class="badge bg-danger ms-1"
+                  ><%= pendingTraining.length %></span
+                >
+                <% } %>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link <%= activeTab === 'logs' ? 'active' : '' %>"
+                id="logs-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#logs"
+                type="button"
+                role="tab"
+              >
+                <i class="las la-list"></i> Activity Logs
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="employeeTabContent">
+            <!-- Profile Tab -->
+            <div
+              class="tab-pane fade <%= activeTab === 'profile' ? 'show active' : '' %>"
+              id="profile"
+              role="tabpanel"
+            >
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-3 text-primary">Personal Information</h6>
+                  <table class="table table-borderless">
+                    <tr>
+                      <td width="40%">Full Name</td>
+                      <td><strong><%= employee.firstname %> <%= employee.lastname %></strong></td>
+                    </tr>
+                    <tr>
+                      <td>Username</td>
+                      <td>@<%= employee.username %></td>
+                    </tr>
+                    <tr>
+                      <td>Birth Date</td>
+                      <td>
+                        <%= new
+                        Date(employee.birthdate).toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'long', year: 'numeric' }) %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Age</td>
+                      <td><%= employee.age %> years</td>
+                    </tr>
+                    <tr>
+                      <td>Gender</td>
+                      <td><%= employee.gender %></td>
+                    </tr>
+                    <tr>
+                      <td>Marital Status</td>
+                      <td><%= employee.maritalStatus %></td>
+                    </tr>
+                    <tr>
+                      <td>KTP Number</td>
+                      <td><%= employee.noKTP %></td>
+                    </tr>
+                    <tr>
+                      <td>SIM Number</td>
+                      <td><%= employee.noSIM || '-' %></td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="mb-3 text-primary">Contact Information</h6>
+                  <table class="table table-borderless">
+                    <tr>
+                      <td width="40%">Email</td>
+                      <td>
+                        <a href="mailto:<%= employee.contact.email %>"
+                          ><%= employee.contact.email %></a
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>WhatsApp</td>
+                      <td>
+                        <a
+                          href="https://wa.me/<%= employee.contact.noPhone.replace(/\D/g, '') %>"
+                          target="_blank"
+                        >
+                          <%= employee.contact.noPhone %>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Emergency Contact</td>
+                      <td><%= employee.contact.noPhoneEmergency %></td>
+                    </tr>
+                    <tr>
+                      <td>Alternative Contact</td>
+                      <td><%= employee.contact.noPhoneContact || '-' %></td>
+                    </tr>
+                  </table>
+
+                  <h6 class="mb-3 mt-4 text-primary">Address</h6>
+                  <p class="mb-0">
+                    <%= employee.address.street || '' %><br />
+                    <%= [employee.address.district,
+                    employee.address.city].filter(Boolean).join(', ') %><br />
+                    <%= employee.address.province || '' %> <%=
+                    employee.address.postalCode || '' %><br />
+                    <%= employee.address.country || 'Indonesia' %>
+                  </p>
+                </div>
+              </div>
+
+              <hr class="my-4" />
+
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="mb-3 text-primary">Employment Information</h6>
+                  <table class="table table-borderless">
+                    <tr>
+                      <td width="40%">Join Date</td>
+                      <td>
+                        <strong
+                          ><%= new
+                          Date(employee.joinDate).toLocaleDateString('id-ID', {
+                          day: 'numeric', month: 'long', year: 'numeric' })
+                          %></strong
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Length of Service</td>
+                      <td>
+                        <% const joinDate = new Date(employee.joinDate); const
+                        today = new Date(); const years = today.getFullYear() -
+                        joinDate.getFullYear(); const months = today.getMonth()
+                        - joinDate.getMonth(); const totalMonths = years * 12 +
+                        months; %> <%= Math.floor(totalMonths / 12) %> years <%=
+                        totalMonths % 12 %> months
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Supervisor</td>
+                      <td>
+                        <% if (employee.supervisor) { %>
+                        <a
+                          href="<%= locals.base %>hrd/employees/detail/<%= employee.supervisor._id %>/<%- locale %>"
+                        >
+                          <%= employee.supervisor.firstname %> <%=
+                          employee.supervisor.lastname || '' %>
+                        </a>
+                        <% } else { %> - <% } %>
+                      </td>
+                    </tr>
+                    <% if (employee.resignDate) { %>
+                    <tr>
+                      <td>Resign Date</td>
+                      <td class="text-danger">
+                        <strong
+                          ><%= new
+                          Date(employee.resignDate).toLocaleDateString('id-ID',
+                          { day: 'numeric', month: 'long', year: 'numeric' })
+                          %></strong
+                        >
+                      </td>
+                    </tr>
+                    <% } %> <% if (employee.mutationDate) { %>
+                    <tr>
+                      <td>Last Mutation</td>
+                      <td>
+                        <%= new
+                        Date(employee.mutationDate).toLocaleDateString('id-ID',
+                        { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                      </td>
+                    </tr>
+                    <% } %>
+                  </table>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="mb-3 text-primary">System Information</h6>
+                  <table class="table table-borderless">
+                    <tr>
+                      <td width="40%">User Account</td>
+                      <td>
+                        <% if (employee.userId) { %> <% if
+                        (employee.userId.isActive) { %>
+                        <span class="badge bg-success rounded-pill">Active</span>
+                        <% } else { %>
+                        <span class="badge bg-danger rounded-pill">Inactive</span>
+                        <% } %> <% } %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Last Login</td>
+                      <td>
+                        <% if (employee.userId && employee.userId.lastLogin) {
+                        %> <%= new
+                        Date(employee.userId.lastLogin).toLocaleString('id-ID')
+                        %> <% } else { %> Never <% } %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Created At</td>
+                      <td>
+                        <%= new Date(employee.createdAt).toLocaleString('id-ID')
+                        %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Updated At</td>
+                      <td>
+                        <%= new Date(employee.updatedAt).toLocaleString('id-ID')
+                        %>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div
+              class="tab-pane fade <%= activeTab === 'documents' ? 'show active' : '' %>"
+              id="documents"
+              role="tabpanel"
+            >
+              <div class="mb-4">
+                <% if (locals.userPermissions && userPermissions.employees &&
+                userPermissions.employees.includes('update')) { %>
+                <button
+                  class="btn btn-sm btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#uploadDocumentModal"
+                >
+                  <i class="las la-upload"></i> Upload Document
+                </button>
+                <% } %>
+              </div>
+
+              <% if (expiringDocuments.length > 0) { %>
+              <div class="alert alert-warning">
+                <i class="las la-exclamation-triangle"></i>
+                <strong>Warning:</strong> <%= expiringDocuments.length %>
+                document(s) will expire within 30 days!
+              </div>
+              <% } %>
+
+              <div class="row">
+                <!-- Identity Photos -->
+                <div class="col-md-12 mb-4">
+                  <h6 class="text-primary mb-2">Identity Photos</h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h6>Profile Photo</h6>
+                          <% if (employee.fotoProfile) { %>
+                          <img
+                            src="<%= locals.base %><%= employee.fotoProfile %>"
+                            alt="Profile"
+                            class="img-fluid rounded"
+                            style="max-height: 200px"
+                          />
+                          <% } else { %>
+                          <p class="text-muted">No photo uploaded</p>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h6>KTP Photo</h6>
+                          <% if (employee.fotoKTP) { %>
+                          <a
+                            href="<%= locals.base %><%= employee.fotoKTP %>"
+                            target="_blank"
+                          >
+                            <img
+                              src="<%= locals.base %><%= employee.fotoKTP %>"
+                              alt="KTP"
+                              class="img-fluid rounded"
+                              style="max-height: 200px"
+                            />
+                          </a>
+                          <% } else { %>
+                          <p class="text-muted">No photo uploaded</p>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <h6>Other Identity</h6>
+                          <% if (employee.fotoIdentitas) { %>
+                          <a
+                            href="<%= locals.base %><%= employee.fotoIdentitas %>"
+                            target="_blank"
+                          >
+                            <img
+                              src="<%= locals.base %><%= employee.fotoIdentitas %>"
+                              alt="Identity"
+                              class="img-fluid rounded"
+                              style="max-height: 200px"
+                            />
+                          </a>
+                          <% } else { %>
+                          <p class="text-muted">No photo uploaded</p>
+                          <% } %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Other Documents -->
+                <div class="col-md-12">
+                  <h6 class="text-primary mb-2">Other Documents</h6>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Type</th>
+                          <th>Number</th>
+                          <th>Issued Date</th>
+                          <th>Expiry Date</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (employee.documents && employee.documents.length >
+                        0) { %> <% employee.documents.forEach(doc => { %>
+                        <tr>
+                          <td><%= doc.type %></td>
+                          <td><%= doc.number %></td>
+                          <td>
+                            <%= doc.issuedDate ? new
+                            Date(doc.issuedDate).toLocaleDateString() : '-' %>
+                          </td>
+                          <td>
+                            <% if (doc.expiryDate) { %> <% const expiry = new
+                            Date(doc.expiryDate); %> <% const today = new
+                            Date(); %> <% const daysUntilExpiry =
+                            Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+                            %>
+                            <span
+                              class="<%= daysUntilExpiry <= 30 ? 'text-danger' : '' %>"
+                            >
+                              <%= expiry.toLocaleDateString() %> <% if
+                              (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
+                              %>
+                              <small class="text-warning"
+                                >(expires in <%= daysUntilExpiry %> days)</small
+                              >
+                              <% } else if (daysUntilExpiry <= 0) { %>
+                              <small class="text-danger">(expired)</small>
+                              <% } %>
+                            </span>
+                            <% } else { %> - <% } %>
+                          </td>
+                          <td>
+                            <% if (doc.fileUrl) { %>
+                            <a
+                              href="<%= locals.base %><%= doc.fileUrl %>"
+                              target="_blank"
+                              class="btn btn-sm btn-light"
+                            >
+                              <i class="las la-download"></i> View
+                            </a>
+                            <% } else { %> - <% } %>
+                          </td>
+                          <td>
+                            <% if (locals.userPermissions &&
+                            userPermissions.employees &&
+                            userPermissions.employees.includes('update')) { %>
+                            <button
+                              class="btn btn-danger btn-sm"
+                              onclick="deleteDocument('<%= doc._id %>')"
+                            >
+                              <i class="las la-trash"></i>
+                            </button>
+                            <% } %>
+                          </td>
+                        </tr>
+                        <% }) %> <% } else { %>
+                        <tr>
+                          <td colspan="6" class="text-center">
+                            No documents uploaded
+                          </td>
+                        </tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Employment History Tab -->
+            <div
+              class="tab-pane fade <%= activeTab === 'history' ? 'show active' : '' %>"
+              id="history"
+              role="tabpanel"
+            >
+              <div class="timeline">
+                <% if (employee.employmentHistory &&
+                employee.employmentHistory.length > 0) { %> <%
+                employee.employmentHistory.sort((a, b) => new Date(b.startDate)
+                - new Date(a.startDate)).forEach((history, index) => { %>
+                <div class="timeline-item">
+                  <div class="timeline-marker"></div>
+                  <div class="timeline-content">
+                    <h6 class="timeline-title">
+                      <%= history.position?.name || 'Unknown Position' %> <% if
+                      (history.branch) { %> at <%= history.branch.name %> <% }
+                      %>
+                    </h6>
+                    <p class="text-muted mb-1">
+                      <i class="las la-calendar"></i>
+                      <%= new
+                      Date(history.startDate).toLocaleDateString('id-ID', {
+                      month: 'long', year: 'numeric' }) %> - <% if
+                      (history.endDate) { %> <%= new
+                      Date(history.endDate).toLocaleDateString('id-ID', { month:
+                      'long', year: 'numeric' }) %> <% } else { %>
+                      <span class="badge bg-success rounded-pill">Current</span>
+                      <% } %>
+                    </p>
+                    <% if (history.division) { %>
+                    <p class="mb-1">Division: <%= history.division.name %></p>
+                    <% } %> <% if (history.reason) { %>
+                    <p class="mb-1">Reason: <%= history.reason %></p>
+                    <% } %> <% if (history.approvedBy) { %>
+                    <p class="text-muted small">
+                      Approved by: <%= history.approvedBy.firstname %> <%=
+                      history.approvedBy.lastname || '' %>
+                    </p>
+                    <% } %>
+                  </div>
+                </div>
+                <% }) %> <% } else { %>
+                <p class="text-center text-muted">
+                  No employment history recorded
+                </p>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Training Tab -->
+            <div
+              class="tab-pane fade <%= activeTab === 'training' ? 'show active' : '' %>"
+              id="training"
+              role="tabpanel"
+            >
+              <div class="mb-4">
+                <% if (locals.userPermissions && userPermissions.employees &&
+                userPermissions.employees.includes('update')) { %>
+                <button
+                  class="btn btn-sm btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addTrainingModal"
+                >
+                  <i class="las la-plus"></i> Add Training
+                </button>
+                <% } %>
+              </div>
+
+              <% if (pendingTraining.length > 0) { %>
+              <div class="alert alert-danger">
+                <i class="las la-exclamation-circle"></i>
+                <strong>Alert:</strong> <%= pendingTraining.length %> required
+                training(s) pending!
+              </div>
+              <% } %>
+
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Training Title</th>
+                      <th>Provider</th>
+                      <th>Date</th>
+                      <th>Duration</th>
+                      <th>Status</th>
+                      <th>Certificate</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (employee.trainingRecords &&
+                    employee.trainingRecords.length > 0) { %> <%
+                    employee.trainingRecords.forEach(training => { %>
+                    <tr>
+                      <td>
+                        <%= training.title %> <% if (training.isRequired) { %>
+                        <span class="badge bg-danger ms-2 rounded-pill">Required</span>
+                        <% } %>
+                      </td>
+                      <td><%= training.provider || '-' %></td>
+                      <td>
+                        <%= training.date ? new
+                        Date(training.date).toLocaleDateString() : '-' %>
+                      </td>
+                      <td><%= training.duration || '-' %></td>
+                      <td>
+                        <% if (training.status === 'completed') { %>
+                        <span class="badge bg-success rounded-pill">Completed</span>
+                        <% } else if (training.status === 'ongoing') { %>
+                        <span class="badge bg-info rounded-pill">Ongoing</span>
+                        <% } else if (training.status === 'planned') { %>
+                        <span class="badge bg-warning rounded-pill">Planned</span>
+                        <% } else if (training.status === 'expired') { %>
+                        <span class="badge bg-danger rounded-pill">Expired</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (training.certificateUrl) { %>
+                        <a
+                          href="<%= locals.base %><%= training.certificateUrl %>"
+                          target="_blank"
+                          class="btn btn-sm btn-light"
+                        >
+                          <i class="las la-certificate"></i> View
+                        </a>
+                        <% } else { %> - <% } %>
+                      </td>
+                      <td class="d-flex justify-content-center gap-2">
+                        <% if (locals.userPermissions &&
+                        userPermissions.employees &&
+                        userPermissions.employees.includes('update')) { %>
+                        <button
+                          class="btn btn-sm btn-warning"
+                          onclick="editTraining('<%= training._id %>')"
+                        >
+                          <i class="las la-edit"></i>
+                        </button>
+                        <button
+                          class="btn btn-sm btn-danger"
+                          onclick="deleteTraining('<%= training._id %>')"
+                        >
+                          <i class="las la-trash"></i>
+                        </button>
+                        <% } %>
+                      </td>
+                    </tr>
+                    <% }) %> <% } else { %>
+                    <tr>
+                      <td colspan="7" class="text-center">
+                        No training records found
+                      </td>
+                    </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Activity Logs Tab -->
+            <div
+              class="tab-pane fade <%= activeTab === 'logs' ? 'show active' : '' %>"
+              id="logs"
+              role="tabpanel"
+            >
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Action</th>
+                      <th>Description</th>
+                      <th>Changed By</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (employee.logs && employee.logs.length > 0) { %> <%
+                    employee.logs.sort((a, b) => new Date(b.date) - new
+                    Date(a.date)).forEach(log => { %>
+                    <tr>
+                      <td><%= new Date(log.date).toLocaleString('id-ID') %></td>
+                      <td>
+                        <% if (log.action === 'created') { %>
+                        <span class="badge bg-success rounded-pill">Created</span>
+                        <% } else if (log.action === 'updated') { %>
+                        <span class="badge bg-info rounded-pill">Updated</span>
+                        <% } else if (log.action === 'promoted') { %>
+                        <span class="badge bg-primary rounded-pill">Promoted</span>
+                        <% } else if (log.action === 'mutated') { %>
+                        <span class="badge bg-warning rounded-pill">Mutated</span>
+                        <% } else if (log.action === 'resigned') { %>
+                        <span class="badge bg-danger rounded-pill">Resigned</span>
+                        <% } else if (log.action === 'terminated') { %>
+                        <span class="badge bg-dark rounded-pill">Terminated</span>
+                        <% } else if (log.action === 'document_uploaded') { %>
+                        <span class="badge bg-secondary rounded-pill">Document</span>
+                        <% } else if (log.action === 'training_completed') { %>
+                        <span class="badge bg-success rounded-pill">Training</span>
+                        <% } %>
+                      </td>
+                      <td><%= log.description %></td>
+                      <td>
+                        <% if (log.changedBy) { %> <%= log.changedBy.firstname
+                        %> <%= log.changedBy.lastname || '' %> <% } else { %>
+                        System <% } %>
+                      </td>
+                    </tr>
+                    <% }) %> <% } else { %>
+                    <tr>
+                      <td colspan="4" class="text-center">
+                        No activity logs found
+                      </td>
+                    </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadDocumentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="uploadDocumentForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload Document</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label"
+              >Document Type <span class="text-danger">*</span></label
+            >
+            <select class="form-control" name="documentType" required>
+              <option value="">Select Type</option>
+              <option value="KTP">KTP</option>
+              <option value="SIM">SIM</option>
+              <option value="NPWP">NPWP</option>
+              <option value="BPJS">BPJS</option>
+              <option value="KK">Kartu Keluarga</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"
+              >Document Number <span class="text-danger">*</span></label
+            >
+            <input
+              type="text"
+              class="form-control"
+              name="documentNumber"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Issued Date</label>
+            <input type="date" class="form-control" name="issuedDate" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Expiry Date</label>
+            <input type="date" class="form-control" name="expiryDate" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label"
+              >Document File <span class="text-danger">*</span></label
+            >
+            <input
+              type="file"
+              class="form-control"
+              name="documents"
+              accept=".pdf,.jpg,.jpeg,.png"
+              required
+            />
+            <div class="form-text">Max 5MB. PDF, JPG, JPEG, PNG only</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Training Modal -->
+<div class="modal fade" id="addTrainingModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="addTrainingForm" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Training Record</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label"
+              >Training Title <span class="text-danger">*</span></label
+            >
+            <input type="text" class="form-control" name="title" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Provider</label>
+            <input type="text" class="form-control" name="provider" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Duration</label>
+            <input
+              type="text"
+              class="form-control"
+              name="duration"
+              placeholder="e.g., 2 days, 8 hours"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-control" name="status">
+              <option value="planned">Planned</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="isRequired"
+                id="isRequired"
+              />
+              <label class="form-check-label" for="isRequired">
+                Required Training
+              </label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Certificate</label>
+            <input
+              type="file"
+              class="form-control"
+              name="certificate"
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
+            <div class="form-text">Optional. Max 5MB</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Add Training</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .timeline:before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+  }
+</style>

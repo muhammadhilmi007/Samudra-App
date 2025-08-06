@@ -1,0 +1,498 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <!-- Success/Error Messages -->
+      <% if (locals.successMessage) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+      <% if (locals.errorMessage) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMessage %>
+        <button type="button" class="btn-close text-capitalize" data-bs-dismiss="alert" aria-label="Close">
+          <img src="<%- locals.base %>img/svg/x.svg" alt="x" class="svg rony" aria-hidden="true">
+        </button>
+      </div>
+      <% } %>
+
+      <div class="breadcrumb-main">
+        <h4 class="text-capitalize breadcrumb-title">Add New Employee</h4>
+        <div class="breadcrumb-action justify-content-center flex-wrap">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="<%= locals.base %>dashboard/analytics/<%- locale %>"><i class="las la-home"></i>Dashboard</a>
+              </li>
+              <li class="breadcrumb-item"><a href="<%= locals.base %>hrd/employees/index/<%- locale %>">Employees</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Add New</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card card-horizontal card-default card-md mb-4">
+        <div class="card-header">
+          <h6>Employee Information</h6>
+        </div>
+        <div class="card-body py-md-30">
+          <form action="<%= locals.base %>hrd/employees/create/<%- locale %>" method="POST" enctype="multipart/form-data">
+            
+            <!-- Personal Information Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h6 class="mb-3 text-primary"><i class="las la-user"></i> Personal Information</h6>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" class="form-control <%= locals.errors && errors.username ? 'is-invalid' : '' %>" 
+                       id="username" name="username" value="<%= locals.input ? input.username : '' %>" 
+                       placeholder="Enter username" required>
+                <% if (locals.errors && errors.username) { %>
+                <div class="invalid-feedback"><%= errors.username.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control <%= locals.errors && errors.firstname ? 'is-invalid' : '' %>" 
+                       id="firstname" name="firstname" value="<%= locals.input ? input.firstname : '' %>" 
+                       placeholder="Enter first name" required>
+                <% if (locals.errors && errors.firstname) { %>
+                <div class="invalid-feedback"><%= errors.firstname.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="lastname" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastname" name="lastname" 
+                       value="<%= locals.input ? input.lastname : '' %>" placeholder="Enter last name">
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="birthdate" class="form-label">Birth Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control <%= locals.errors && errors.birthdate ? 'is-invalid' : '' %>" 
+                       id="birthdate" name="birthdate" value="<%= locals.input ? input.birthdate : '' %>" required>
+                <% if (locals.errors && errors.birthdate) { %>
+                <div class="invalid-feedback"><%= errors.birthdate.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                <select class="form-control <%= locals.errors && errors.gender ? 'is-invalid' : '' %>" 
+                        id="gender" name="gender" required>
+                  <option value="">Select Gender</option>
+                  <option value="Male" <%= (locals.input && input.gender === 'Male') ? 'selected' : '' %>>Male</option>
+                  <option value="Female" <%= (locals.input && input.gender === 'Female') ? 'selected' : '' %>>Female</option>
+                </select>
+                <% if (locals.errors && errors.gender) { %>
+                <div class="invalid-feedback"><%= errors.gender.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="maritalStatus" class="form-label">Marital Status</label>
+                <select class="form-control" id="maritalStatus" name="maritalStatus">
+                  <option value="Single" <%= (locals.input && input.maritalStatus === 'Single') ? 'selected' : '' %>>Single</option>
+                  <option value="Married" <%= (locals.input && input.maritalStatus === 'Married') ? 'selected' : '' %>>Married</option>
+                  <option value="Divorced" <%= (locals.input && input.maritalStatus === 'Divorced') ? 'selected' : '' %>>Divorced</option>
+                  <option value="Widowed" <%= (locals.input && input.maritalStatus === 'Widowed') ? 'selected' : '' %>>Widowed</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="noKTP" class="form-label">KTP Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control <%= locals.errors && errors.noKTP ? 'is-invalid' : '' %>" 
+                       id="noKTP" name="noKTP" value="<%= locals.input ? input.noKTP : '' %>" 
+                       placeholder="16 digit KTP number" maxlength="16" required>
+                <% if (locals.errors && errors.noKTP) { %>
+                <div class="invalid-feedback"><%= errors.noKTP.message %></div>
+                <% } %>
+                <div class="form-text">Enter 16 digit KTP number without spaces</div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="noSIM" class="form-label">SIM Number</label>
+                <input type="text" class="form-control" id="noSIM" name="noSIM" 
+                       value="<%= locals.input ? input.noSIM : '' %>" placeholder="Enter SIM number">
+              </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h6 class="mb-3 text-primary"><i class="las la-phone"></i> Contact Information</h6>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                <input type="email" class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" 
+                       id="email" name="email" value="<%= locals.input ? input.email : '' %>" 
+                       placeholder="Enter email address" required>
+                <% if (locals.errors && errors.email) { %>
+                <div class="invalid-feedback"><%= errors.email.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="noPhone" class="form-label">WhatsApp Number <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">+62</span>
+                  <input type="text" class="form-control <%= locals.errors && errors.noPhone ? 'is-invalid' : '' %>" 
+                         id="noPhone" name="noPhone" value="<%= locals.input ? input.noPhone : '' %>" 
+                         placeholder="8123456789" required>
+                  <% if (locals.errors && errors.noPhone) { %>
+                  <div class="invalid-feedback"><%= errors.noPhone.message %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="noPhoneEmergency" class="form-label">Emergency Contact <span class="text-danger">*</span></label>
+                <input type="text" class="form-control <%= locals.errors && errors.noPhoneEmergency ? 'is-invalid' : '' %>" 
+                       id="noPhoneEmergency" name="noPhoneEmergency" value="<%= locals.input ? input.noPhoneEmergency : '' %>" 
+                       placeholder="Emergency phone number" required>
+                <% if (locals.errors && errors.noPhoneEmergency) { %>
+                <div class="invalid-feedback"><%= errors.noPhoneEmergency.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="noPhoneContact" class="form-label">Alternative Contact</label>
+                <input type="text" class="form-control" id="noPhoneContact" name="noPhoneContact" 
+                       value="<%= locals.input ? input.noPhoneContact : '' %>" placeholder="Alternative phone number">
+              </div>
+            </div>
+
+            <!-- Address Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h6 class="mb-3 text-primary"><i class="las la-map-marker"></i> Address Information</h6>
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label for="street" class="form-label">Street Address</label>
+                <textarea class="form-control" id="street" name="street" rows="2" 
+                          placeholder="Enter street address"><%= locals.input ? input.street : '' %></textarea>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="province" class="form-label">Province</label>
+                <select class="form-control" id="province" name="province">
+                  <option value="">Select Province</option>
+                </select>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="city" class="form-label">City/Regency</label>
+                <select class="form-control" id="city" name="city">
+                  <option value="">Select City</option>
+                </select>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="district" class="form-label">District</label>
+                <select class="form-control" id="district" name="district">
+                  <option value="">Select District</option>
+                </select>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label for="postalCode" class="form-label">Postal Code</label>
+                <input type="text" class="form-control" id="postalCode" name="postalCode" 
+                       value="<%= locals.input ? input.postalCode : '' %>" placeholder="12345">
+              </div>
+            </div>
+
+            <!-- Employment Information Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h6 class="mb-3 text-primary"><i class="las la-briefcase"></i> Employment Information</h6>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="branchId" class="form-label">Branch <span class="text-danger">*</span></label>
+                <select class="form-control <%= locals.errors && errors.branchId ? 'is-invalid' : '' %>" 
+                        id="branchId" name="branchId" required>
+                  <option value="">Select Branch</option>
+                  <% branches.forEach(branch => { %>
+                  <option value="<%= branch._id %>" <%= (locals.input && input.branchId == branch._id) ? 'selected' : '' %>>
+                    <%= branch.name %>
+                  </option>
+                  <% }) %>
+                </select>
+                <% if (locals.errors && errors.branchId) { %>
+                <div class="invalid-feedback"><%= errors.branchId.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="divisionId" class="form-label">Division <span class="text-danger">*</span></label>
+                <select class="form-control <%= locals.errors && errors.divisionId ? 'is-invalid' : '' %>" 
+                        id="divisionId" name="divisionId" required>
+                  <option value="">Select Division</option>
+                  <% divisions.forEach(division => { %>
+                  <option value="<%= division._id %>" <%= (locals.input && input.divisionId == division._id) ? 'selected' : '' %>>
+                    <%= division.name %>
+                  </option>
+                  <% }) %>
+                </select>
+                <% if (locals.errors && errors.divisionId) { %>
+                <div class="invalid-feedback"><%= errors.divisionId.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="positionId" class="form-label">Position <span class="text-danger">*</span></label>
+                <select class="form-control <%= locals.errors && errors.positionId ? 'is-invalid' : '' %>" 
+                        id="positionId" name="positionId" required>
+                  <option value="">Select Position</option>
+                  <% positions.forEach(position => { %>
+                  <option value="<%= position._id %>" <%= (locals.input && input.positionId == position._id) ? 'selected' : '' %>>
+                    <%= position.name %> (Level <%= position.level %>)
+                  </option>
+                  <% }) %>
+                </select>
+                <% if (locals.errors && errors.positionId) { %>
+                <div class="invalid-feedback"><%= errors.positionId.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="supervisor" class="form-label">Supervisor</label>
+                <select class="form-control" id="supervisor" name="supervisor">
+                  <option value="">Select Supervisor</option>
+                  <% employees.forEach(emp => { %>
+                  <option value="<%= emp._id %>" <%= (locals.input && input.supervisor == emp._id) ? 'selected' : '' %>>
+                    <%= emp.employeeCode %> - <%= emp.firstname %> <%= emp.lastname || '' %>
+                  </option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="joinDate" class="form-label">Join Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control <%= locals.errors && errors.joinDate ? 'is-invalid' : '' %>" 
+                       id="joinDate" name="joinDate" value="<%= locals.input ? input.joinDate : new Date().toISOString().split('T')[0] %>" required>
+                <% if (locals.errors && errors.joinDate) { %>
+                <div class="invalid-feedback"><%= errors.joinDate.message %></div>
+                <% } %>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="password" class="form-label">Initial Password</label>
+                <input type="password" class="form-control" id="password" name="password" 
+                       placeholder="Leave blank for default">
+                <div class="form-text">Default: Password123!</div>
+              </div>
+            </div>
+
+            <!-- Document Upload Section -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h6 class="mb-3 text-primary"><i class="las la-file-upload"></i> Document Upload</h6>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="fotoProfile" class="form-label">Profile Photo <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="fotoProfile" name="fotoProfile" 
+                       accept="image/jpeg,image/jpg,image/png" required>
+                <div class="form-text">Max 5MB. JPG, JPEG, PNG only</div>
+                <img id="profilePreview" src="#" alt="Profile Preview" class="mt-2 d-none" 
+                     style="max-width: 150px; max-height: 150px; object-fit: cover; border-radius: 8px;">
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="fotoKTP" class="form-label">KTP Photo <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="fotoKTP" name="fotoKTP" 
+                       accept="image/jpeg,image/jpg,image/png" required>
+                <div class="form-text">Max 5MB. JPG, JPEG, PNG only</div>
+                <img id="ktpPreview" src="#" alt="KTP Preview" class="mt-2 d-none" 
+                     style="max-width: 200px; max-height: 120px; object-fit: cover; border-radius: 4px;">
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label for="fotoIdentitas" class="form-label">Other Identity Photo</label>
+                <input type="file" class="form-control" id="fotoIdentitas" name="fotoIdentitas" 
+                       accept="image/jpeg,image/jpg,image/png">
+                <div class="form-text">Optional. Max 5MB</div>
+                <img id="identitasPreview" src="#" alt="Identity Preview" class="mt-2 d-none" 
+                     style="max-width: 200px; max-height: 120px; object-fit: cover; border-radius: 4px;">
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                  <label class="form-check-label" for="isActive">Active Status</label>
+                </div>
+                <div class="form-text">Active employees can access the system</div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="layout-button mt-25">
+              <button type="submit" class="btn btn-primary btn-default btn-squared px-30">
+                <i class="las la-save"></i> Create Employee
+              </button>
+              <a href="<%= locals.base %>hrd/employees/index/<%- locale %>" class="btn btn-light btn-default btn-squared px-30">
+                <i class="las la-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // File preview functionality
+  function setupFilePreview(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    
+    input.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.add('d-none');
+      }
+    });
+  }
+
+  setupFilePreview('fotoProfile', 'profilePreview');
+  setupFilePreview('fotoKTP', 'ktpPreview');
+  setupFilePreview('fotoIdentitas', 'identitasPreview');
+
+  // Phone number formatting
+  document.getElementById('noPhone').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    let value = e.target.value.replace(/\D/g, '');
+    // Remove leading zeros
+    value = value.replace(/^0+/, '');
+    e.target.value = value;
+  });
+
+  // KTP number validation
+  document.getElementById('noKTP').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    let value = e.target.value.replace(/\D/g, '');
+    // Limit to 16 digits
+    value = value.substring(0, 16);
+    e.target.value = value;
+  });
+
+  // Load provinces on page load
+  async function loadProvinces() {
+    try {
+      const response = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+      const provinces = await response.json();
+      
+      const provinceSelect = document.getElementById('province');
+      provinceSelect.innerHTML = '<option value="">Select Province</option>';
+      
+      provinces.forEach(province => {
+        const option = document.createElement('option');
+        option.value = province.name;
+        option.textContent = province.name;
+        option.dataset.id = province.id;
+        provinceSelect.appendChild(option);
+      });
+      
+      // If there's an input value, select it
+      <% if (locals.input && input.province) { %>
+      provinceSelect.value = '<%= input.province %>';
+      provinceSelect.dispatchEvent(new Event('change'));
+      <% } %>
+    } catch (error) {
+      console.error('Error loading provinces:', error);
+    }
+  }
+
+  // Load cities when province changes
+  document.getElementById('province').addEventListener('change', async function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const provinceId = selectedOption.dataset.id;
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    
+    citySelect.innerHTML = '<option value="">Select City</option>';
+    districtSelect.innerHTML = '<option value="">Select District</option>';
+    
+    if (provinceId) {
+      try {
+        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`);
+        const cities = await response.json();
+        
+        cities.forEach(city => {
+          const option = document.createElement('option');
+          option.value = city.name;
+          option.textContent = city.name;
+          option.dataset.id = city.id;
+          citySelect.appendChild(option);
+        });
+        
+        // If there's an input value, select it
+        <% if (locals.input && input.city) { %>
+        citySelect.value = '<%= input.city %>';
+        citySelect.dispatchEvent(new Event('change'));
+        <% } %>
+      } catch (error) {
+        console.error('Error loading cities:', error);
+      }
+    }
+  });
+
+  // Load districts when city changes
+  document.getElementById('city').addEventListener('change', async function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const cityId = selectedOption.dataset.id;
+    const districtSelect = document.getElementById('district');
+    
+    districtSelect.innerHTML = '<option value="">Select District</option>';
+    
+    if (cityId) {
+      try {
+        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${cityId}.json`);
+        const districts = await response.json();
+        
+        districts.forEach(district => {
+          const option = document.createElement('option');
+          option.value = district.name;
+          option.textContent = district.name;
+          districtSelect.appendChild(option);
+        });
+        
+        // If there's an input value, select it
+        <% if (locals.input && input.district) { %>
+        districtSelect.value = '<%= input.district %>';
+        <% } %>
+      } catch (error) {
+        console.error('Error loading districts:', error);
+      }
+    }
+  });
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadProvinces();
+  });
+</script>
