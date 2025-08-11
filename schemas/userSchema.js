@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { isEmail } = require("validator");
 const validator = require("mongoose-unique-validator");
+const bcrypt = require("bcrypt");
 
 const userSchema = mongoose.Schema(
   {
@@ -30,15 +31,24 @@ const userSchema = mongoose.Schema(
       trim: true,
     },
     phoneNumber: {
-        type: String,
-        required: false,
-        unique: true,
-        trim: true,
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      validate: {
+        validator: v => !v || /^(\+62|62|0)8[1-9][0-9]{6,10}$/.test(v),
+        message: 'Invalid phone number format'
+      }
     },
     photoProfile: {
         type: String,
         required: false,
         default: null,
+    },
+    userType: {
+      type: String,
+      enum: ['Employee', 'Customer', 'Vendor', 'Other'],
+      default: 'Employee'
     },
     level: {
       type: String,
@@ -76,16 +86,6 @@ const userSchema = mongoose.Schema(
         }
       }
     },
-    division_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Division",
-      required: [true, "Division is required!"],
-    },
-    position_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Position",
-      required: [true, "Position is required!"],
-    },
     role_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Role",
@@ -106,34 +106,35 @@ const userSchema = mongoose.Schema(
 );
 
 // Indexes for performance
-userSchema.index({ email: 1 });
+userSchema.index({ email: 1, isActive: 1 });
 userSchema.index({ username: 1 });
-userSchema.index({ branch_id: 1, division_id: 1, position_id: 1, level: 1 });
+userSchema.index({ phoneNumber: 1 }, { unique: true, sparse: true });
+userSchema.index({ branch_id: 1, level: 1, userType: 1 });
 
-// Pre-save middleware to handle level-branch relationship
-userSchema.pre('save', function(next) {
-  if (this.level === 'Pusat') {
+
+// Pre-save hook: hash password jika diubah
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+  // Auto-null branch untuk level Pusat
+  if (this.level === "Pusat") {
     this.branch_id = null;
   }
-  
-  // Migrate old status field to new level field
-  if (this.status !== undefined && this.level === undefined) {
-    this.level = this.status ? 'Pusat' : 'Cabang';
-  }
-  
   next();
 });
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {
-  return `${this.firstname} ${this.lastname}`.trim();
+  return `${this.firstname} ${this.lastname || ''}`.trim();
 });
 
 userSchema.plugin(validator, { message: "Error, expected {PATH} to be unique. Value: {VALUE}" });
 
 // Method to generate hash for password
 userSchema.methods.generateHash = function(password) {
-  const bcrypt = require('bcrypt');
   return bcrypt.hash(password, 10);
 };
 

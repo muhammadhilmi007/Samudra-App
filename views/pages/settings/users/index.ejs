@@ -78,6 +78,15 @@
           <!-- Filters -->
           <div class="support-form__filter">
             <div class="d-flex align-items-center flex-wrap gap-2">
+
+              <select class="form-select form-select-sm" id="filterType" style="width: auto;">
+                <option value="">All Types</option>
+                <option value="Employee" <%=filters && filters.userType==='Employee' ? 'selected' : '' %>>Employee</option>
+                <option value="Vendor" <%=filters && filters.userType==='Vendor' ? 'selected' : '' %>>Vendor</option>
+                <option value="Customer" <%=filters && filters.userType==='Customer' ? 'selected' : '' %>>Customer</option>
+                <option value="Other" <%=filters && filters.userType==='Other' ? 'selected' : '' %>>Other</option>
+              </select>
+
               <select class="form-select form-select-sm" id="filterLevel" style="width: auto;">
                 <option value="">All Levels</option>
                 <option value="Pusat" <%=filters && filters.level==='Pusat' ? 'selected' : '' %>>Pusat</option>
@@ -114,10 +123,9 @@
                 <tr class="userDatatable-header">
                   <th>Username</th>
                   <th>Email</th>
+                  <th>Type</th>
                   <th>Level</th>
                   <th>Branch</th>
-                  <th>Division</th>
-                  <th>Position</th>
                   <th>Role</th>
                   <th>Status</th>
                   <th>Last Login</th>
@@ -144,7 +152,7 @@
                               <% } %>
                                 <div>
                                   <strong>
-                                    <%= user.fullName %>
+                                    <%= user.firstname %> <%= user.lastname %>
                                   </strong>
                                   <% if (session && session.user && user.email===session.user.email) { %>
                                     <span class="badge bg-info ms-1">You</span>
@@ -158,6 +166,9 @@
                         <%= user.email %>
                       </td>
                       <td>
+                        <%= user.userType %>
+                      </td>
+                      <td>
                         <span
                           class="bg-opacity-<%= user.level === 'Pusat' ? 'success' : 'info' %> color-<%= user.level === 'Pusat' ? 'success' : 'info' %> userDatatable-content-status active">
                           <%= user.level %>
@@ -165,12 +176,6 @@
                       </td>
                       <td>
                         <%= user.branch_id ? user.branch_id.name : '-' %>
-                      </td>
-                      <td>
-                        <%= user.division_id ? user.division_id.name : '-' %>
-                      </td>
-                      <td>
-                        <%= user.position_id ? user.position_id.name : '-' %>
                       </td>
                       <td>
                         <% if (user.role_id) { %>
@@ -233,8 +238,7 @@
                                     data-photo="<%= user.photoProfile || '' %>"
                                     data-level="<%= user.level || 'Cabang' %>"
                                     data-branch="<%= user.branch_id ? user.branch_id._id : '' %>"
-                                    data-division="<%= user.division_id ? user.division_id._id : '' %>"
-                                    data-position="<%= user.position_id ? user.position_id._id : '' %>"
+                                    data-type="<%= user.userType || '' %>"
                                     data-active="<%= user.isActive %>">
                                     <i class="uil uil-edit"></i>
                                   </a>
@@ -508,42 +512,20 @@
               <% } %>
           </div>
 
-          <!-- Division -->
+          <!-- Type -->
           <div class="mb-3">
-            <label for="division_id" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.division_id ? 'is-invalid' : '' %>" id="division_id"
-              name="division_id" required>
-              <option value="">Select Division</option>
-              <% divisions.forEach(division=> { %>
-                <option value="<%= division._id %>" <%=(locals.input && input.division_id==division._id) ? 'selected'
-                  : '' %>>
-                  <%= division.name %>
-                </option>
-                <% }) %>
+            <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
+            <select class="form-control <%= locals.errors && errors.userType ? 'is-invalid' : '' %>" id="type"
+              name="userType" required>
+              <option value="">Select Type</option>
+              <option value="Employee" <%=(locals.input && input.userType==='Employee' ) ? 'selected' : '' %>>Employee</option>
+              <option value="Vendor" <%=(locals.input && input.userType==='Vendor' ) ? 'selected' : '' %>>Vendor</option>
+              <option value="Customer" <%=(locals.input && input.userType==='Customer' ) ? 'selected' : '' %>>Customer</option>
+              <option value="Other" <%=(locals.input && input.userType==='Other' ) ? 'selected' : '' %>>Other</option>
             </select>
-            <% if (locals.errors && errors.division_id) { %>
+            <% if (locals.errors && errors.userType) { %>
               <div class="invalid-feedback">
-                <%= errors.division_id.message %>
-              </div>
-              <% } %>
-          </div>
-
-          <!-- Position -->
-          <div class="mb-3">
-            <label for="position_id" class="form-label">Position <span class="text-danger">*</span></label>
-            <select class="form-control <%= locals.errors && errors.position_id ? 'is-invalid' : '' %>" id="position_id"
-              name="position_id" required>
-              <option value="">Select Position</option>
-              <% positions.forEach(position=> { %>
-                <option value="<%= position._id %>" <%=(locals.input && input.position_id==position._id) ? 'selected'
-                  : '' %>>
-                  <%= position.name %> (Level <%= position.level %>)
-                </option>
-                <% }) %>
-            </select>
-            <% if (locals.errors && errors.position_id) { %>
-              <div class="invalid-feedback">
-                <%= errors.position_id.message %>
+                <%= errors.userType.message %>
               </div>
               <% } %>
           </div>
@@ -670,31 +652,17 @@
             </select>
           </div>
 
-          <!-- Division -->
-          <div class="mb-3">
-            <label for="edit-division_id" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-control" id="edit-division_id" name="division_id" required>
-              <option value="">Select Division</option>
-              <% divisions.forEach(division=> { %>
-                <option value="<%= division._id %>">
-                  <%= division.name %>
-                </option>
-                <% }) %>
+           <!-- Type -->
+           <div class="mb-3">
+            <label for="edit-type" class="form-label">Type <span class="text-danger">*</span></label>
+            <select class="form-control" id="edit-type" name="userType" required>
+              <option value="Employee">Employee</option>
+              <option value="Customer">Customer</option>
+              <option value="Vendor">Vendor</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
-          <!-- Position -->
-          <div class="mb-3">
-            <label for="edit-position_id" class="form-label">Position <span class="text-danger">*</span></label>
-            <select class="form-control" id="edit-position_id" name="position_id" required>
-              <option value="">Select Position</option>
-              <% positions.forEach(position=> { %>
-                <option value="<%= position._id %>">
-                  <%= position.name %> (Level <%= position.level %>)
-                </option>
-                <% }) %>
-            </select>
-          </div>
 
           <!-- Active Status -->
           <div class="mb-3">
@@ -738,6 +706,7 @@
   // Handle filters
   const filterLevel = document.getElementById('filterLevel');
   const filterBranch = document.getElementById('filterBranch');
+  const filterType = document.getElementById('filterType');
   const filterStatus = document.getElementById('filterStatus');
   const resetFilters = document.getElementById('resetFilters');
 
@@ -746,6 +715,9 @@
 
     if (filterLevel.value) params.set('level', filterLevel.value);
     else params.delete('level');
+
+    if (filterType.value) params.set('userType', filterType.value);
+    else params.delete('userType');
 
     if (filterBranch.value) params.set('branch', filterBranch.value);
     else params.delete('branch');
@@ -759,6 +731,7 @@
 
   filterLevel.addEventListener('change', applyFilters);
   filterBranch.addEventListener('change', applyFilters);
+  filterType.addEventListener('change', applyFilters);
   filterStatus.addEventListener('change', applyFilters);
 
   resetFilters.addEventListener('click', function () {
@@ -769,6 +742,8 @@
   const levelSelect = document.getElementById('level');
   const branchSelection = document.getElementById('branch-selection');
   const branchSelect = document.getElementById('branch_id');
+  const typeSelect = document.getElementById('type');
+
 
   levelSelect.addEventListener('change', function () {
     if (this.value === 'Pusat') {
@@ -879,6 +854,7 @@
 
   // Edit modal handling
   const editLevelSelect = document.getElementById('edit-level');
+  const editTypeSelect = document.getElementById('edit-type');
   const editBranchSelection = document.getElementById('edit-branch-selection');
   const editBranchSelect = document.getElementById('edit-branch_id');
   const editPhotoInput = document.getElementById('edit-photoProfile');
@@ -943,9 +919,14 @@
       const photo = this.dataset.photo;
       const level = this.dataset.level || (this.dataset.status === 'true' ? 'Pusat' : 'Cabang');
       const branch = this.dataset.branch;
-      const division = this.dataset.division;
-      const position = this.dataset.position;
+      const type = this.dataset.type;
       const isActive = this.dataset.active === 'true';
+
+      // Debug logging
+      console.log('Edit modal data:', {
+        id, username, firstname, lastname, email, phoneNumber, photo, level, branch, type, isActive
+      });
+      console.log('Raw dataset:', this.dataset);
 
       const form = document.getElementById('editUserForm');
       form.action = `<%= locals.base %>settings/users/update/${id}/<%- locale %>?_method=POST`;
@@ -957,8 +938,8 @@
       document.getElementById('edit-phoneNumber').value = phoneNumber ? phoneNumber.replace('+62', '') : '';
       document.getElementById('edit-password').value = '';
       document.getElementById('edit-level').value = level;
-      document.getElementById('edit-division_id').value = division;
-      document.getElementById('edit-position_id').value = position;
+      document.getElementById('edit-branch_id').value = branch;
+      document.getElementById('edit-type').value = type;
       document.getElementById('edit-isActive').checked = isActive;
 
       if (photo) {
@@ -1035,8 +1016,9 @@
     function updateExportLinks() {
       const filterLevel = document.getElementById('filterLevel').value;
       const filterBranch = document.getElementById('filterBranch').value;
+      const filterType = document.getElementById('filterType').value;
       const filterStatus = document.getElementById('filterStatus').value;
-      const queryString = `?filterLevel=${filterLevel}&filterBranch=${filterBranch}&filterStatus=${filterStatus}`;
+      const queryString = `?filterLevel=${filterLevel}&filterBranch=${filterBranch}&filterType=${filterType}&filterStatus=${filterStatus}`;
 
       excelBtn.href = `<%= locals.base %>settings/users/export/excel/<%- locale %>${queryString}`;
       csvBtn.href = `<%= locals.base %>settings/users/export/csv/<%- locale %>${queryString}`;
@@ -1044,6 +1026,7 @@
 
     document.getElementById('filterLevel').addEventListener('change', updateExportLinks);
     document.getElementById('filterBranch').addEventListener('change', updateExportLinks);
+    document.getElementById('filterType').addEventListener('change', updateExportLinks);
     document.getElementById('filterStatus').addEventListener('change', updateExportLinks);
     updateExportLinks();
   });

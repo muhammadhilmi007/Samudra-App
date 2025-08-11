@@ -190,15 +190,14 @@ async function seedDatabase() {
     // Create Roles
     console.log('Creating roles...');
     const roles = [];
-    // Using a stronger password that meets the requirements: at least 6 characters with uppercase, lowercase, number, and special character
-    const hashedPassword = await bcrypt.hash('P@ssw0rd!', 12);
+    // Plain password - will be hashed automatically by userSchema pre-save hook
+    const plainPassword = 'P@ssw0rd!';
     
     // Validate password meets userSchema requirements
-    const testPassword = 'P@ssw0rd!';
-    if (testPassword.length < 6) {
+    if (plainPassword.length < 6) {
       throw new Error('Password must be at least 6 characters long');
     }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(testPassword)) {
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(plainPassword)) {
       throw new Error('Password must contain uppercase, lowercase, number, and special character');
     }
 
@@ -349,14 +348,15 @@ async function seedDatabase() {
       firstname: 'Direktur',
       lastname: 'Utama',
       email: 'direktur@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000001', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'DIR')._id,
-      position_id: positions.find(p => p.code === 'CEO')._id,
+      photoProfile: null, // Optional field
+      userType: 'Employee', // Default value from schema
+      level: 'Pusat', // Required field
+      branch_id: null, // Null for Pusat users as per schema validation
       role_id: direktorRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null // Optional field
     });
 
     // Manager Operasional
@@ -365,14 +365,15 @@ async function seedDatabase() {
       firstname: 'Manager',
       lastname: 'Operasional',
       email: 'mgr.operasional@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000002', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Pusat',
+      branch_id: null, // Null for Pusat users
       role_id: mgrOperasionalRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     // Manager Pemasaran
@@ -381,14 +382,15 @@ async function seedDatabase() {
       firstname: 'Manager',
       lastname: 'Pemasaran',
       email: 'mgr.pemasaran@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000003', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'MKT')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Pusat',
+      branch_id: null, // Null for Pusat users
       role_id: mgrPemasaranRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     // Manager Keuangan
@@ -397,14 +399,15 @@ async function seedDatabase() {
       firstname: 'Manager',
       lastname: 'Keuangan',
       email: 'mgr.keuangan@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000004', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'FIN')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Pusat',
+      branch_id: null, // Null for Pusat users
       role_id: mgrKeuanganRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     // Manager Administrasi
@@ -413,14 +416,15 @@ async function seedDatabase() {
       firstname: 'Manager',
       lastname: 'Administrasi',
       email: 'mgr.administrasi@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000005', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'ADM')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Pusat',
+      branch_id: null, // Null for Pusat users
       role_id: mgrAdministrasiRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     // Manager HRD
@@ -429,14 +433,15 @@ async function seedDatabase() {
       firstname: 'Manager',
       lastname: 'HRD',
       email: 'mgr.hrd@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000006', // Indonesian format without +62 prefix
-      level: 'Pusat', // Using new level field
-      branch_id: null, // Pusat users should have null branch_id
-      division_id: divisions.find(d => d.code === 'HRD')._id,
-      position_id: positions.find(p => p.code === 'MGR')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Pusat',
+      branch_id: null, // Null for Pusat users
       role_id: mgrHRDRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     // Kepala Cabang Jakarta
@@ -445,14 +450,15 @@ async function seedDatabase() {
       firstname: 'Kepala',
       lastname: 'Cabang Jakarta',
       email: 'kcb.jakarta@samudra.com',
-      password: hashedPassword,
+      password: plainPassword,
       phoneNumber: '08120000007', // Indonesian format without +62 prefix
-      level: 'Cabang', // Using new level field
-      branch_id: jakartaBranch._id,
-      division_id: divisions.find(d => d.code === 'OPS')._id,
-      position_id: positions.find(p => p.code === 'KCB')._id,
+      photoProfile: null,
+      userType: 'Employee',
+      level: 'Cabang',
+      branch_id: jakartaBranch._id, // Required for Cabang users
       role_id: kepalaCabangRole._id,
-      isActive: true
+      isActive: true,
+      lastLogin: null
     });
 
     console.log('Database seeded successfully!');

@@ -8,17 +8,8 @@ const ExcelJS = require("exceljs");
 // Models
 const User = mongoose.model("User", require("../schemas/userSchema"));
 const Branch = mongoose.model("Branch", require("../schemas/branchSchema"));
-const Division = mongoose.model(
-  "Division",
-  require("../schemas/divisionSchema")
-);
-const Position = mongoose.model(
-  "Position",
-  require("../schemas/positionSchema")
-);
 const Role = mongoose.model("Role", require("../schemas/roleSchema"));
 
-// Configure multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, "../public/uploads/profiles/");
@@ -35,21 +26,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB limit
-  },
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
   fileFilter: function (req, file, cb) {
     const allowedTypes = /jpeg|jpg|png/;
-    const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error("Only JPEG, JPG, and PNG files are allowed"));
-    }
+    if (mimetype && extname) cb(null, true);
+    else cb(new Error("Only JPEG, JPG, and PNG files are allowed"));
   },
 }).single("photoProfile");
 
@@ -63,9 +46,9 @@ const index = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
     const branch = req.query.branch || "";
-    const division = req.query.division || "";
     const isActive = req.query.isActive || "";
     const level = req.query.level || "";
+    const userType = req.query.userType || "";
 
     // Query for users - if not super admin, filter by branch
     console.log("query", req.query);
@@ -78,8 +61,7 @@ const index = async (req, res) => {
           { lastname: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
           { branch: { $regex: search, $options: "i" } },
-          { division: { $regex: search, $options: "i" } },
-          { position: { $regex: search, $options: "i" } },
+          { userType: { $regex: search, $options: "i" } },
           { role: { $regex: search, $options: "i" } },
           { isActive: search === "active" ? true : false },
           { level: search === "Pusat" ? true : false },
@@ -90,7 +72,7 @@ const index = async (req, res) => {
     // Filters
     if (level) query.level = level;
     if (branch) query.branch_id = branch;
-    if (division) query.division_id = division;
+    if (userType) query.userType = userType;
     if (isActive !== "") query.isActive = isActive === "true";
 
     // Filter by branch for non-pusat users
@@ -102,12 +84,11 @@ const index = async (req, res) => {
     const [users, total] = await Promise.all([
       User.find(query)
         .populate("branch_id", "name")
-        .populate("division_id", "name")
-        .populate("position_id", "name")
         .populate("role_id", "name")
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       User.countDocuments(query),
     ]);
 
@@ -115,11 +96,6 @@ const index = async (req, res) => {
 
     const branches = await Branch.find({ isActive: "active" }).sort({
       name: 1,
-    });
-    const divisions = await Division.find({ isActive: true }).sort({ name: 1 });
-    const positions = await Position.find({ isActive: true }).sort({
-      name: 1,
-      level: 1,
     });
 
     // Get success/error messages from session
@@ -139,13 +115,11 @@ const index = async (req, res) => {
       total,
       search,
       branch,
-      division,
       isActive,
+      userType,
       level,
-      filters: { level, branch, division, isActive },
+      filters: { level, branch, userType, isActive },
       branches: branches,
-      divisions: divisions,
-      positions: positions,
       userPermissions: req.userPermissions,
       successMessage,
       errorMessage,
@@ -164,8 +138,6 @@ const detail = async (req, res) => {
 
     const user = await User.findById(userId)
       .populate("branch_id", "name")
-      .populate("division_id", "name")
-      .populate("position_id", "name")
       .populate("role_id", "name");
 
     if (!user) {
@@ -193,12 +165,6 @@ const create = async (req, res) => {
   try {
     const currentUser = await User.findOne({ _id: req.session.user._id });
     const branches = await Branch.find(branchQuery, "name").sort({ name: 1 });
-    const divisions = await Division.find({ isActive: true }, "name").sort({
-      name: 1,
-    });
-    const positions = await Position.find({ isActive: true }, "name").sort({
-      level: 1,
-    });
 
     // Get data for dropdowns
     let branchQuery = { isActive: "active" };
@@ -210,8 +176,6 @@ const create = async (req, res) => {
       title: "Create User",
       name: "users",
       branches: branches,
-      divisions: divisions,
-      positions: positions,
       layout: "../views/layout/app.ejs",
       errors: null,
       input: {},
@@ -239,8 +203,7 @@ const store = async (req, res) => {
       password,
       phoneNumber,
       branch_id,
-      division_id,
-      position_id,
+      userType,
       level,
       isActive,
     } = req.body;
@@ -259,22 +222,24 @@ const store = async (req, res) => {
     }
 
     // Tentukan branch_id sesuai level
-    let userBranchId = level === "Pusat" ? null : branch_id;
+    const userBranchId = level === "Pusat" ? null : branch_id;
 
     if (level !== "Pusat" && !userBranchId) {
       req.session.errorMessage = "Branch is required for non-pusat user!";
+
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      } else {
+        req.session.errorMessage = "Failed to delete file!";
+      }
+
       return res.redirect(req.get("referer"));
     }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Cari atau buat role
     let role = await Role.findOne({
       branch_id: userBranchId,
-      division_id: division_id,
-      position_id: position_id,
+      userType: userType,
       isActive: true,
     });
 
@@ -282,19 +247,16 @@ const store = async (req, res) => {
       const branch = userBranchId
         ? await Branch.findById(userBranchId)
         : await Branch.findOne({ type: "pusat" });
-      const division = await Division.findById(division_id);
-      const position = await Position.findById(position_id);
 
       role = new Role({
-        name: `${position.name} - ${division.name} - ${
+        name: `${userType} - ${
           branch ? branch.name : "Pusat"
         }`,
-        description: `Default role for ${position.name} in ${
-          division.name
-        } at ${branch ? branch.name : "Pusat"}`,
+        description: `Default role for ${userType} at ${
+          branch ? branch.name : "Pusat"
+        }`,
         branch_id: userBranchId,
-        division_id: division_id,
-        position_id: position_id,
+        userType: userType,
         isActive: true,
       });
       await role.save();
@@ -306,13 +268,12 @@ const store = async (req, res) => {
       firstname,
       lastname,
       email,
-      password: hashedPassword,
+      password,
       phoneNumber,
       photoProfile: req.file ? "uploads/profiles/" + req.file.filename : null,
       level, // <-- disimpan string, bukan boolean
       branch_id: userBranchId, // <-- null jika pusat
-      division_id,
-      position_id,
+      userType: userType,
       role_id: role._id,
       isActive: isActive === "on" || isActive === true,
     });
@@ -346,9 +307,7 @@ const edit = async (req, res) => {
     }
 
     const user = await User.findOne(userQuery)
-      .populate("branch_id")
-      .populate("division_id")
-      .populate("position_id");
+      .populate("branch_id", "name")
 
     if (!user) {
       req.session.errorMessage = "User not found or access denied!";
@@ -364,10 +323,6 @@ const edit = async (req, res) => {
     }
 
     const branches = await Branch.find(branchQuery).select("name type");
-    const divisions = await Division.find({ isActive: true }).select("name");
-    const positions = await Position.find({ isActive: true })
-      .select("name level")
-      .sort("level");
 
     res.render("../views/pages/settings/users/index.ejs", {
       title: "Edit User",
@@ -375,8 +330,6 @@ const edit = async (req, res) => {
       name: "users",
       user,
       branches,
-      divisions,
-      positions,
       errors: {},
       userPermissions: req.userPermissions,
       successMessage: req.session.successMessage || null,
@@ -407,8 +360,7 @@ const update = async (req, res) => {
       email,
       password,
       phoneNumber,
-      division_id,
-      position_id,
+      userType,
       branch_id,
       level,
       isActive,
@@ -438,8 +390,7 @@ const update = async (req, res) => {
     user.lastname = lastname;
     user.email = email;
     user.phoneNumber = phoneNumber;
-    user.division_id = division_id;
-    user.position_id = position_id;
+    user.userType = userType;
     user.isActive = isActive === "on" || isActive === true;
 
     // Level & Branch (string-based like version 1)
@@ -454,6 +405,11 @@ const update = async (req, res) => {
       user.branch_id = branch_id;
     }
 
+    // Update password jika diisi
+    if (password) {
+      user.password = password; // auto hash via pre-save
+    }
+
     // Handle photo
     if (req.file) {
       // Delete old photo if exists
@@ -466,12 +422,6 @@ const update = async (req, res) => {
       user.photoProfile = "uploads/profiles/" + req.file.filename;
     }
 
-    // Update password if provided
-    if (password) {
-      const salt = await bcrypt.genSalt(12); // pakai 12 seperti versi pertama
-      user.password = await bcrypt.hash(password, salt);
-    }
-
     // Find or create role (active only)
     let roleBranchId = level === "Pusat" ? null : branch_id;
     if (level === "Pusat") {
@@ -481,8 +431,7 @@ const update = async (req, res) => {
 
     let role = await Role.findOne({
       branch_id: roleBranchId,
-      division_id: division_id,
-      position_id: position_id,
+      userType: userType,
       isActive: true,
     });
 
@@ -490,19 +439,17 @@ const update = async (req, res) => {
       const branch = roleBranchId
         ? await Branch.findById(roleBranchId)
         : await Branch.findOne({ type: "pusat" });
-      const division = await Division.findById(division_id);
-      const position = await Position.findById(position_id);
+      const userType = userType;
 
       role = new Role({
-        name: `${position.name} - ${division.name} - ${
+        name: `${userType} - ${
           branch ? branch.name : "Pusat"
         }`,
-        description: `Default role for ${position.name} in ${
-          division.name
+        description: `Default role for ${userType} in ${
+          branch.name
         } at ${branch ? branch.name : "Pusat"}`,
         branch_id: roleBranchId,
-        division_id: division_id,
-        position_id: position_id,
+        userType: userType,
         isActive: true,
       });
       await role.save();
@@ -573,6 +520,7 @@ const exportExcel = async (req, res) => {
     // Get filter parameters from query (sent by frontend)
     const filterBranch = req.query.filterBranch || "all";
     const filterLevel = req.query.filterLevel || "all";
+    const filterUserType = req.query.filterUserType || "all";
     const filterStatus = req.query.filterStatus || "all";
 
     // Branch filtering
@@ -590,6 +538,11 @@ const exportExcel = async (req, res) => {
       query.branch_id = currentUser.branch_id;
     }
 
+    // User Type filtering
+    if (filterUserType && filterUserType !== "all") {
+      query.userType = filterUserType;
+    }
+
     // Level filtering
     if (filterLevel && filterLevel !== "all") {
       // Fix level filter logic to match frontend select options
@@ -603,8 +556,6 @@ const exportExcel = async (req, res) => {
 
     const users = await User.find(query)
       .populate("branch_id", "name")
-      .populate("division_id", "name")
-      .populate("position_id", "name")
       .populate("role_id", "name")
       .sort({ createdAt: -1 });
 
@@ -619,8 +570,7 @@ const exportExcel = async (req, res) => {
       { header: "Phone", key: "phoneNumber", width: 20 },
       { header: "Level", key: "level", width: 15 },
       { header: "Branch", key: "branch", width: 25 },
-      { header: "Division", key: "division", width: 25 },
-      { header: "Position", key: "position", width: 25 },
+      { header: "User Type", key: "userType", width: 20 },
       { header: "Role", key: "role", width: 30 },
       { header: "Active", key: "isActive", width: 10 },
       { header: "Last Login", key: "lastLogin", width: 20 },
@@ -636,8 +586,7 @@ const exportExcel = async (req, res) => {
         phoneNumber: user.phoneNumber || "-",
         level: user.level || "-",
         branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
-        division: user.division_id ? user.division_id.name : "-",
-        position: user.position_id ? user.position_id.name : "-",
+        userType: user.userType || "-",
         role: user.role_id ? user.role_id.name : "-",
         isActive: user.isActive ? "Yes" : "No",
         lastLogin: user.lastLogin ? user.lastLogin.toLocaleString() : "Never",
@@ -687,6 +636,8 @@ const exportCSV = async (req, res) => {
     const filterBranch = req.query.filterBranch || "all";
     const filterLevel = req.query.filterLevel || "all";
     const filterStatus = req.query.filterStatus || "all";
+    const filterUserType = req.query.filterUserType || "all";
+
 
     // Branch filtering
     if (currentUser.level === "Pusat") {
@@ -703,6 +654,11 @@ const exportCSV = async (req, res) => {
       query.branch_id = currentUser.branch_id;
     }
 
+    // User Type filtering
+    if (filterUserType && filterUserType !== "all") {
+      query.userType = filterUserType;
+    }
+
     // Level filtering
     if (filterLevel && filterLevel !== "all") {
       // Fix level filter logic to match frontend select options
@@ -716,8 +672,6 @@ const exportCSV = async (req, res) => {
 
     const users = await User.find(query)
       .populate("branch_id", "name")
-      .populate("division_id", "name")
-      .populate("position_id", "name")
       .populate("role_id", "name")
       .sort({ createdAt: -1 });
 
@@ -729,8 +683,7 @@ const exportCSV = async (req, res) => {
       phoneNumber: user.phoneNumber || "-",
       level: user.level || "-",
       branch: user.branch_id ? user.branch_id.name : "Kantor Pusat",
-      division: user.division_id ? user.division_id.name : "-",
-      position: user.position_id ? user.position_id.name : "-",
+      userType: user.userType || "-",
       role: user.role_id ? user.role_id.name : "-",
       isActive: user.isActive ? "Yes" : "No",
       lastLogin: user.lastLogin ? user.lastLogin.toISOString() : "Never",
@@ -752,8 +705,7 @@ const exportCSV = async (req, res) => {
       "Phone",
       "Level",
       "Branch",
-      "Division",
-      "Position",
+      "User Type",
       "Role",
       "Active",
       "Last Login",
@@ -769,8 +721,7 @@ const exportCSV = async (req, res) => {
           record.phoneNumber,
           record.level,
           record.branch,
-          record.division,
-          record.position,
+          record.userType,
           record.role,
           record.isActive,
           record.lastLogin,
@@ -790,11 +741,21 @@ const exportCSV = async (req, res) => {
 // Get roles by branch, division, and position (AJAX endpoint)
 const getRolesByFilters = async (req, res) => {
   try {
-    const { branch_id, division_id, position_id, level } = req.query;
+    const { branch_id, userType, level } = req.query;
 
     // Cek filter kosong
-    if (!branch_id && !division_id && !position_id && !level) {
+    if (!branch_id && !userType && !level) {
       return res.json({ success: false, message: "No filters provided" });
+    }
+
+    // Add userType filter
+    if (userType) {
+      query.userType = userType;
+    }
+
+    // Add level filter
+    if (level) {
+      query.level = level;
     }
 
     // Build query
@@ -808,16 +769,12 @@ const getRolesByFilters = async (req, res) => {
       }
     } else if (branch_id) {
       query.branch_id = branch_id;
-    }
-
-    if (division_id) query.division_id = division_id;
-    if (position_id) query.position_id = position_id;
+    } 
 
     // Cari role sesuai filter
     const roles = await Role.find(query)
       .populate("branch_id", "name")
-      .populate("division_id", "name")
-      .populate("position_id", "name");
+      .populate("userType", "name");
 
     if (!roles || roles.length === 0) {
       return res.json({ success: false, message: "No roles found" });
